@@ -58,6 +58,7 @@ func (vw *View) RenderOffNode(frame *gpu.Framebuffer, node epe.Node, cam *Camera
 	if !sc.RenderOffFrame() {
 		return fmt.Errorf("could not render to offscreen framebuffer")
 	}
+	(*frame).Rendered()
 	return nil
 }
 

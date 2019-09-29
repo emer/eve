@@ -6,6 +6,7 @@ package main
 
 import (
 	"image"
+	"log"
 
 	"github.com/emer/epe/epe"
 	"github.com/emer/epe/epev"
@@ -28,16 +29,17 @@ func main() {
 
 // Env encapsulates the virtual environment
 type Env struct {
-	MoveStep float32     `desc:"how far to move every step"`
-	Width    float32     `desc:"width of room"`
-	Depth    float32     `desc:"depth of room"`
-	Height   float32     `desc:"height of room"`
-	Thick    float32     `desc:"thickness of walls of room"`
-	EmerHt   float32     `desc:"height of emer"`
-	Camera   epev.Camera `desc:"offscreen render camera settings"`
-	World    *epe.Group  `view:"-" desc:"world"`
-	View     *epev.View  `view:"-" desc:"view of world"`
-	Emer     *epe.Group
+	EmerHt   float32         `desc:"height of emer"`
+	MoveStep float32         `desc:"how far to move every step"`
+	RotStep  float32         `desc:"how far to rotate every step"`
+	Width    float32         `desc:"width of room"`
+	Depth    float32         `desc:"depth of room"`
+	Height   float32         `desc:"height of room"`
+	Thick    float32         `desc:"thickness of walls of room"`
+	Camera   epev.Camera     `desc:"offscreen render camera settings"`
+	World    *epe.Group      `view:"-" desc:"world"`
+	View     *epev.View      `view:"-" desc:"view of world"`
+	Emer     *epe.Group      `view:"-" desc:"emer group"`
 	EyeR     epe.Body        `view:"Right eye of emer"`
 	Win      *gi.Window      `view:"-" desc:"gui window"`
 	SnapImg  *gi.Bitmap      `view:"-" desc:"snapshot bitmap view"`
@@ -45,12 +47,13 @@ type Env struct {
 }
 
 func (ev *Env) Defaults() {
-	ev.MoveStep = 0.1
 	ev.Width = 10
 	ev.Depth = 15
 	ev.Height = 8
 	ev.Thick = 0.2
 	ev.EmerHt = 1
+	ev.MoveStep = ev.EmerHt * .2
+	ev.RotStep = 15
 	ev.Camera.Defaults()
 	ev.Camera.FOV = 90
 }
@@ -76,15 +79,20 @@ func (ev *Env) MakeView(sc *gi3d.Scene) {
 
 // Snapshot takes a snapshot from the perspective of Emer's right eye
 func (ev *Env) Snapshot() {
-	ev.View.RenderOffNode(&ev.Frame, ev.EyeR, &ev.Camera)
+	err := ev.View.RenderOffNode(&ev.Frame, ev.EyeR, &ev.Camera)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	var img image.Image
 	oswin.TheApp.RunOnMain(func() {
 		tex := ev.Frame.Texture()
 		tex.SetBotZero(true)
 		img = tex.GrabImage()
 	})
-	gi.SaveImage("test.png", img)
 	ev.SnapImg.SetImage(img, 0, 0)
+	ev.View.Scene.Render2D()
+	ev.View.Scene.DirectWinUpload()
 }
 
 // StepForward moves Emer forward in current facing direction one step, and takes Snapshot
@@ -98,6 +106,40 @@ func (ev *Env) StepForward() {
 // StepBackward moves Emer backward in current facing direction one step, and takes Snapshot
 func (ev *Env) StepBackward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
+	ev.World.UpdateWorld()
+	ev.View.Sync()
+	ev.Snapshot()
+}
+
+// RotBodyLeft rotates emer left and takes Snapshot
+func (ev *Env) RotBodyLeft() {
+	ev.Emer.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
+	ev.World.UpdateWorld()
+	ev.View.Sync()
+	ev.Snapshot()
+}
+
+// RotBodyRight rotates emer right and takes Snapshot
+func (ev *Env) RotBodyRight() {
+	ev.Emer.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
+	ev.World.UpdateWorld()
+	ev.View.Sync()
+	ev.Snapshot()
+}
+
+// RotHeadLeft rotates emer left and takes Snapshot
+func (ev *Env) RotHeadLeft() {
+	hd := ev.Emer.ChildByName("head", 1).(*epe.Group)
+	hd.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
+	ev.World.UpdateWorld()
+	ev.View.Sync()
+	ev.Snapshot()
+}
+
+// RotHeadRight rotates emer right and takes Snapshot
+func (ev *Env) RotHeadRight() {
+	hd := ev.Emer.ChildByName("head", 1).(*epe.Group)
+	hd.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.World.UpdateWorld()
 	ev.View.Sync()
 	ev.Snapshot()
@@ -120,7 +162,7 @@ func MakeRoom(par *epe.Group, name string, width, depth, height, thick float32) 
 // MakeEmer constructs a new Emer virtual robot of given height (e.g., 1)
 func MakeEmer(par *epe.Group, height float32) *epe.Group {
 	emr := epe.AddNewGroup(par, "emer")
-	width := height * .3
+	width := height * .4
 	depth := height * .15
 	body := epe.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
 	body.Mat.Color = "purple"
@@ -168,20 +210,6 @@ func (ev *Env) ConfigGui() {
 	mfr := win.SetMainFrame()
 	mfr.SetProp("spacing", units.NewEx(1))
 
-	trow := gi.AddNewLayout(mfr, "trow", gi.LayoutHoriz)
-	trow.SetStretchMaxWidth()
-
-	title := gi.AddNewLabel(trow, "title", `This is a demonstration of the
-<a href="https://github.com/emer/epe">epe</a> <i>3D</i> Framework<br>
-See <a href="https://github.com/emer/epe/blob/master/examples/virtroomd/README.md">README</a> for detailed info and things to try.`)
-	title.SetProp("white-space", gi.WhiteSpaceNormal) // wrap
-	title.SetProp("text-align", gi.AlignCenter)       // note: this also sets horizontal-align, which controls the "box" that the text is rendered in..
-	title.SetProp("vertical-align", gi.AlignCenter)
-	title.SetProp("font-size", "x-large")
-	title.SetProp("line-height", 1.5)
-	title.SetStretchMaxWidth()
-	title.SetStretchMaxHeight()
-
 	//////////////////////////////////////////
 	//    world
 
@@ -201,7 +229,7 @@ See <a href="https://github.com/emer/epe/blob/master/examples/virtroomd/README.m
 	svfr := gi.AddNewFrame(split, "svfr", gi.LayoutHoriz)
 	imfr := gi.AddNewFrame(split, "imfr", gi.LayoutHoriz)
 	scfr := gi.AddNewFrame(split, "scfr", gi.LayoutHoriz)
-	split.SetSplits(.1, .1, .2, .6)
+	split.SetSplits(.1, .2, .2, .5)
 
 	tv := giv.AddNewTreeView(tvfr, "tv")
 	tv.SetRootNode(ev.World)
@@ -268,17 +296,34 @@ See <a href="https://github.com/emer/epe/blob/master/examples/virtroomd/README.m
 	ev.SnapImg.LayoutToImgSize()
 	ev.SnapImg.SetProp("vertical-align", gi.AlignTop)
 
+	tbar.AddAction(gi.ActOpts{Label: "Edit Env", Icon: "edit", Tooltip: "Edit the settings for the environment."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		sv.SetStruct(ev)
+	})
 	tbar.AddAction(gi.ActOpts{Label: "Snap", Icon: "file-image", Tooltip: "Take a snapshot from perspective of the right eye of emer virtual robot."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.Snapshot()
-		vp.SetNeedsFullRender()
 	})
+	tbar.AddSeparator("mv-sep")
 	tbar.AddAction(gi.ActOpts{Label: "Fwd", Icon: "wedge-up", Tooltip: "Take a step Forward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.StepForward()
-		vp.SetNeedsFullRender()
 	})
 	tbar.AddAction(gi.ActOpts{Label: "Bkw", Icon: "wedge-down", Tooltip: "Take a step Backward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.StepBackward()
-		vp.SetNeedsFullRender()
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Body Left", Icon: "wedge-left", Tooltip: "Rotate body left."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.RotBodyLeft()
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Body Right", Icon: "wedge-right", Tooltip: "Rotate body right."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.RotBodyRight()
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Head Left", Icon: "wedge-left", Tooltip: "Rotate body left."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.RotHeadLeft()
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Head Right", Icon: "wedge-right", Tooltip: "Rotate body right."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.RotHeadRight()
+	})
+	tbar.AddSeparator("rm-sep")
+	tbar.AddAction(gi.ActOpts{Label: "README", Icon: "file-markdown", Tooltip: "Open browser on README."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		gi.OpenURL("https://github.com/emer/epe/blob/master/examples/virtroom/README.md")
 	})
 
 	appnm := gi.AppName()

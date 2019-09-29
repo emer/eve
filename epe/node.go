@@ -67,10 +67,10 @@ func (nb *NodeBase) InitBase(par *NodeBase) {
 	}
 	nb.Rel = nb.Initial
 	if par != nil {
-		nb.Abs.Pos = nb.Initial.Pos.MulQuat(nb.Initial.Quat).Add(par.Abs.Pos)
+		nb.Abs.Quat = nb.Initial.Quat.Mul(par.Abs.Quat)
+		nb.Abs.Pos = nb.Initial.Pos.MulQuat(par.Abs.Quat).Add(par.Abs.Pos)
 		nb.Abs.LinVel = nb.Initial.LinVel.MulQuat(nb.Initial.Quat).Add(par.Abs.LinVel)
 		nb.Abs.AngVel = nb.Initial.AngVel.MulQuat(nb.Initial.Quat).Add(par.Abs.AngVel)
-		nb.Abs.Quat = nb.Initial.Quat.Mul(par.Abs.Quat)
 	} else {
 		nb.Abs.Pos = nb.Initial.Pos
 		nb.Abs.LinVel = nb.Initial.LinVel
@@ -82,10 +82,10 @@ func (nb *NodeBase) InitBase(par *NodeBase) {
 // UpdateBase is the base-level update of Phys state based on current relative values
 func (nb *NodeBase) UpdateBase(par *NodeBase) {
 	if par != nil {
-		nb.Abs.Pos = nb.Rel.Pos.MulQuat(nb.Rel.Quat).Add(par.Abs.Pos)
+		nb.Abs.Quat = nb.Rel.Quat.Mul(par.Abs.Quat)
+		nb.Abs.Pos = nb.Rel.Pos.MulQuat(par.Abs.Quat).Add(par.Abs.Pos)
 		nb.Abs.LinVel = nb.Rel.LinVel.MulQuat(nb.Rel.Quat).Add(par.Abs.LinVel)
 		nb.Abs.AngVel = nb.Rel.AngVel.MulQuat(nb.Rel.Quat).Add(par.Abs.AngVel)
-		nb.Abs.Quat = nb.Rel.Quat.Mul(par.Abs.Quat)
 	} else {
 		nb.Abs.Pos = nb.Rel.Pos
 		nb.Abs.LinVel = nb.Rel.LinVel
