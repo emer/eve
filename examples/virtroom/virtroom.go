@@ -28,21 +28,24 @@ func main() {
 
 // Env encapsulates the virtual environment
 type Env struct {
-	Width   float32         `desc:"width of room"`
-	Depth   float32         `desc:"depth of room"`
-	Height  float32         `desc:"height of room"`
-	Thick   float32         `desc:"thickness of walls of room"`
-	EmerHt  float32         `desc:"height of emer"`
-	Camera  epev.Camera     `desc:"offscreen render camera settings"`
-	World   *epe.Group      `view:"-" desc:"world"`
-	View    *epev.View      `view:"-" desc:"view of world"`
-	EyeR    epe.Body        `view:"Right eye of emer"`
-	Win     *gi.Window      `view:"-" desc:"gui window"`
-	SnapImg *gi.Bitmap      `view:"-" desc:"snapshot bitmap view"`
-	Frame   gpu.Framebuffer `view:"-" desc:"offscreen render buffer"`
+	MoveStep float32     `desc:"how far to move every step"`
+	Width    float32     `desc:"width of room"`
+	Depth    float32     `desc:"depth of room"`
+	Height   float32     `desc:"height of room"`
+	Thick    float32     `desc:"thickness of walls of room"`
+	EmerHt   float32     `desc:"height of emer"`
+	Camera   epev.Camera `desc:"offscreen render camera settings"`
+	World    *epe.Group  `view:"-" desc:"world"`
+	View     *epev.View  `view:"-" desc:"view of world"`
+	Emer     *epe.Group
+	EyeR     epe.Body        `view:"Right eye of emer"`
+	Win      *gi.Window      `view:"-" desc:"gui window"`
+	SnapImg  *gi.Bitmap      `view:"-" desc:"snapshot bitmap view"`
+	Frame    gpu.Framebuffer `view:"-" desc:"offscreen render buffer"`
 }
 
 func (ev *Env) Defaults() {
+	ev.MoveStep = 0.1
 	ev.Width = 10
 	ev.Depth = 15
 	ev.Height = 8
@@ -58,8 +61,8 @@ func (ev *Env) MakeWorld() {
 	ev.World.InitName(ev.World, "RoomWorld")
 
 	MakeRoom(ev.World, "room1", ev.Width, ev.Depth, ev.Height, ev.Thick)
-	emr := MakeEmer(ev.World, ev.EmerHt)
-	ev.EyeR = emr.ChildByName("eye-r", 2).(epe.Body)
+	ev.Emer = MakeEmer(ev.World, ev.EmerHt)
+	ev.EyeR = ev.Emer.ChildByName("head", 1).ChildByName("eye-r", 2).(epe.Body)
 
 	ev.World.InitWorld()
 }
@@ -80,8 +83,24 @@ func (ev *Env) Snapshot() {
 		tex.SetBotZero(true)
 		img = tex.GrabImage()
 	})
-	// gi.SaveImage("test.png", img)
+	gi.SaveImage("test.png", img)
 	ev.SnapImg.SetImage(img, 0, 0)
+}
+
+// StepForward moves Emer forward in current facing direction one step, and takes Snapshot
+func (ev *Env) StepForward() {
+	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
+	ev.World.UpdateWorld()
+	ev.View.Sync() // todo: just pos
+	// ev.Snapshot()
+}
+
+// StepBackward moves Emer backward in current facing direction one step, and takes Snapshot
+func (ev *Env) StepBackward() {
+	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
+	ev.World.UpdateWorld()
+	ev.View.Sync()
+	// ev.Snapshot()
 }
 
 // MakeRoom constructs a new room in given parent group with given params
@@ -105,14 +124,18 @@ func MakeEmer(par *epe.Group, height float32) *epe.Group {
 	depth := height * .15
 	body := epe.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
 	body.Mat.Color = "purple"
+
 	headsz := depth * 1.5
 	hhsz := .5 * headsz
-	head := epe.AddNewBox(emr, "head", mat32.Vec3{0, height + hhsz, 0}, mat32.Vec3{headsz, headsz, headsz})
+	hgp := epe.AddNewGroup(emr, "head")
+	hgp.Initial.Pos = mat32.Vec3{0, height + hhsz, 0}
+
+	head := epe.AddNewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
 	head.Mat.Color = "tan"
 	eyesz := headsz * .2
-	eyel := epe.AddNewBox(emr, "eye-l", mat32.Vec3{-hhsz * .6, height + headsz*.6, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
+	eyel := epe.AddNewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyel.Mat.Color = "green"
-	eyer := epe.AddNewBox(emr, "eye-r", mat32.Vec3{hhsz * .6, height + headsz*.6, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
+	eyer := epe.AddNewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyer.Mat.Color = "green"
 	return emr
 }
@@ -247,6 +270,14 @@ See <a href="https://github.com/emer/epe/blob/master/examples/virtroomd/README.m
 
 	tbar.AddAction(gi.ActOpts{Label: "Snap", Icon: "file-image", Tooltip: "Take a snapshot from perspective of the right eye of emer virtual robot."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.Snapshot()
+		vp.SetNeedsFullRender()
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Fwd", Icon: "wedge-up", Tooltip: "Take a step Forward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.StepForward()
+		vp.SetNeedsFullRender()
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Bkw", Icon: "wedge-down", Tooltip: "Take a step Backward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.StepBackward()
 		vp.SetNeedsFullRender()
 	})
 

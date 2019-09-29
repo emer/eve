@@ -49,8 +49,8 @@ func (vw *View) RenderOffNode(frame *gpu.Framebuffer, node epe.Node, cam *Camera
 	sc.Camera.Near = cam.Near
 	sc.Camera.Far = cam.Far
 	nb := node.AsNodeBase()
-	sc.Camera.Pose.Pos = nb.Cur.Pos
-	sc.Camera.Pose.Quat = nb.Cur.Quat
+	sc.Camera.Pose.Pos = nb.Abs.Pos
+	sc.Camera.Pose.Quat = nb.Abs.Quat
 	sc.Camera.Pose.Scale.Set(1, 1, 1)
 	if !sc.ActivateOffFrame(frame, "epe-view", cam.Size, cam.MSample) {
 		return fmt.Errorf("could not activate offscreen framebuffer")
@@ -104,8 +104,8 @@ func SyncNode(wn epe.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 func ConfigView(wn epe.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	wb := wn.AsNodeBase()
 	vb := vn.AsNode3D()
-	vb.Pose.Pos = wb.Cur.Pos
-	vb.Pose.Quat = wb.Cur.Quat
+	vb.Pose.Pos = wb.Rel.Pos
+	vb.Pose.Quat = wb.Rel.Quat
 	wt := kit.ShortTypeName(wn.Type())
 	switch wt {
 	case "epe.Box":

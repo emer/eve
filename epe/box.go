@@ -29,5 +29,11 @@ func AddNewBox(parent ki.Ki, name string, pos, size mat32.Vec3) *Box {
 func (bx *Box) InitPhys(par *NodeBase) {
 	bx.InitBase(par)
 	bx.BBox.SetBounds(bx.Size.MulScalar(-.5), bx.Size.MulScalar(.5))
-	bx.BBox.XForm(bx.Cur.Quat, bx.Cur.Pos)
+	bx.BBox.XForm(bx.Abs.Quat, bx.Abs.Pos)
+}
+
+func (bx *Box) UpdatePhys(par *NodeBase) {
+	bx.UpdateBase(par)
+	bx.BBox.SetBounds(bx.Size.MulScalar(-.5), bx.Size.MulScalar(.5))
+	bx.BBox.XForm(bx.Abs.Quat, bx.Abs.Pos)
 }

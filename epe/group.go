@@ -33,6 +33,10 @@ func (gp *Group) InitPhys(par *NodeBase) {
 	gp.InitBase(par)
 }
 
+func (gp *Group) UpdatePhys(par *NodeBase) {
+	gp.UpdateBase(par)
+}
+
 func (gp *Group) GroupBBox() {
 	gp.BBox.BBox.SetEmpty()
 	for _, kid := range gp.Kids {
@@ -54,6 +58,37 @@ func (gp *Group) InitWorld() {
 		}
 		_, pi := KiToNode(k.Parent())
 		nii.InitPhys(pi)
+		return true
+	})
+
+	gp.FuncDownMeLast(0, gp.This(),
+		func(k ki.Ki, level int, d interface{}) bool {
+			nii, _ := KiToNode(k)
+			if nii == nil {
+				return false // going into a different type of thing, bail
+			}
+			return true
+		},
+		func(k ki.Ki, level int, d interface{}) bool {
+			nii, _ := KiToNode(k)
+			if nii == nil {
+				return false // going into a different type of thing, bail
+			}
+			nii.GroupBBox()
+			return true
+		})
+
+}
+
+// UpdateWorld does the full tree UpdatePhys and GroupBBox updates
+func (gp *Group) UpdateWorld() {
+	gp.FuncDownMeFirst(0, gp.This(), func(k ki.Ki, level int, d interface{}) bool {
+		nii, _ := KiToNode(k)
+		if nii == nil {
+			return false // going into a different type of thing, bail
+		}
+		_, pi := KiToNode(k.Parent())
+		nii.UpdatePhys(pi)
 		return true
 	})
 
