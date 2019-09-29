@@ -8,8 +8,8 @@ import (
 	"image"
 	"log"
 
-	"github.com/emer/epe/epe"
-	"github.com/emer/epe/epev"
+	"github.com/emer/eve/eve"
+	"github.com/emer/eve/evev"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/gimain"
@@ -36,11 +36,11 @@ type Env struct {
 	Depth    float32         `desc:"depth of room"`
 	Height   float32         `desc:"height of room"`
 	Thick    float32         `desc:"thickness of walls of room"`
-	Camera   epev.Camera     `desc:"offscreen render camera settings"`
-	World    *epe.Group      `view:"-" desc:"world"`
-	View     *epev.View      `view:"-" desc:"view of world"`
-	Emer     *epe.Group      `view:"-" desc:"emer group"`
-	EyeR     epe.Body        `view:"Right eye of emer"`
+	Camera   evev.Camera     `desc:"offscreen render camera settings"`
+	World    *eve.Group      `view:"-" desc:"world"`
+	View     *evev.View      `view:"-" desc:"view of world"`
+	Emer     *eve.Group      `view:"-" desc:"emer group"`
+	EyeR     eve.Body        `view:"-" desc:"Right eye of emer"`
 	Win      *gi.Window      `view:"-" desc:"gui window"`
 	SnapImg  *gi.Bitmap      `view:"-" desc:"snapshot bitmap view"`
 	Frame    gpu.Framebuffer `view:"-" desc:"offscreen render buffer"`
@@ -60,20 +60,35 @@ func (ev *Env) Defaults() {
 
 // MakeWorld constructs a new virtual physics world
 func (ev *Env) MakeWorld() {
-	ev.World = &epe.Group{}
+	ev.World = &eve.Group{}
 	ev.World.InitName(ev.World, "RoomWorld")
 
 	MakeRoom(ev.World, "room1", ev.Width, ev.Depth, ev.Height, ev.Thick)
 	ev.Emer = MakeEmer(ev.World, ev.EmerHt)
-	ev.EyeR = ev.Emer.ChildByName("head", 1).ChildByName("eye-r", 2).(epe.Body)
+	ev.EyeR = ev.Emer.ChildByName("head", 1).ChildByName("eye-r", 2).(eve.Body)
 
 	ev.World.InitWorld()
+}
+
+// InitWorld does init on world and re-syncs
+func (ev *Env) InitWorld() {
+	ev.World.InitWorld()
+	ev.View.Sync()
+	ev.Snapshot()
+}
+
+// ReMakeWorld rebuilds the world and re-syncs with gui
+func (ev *Env) ReMakeWorld() {
+	ev.MakeWorld()
+	ev.View.World = ev.World
+	ev.View.Sync()
+	ev.Snapshot()
 }
 
 // MakeView makes the view
 func (ev *Env) MakeView(sc *gi3d.Scene) {
 	wgp := gi3d.AddNewGroup(sc, sc, "world")
-	ev.View = epev.NewView(ev.World, sc, wgp)
+	ev.View = evev.NewView(ev.World, sc, wgp)
 	ev.View.Sync()
 }
 
@@ -99,7 +114,7 @@ func (ev *Env) Snapshot() {
 func (ev *Env) StepForward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
 	ev.World.UpdateWorld()
-	ev.View.Sync() // todo: just pos
+	ev.View.UpdatePose()
 	ev.Snapshot()
 }
 
@@ -107,7 +122,7 @@ func (ev *Env) StepForward() {
 func (ev *Env) StepBackward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
 	ev.World.UpdateWorld()
-	ev.View.Sync()
+	ev.View.UpdatePose()
 	ev.Snapshot()
 }
 
@@ -115,7 +130,7 @@ func (ev *Env) StepBackward() {
 func (ev *Env) RotBodyLeft() {
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.World.UpdateWorld()
-	ev.View.Sync()
+	ev.View.UpdatePose()
 	ev.Snapshot()
 }
 
@@ -123,61 +138,61 @@ func (ev *Env) RotBodyLeft() {
 func (ev *Env) RotBodyRight() {
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.World.UpdateWorld()
-	ev.View.Sync()
+	ev.View.UpdatePose()
 	ev.Snapshot()
 }
 
 // RotHeadLeft rotates emer left and takes Snapshot
 func (ev *Env) RotHeadLeft() {
-	hd := ev.Emer.ChildByName("head", 1).(*epe.Group)
+	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.World.UpdateWorld()
-	ev.View.Sync()
+	ev.View.UpdatePose()
 	ev.Snapshot()
 }
 
 // RotHeadRight rotates emer right and takes Snapshot
 func (ev *Env) RotHeadRight() {
-	hd := ev.Emer.ChildByName("head", 1).(*epe.Group)
+	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.World.UpdateWorld()
-	ev.View.Sync()
+	ev.View.UpdatePose()
 	ev.Snapshot()
 }
 
 // MakeRoom constructs a new room in given parent group with given params
-func MakeRoom(par *epe.Group, name string, width, depth, height, thick float32) *epe.Group {
-	rm := epe.AddNewGroup(par, name)
-	bwall := epe.AddNewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
+func MakeRoom(par *eve.Group, name string, width, depth, height, thick float32) *eve.Group {
+	rm := eve.AddNewGroup(par, name)
+	bwall := eve.AddNewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
 	bwall.Mat.Color = "blue"
-	lwall := epe.AddNewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	lwall := eve.AddNewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
 	lwall.Mat.Color = "red"
-	rwall := epe.AddNewBox(rm, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	rwall := eve.AddNewBox(rm, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
 	rwall.Mat.Color = "green"
-	fwall := epe.AddNewBox(rm, "front-wall", mat32.Vec3{0, height / 2, depth / 2}, mat32.Vec3{width, height, thick})
+	fwall := eve.AddNewBox(rm, "front-wall", mat32.Vec3{0, height / 2, depth / 2}, mat32.Vec3{width, height, thick})
 	fwall.Mat.Color = "yellow"
 	return rm
 }
 
 // MakeEmer constructs a new Emer virtual robot of given height (e.g., 1)
-func MakeEmer(par *epe.Group, height float32) *epe.Group {
-	emr := epe.AddNewGroup(par, "emer")
+func MakeEmer(par *eve.Group, height float32) *eve.Group {
+	emr := eve.AddNewGroup(par, "emer")
 	width := height * .4
 	depth := height * .15
-	body := epe.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
+	body := eve.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
 	body.Mat.Color = "purple"
 
 	headsz := depth * 1.5
 	hhsz := .5 * headsz
-	hgp := epe.AddNewGroup(emr, "head")
+	hgp := eve.AddNewGroup(emr, "head")
 	hgp.Initial.Pos = mat32.Vec3{0, height + hhsz, 0}
 
-	head := epe.AddNewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
+	head := eve.AddNewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
 	head.Mat.Color = "tan"
 	eyesz := headsz * .2
-	eyel := epe.AddNewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
+	eyel := eve.AddNewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyel.Mat.Color = "green"
-	eyer := epe.AddNewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
+	eyer := eve.AddNewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyer.Mat.Color = "green"
 	return emr
 }
@@ -198,10 +213,10 @@ func (ev *Env) ConfigGui() {
 	rec.InitName(&rec, "rec") // this is essential for root objects not owned by other Ki tree nodes
 
 	gi.SetAppName("gi3d")
-	gi.SetAppAbout(`This is a demo of the Emergent Physics Engine.  See <a href="https://github.com/emer/epe">epe on GitHub</a>.
-<p>The <a href="https://github.com/emer/epe/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`)
+	gi.SetAppAbout(`This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
+<p>The <a href="https://github.com/emer/eve/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`)
 
-	win := gi.NewWindow2D("epe-demo", "Emergent Physics Engine", width, height, true) // true = pixel sizes
+	win := gi.NewWindow2D("eve-demo", "Emergent Virtual Engine", width, height, true) // true = pixel sizes
 	ev.Win = win
 
 	vp := win.WinViewport2D()
@@ -277,14 +292,18 @@ func (ev *Env) ConfigGui() {
 	// // floor.Mat.Emissive.SetName("brown")
 	// floor.Mat.Bright = 2 // .5 for wood / brown
 	// floor.Mat.SetTexture(sc, grtx)
-	// floor.Mat.Tiling.Repeat.Set(40, 40)
+	// floor.Mat.Tiling.Reveat.Set(40, 40)
+
+	sc.Camera.Pose.Pos = mat32.Vec3{0, 40, 3.5}
+	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
+	sc.SaveCamera("3")
 
 	sc.Camera.Pose.Pos = mat32.Vec3{0, 20, 30}
-	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y) // defaults to looking at origin
+	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
 	sc.SaveCamera("2")
 
 	sc.Camera.Pose.Pos = mat32.Vec3{-.86, .97, 2.7}
-	sc.Camera.LookAt(mat32.Vec3{0, .8, 0}, mat32.Vec3Y) // defaults to looking at origin
+	sc.Camera.LookAt(mat32.Vec3{0, .8, 0}, mat32.Vec3Y)
 	sc.SaveCamera("1")
 	sc.SaveCamera("default")
 
@@ -298,6 +317,12 @@ func (ev *Env) ConfigGui() {
 
 	tbar.AddAction(gi.ActOpts{Label: "Edit Env", Icon: "edit", Tooltip: "Edit the settings for the environment."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		sv.SetStruct(ev)
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "Initialize virtual world -- go back to starting positions etc."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.InitWorld()
+	})
+	tbar.AddAction(gi.ActOpts{Label: "Make", Icon: "update", Tooltip: "Re-make virtual world -- do this if you have changed any of the world parameters."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.ReMakeWorld()
 	})
 	tbar.AddAction(gi.ActOpts{Label: "Snap", Icon: "file-image", Tooltip: "Take a snapshot from perspective of the right eye of emer virtual robot."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.Snapshot()
@@ -323,7 +348,7 @@ func (ev *Env) ConfigGui() {
 	})
 	tbar.AddSeparator("rm-sep")
 	tbar.AddAction(gi.ActOpts{Label: "README", Icon: "file-markdown", Tooltip: "Open browser on README."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		gi.OpenURL("https://github.com/emer/epe/blob/master/examples/virtroom/README.md")
+		gi.OpenURL("https://github.com/emer/eve/blob/master/examples/virtroom/README.md")
 	})
 
 	appnm := gi.AppName()

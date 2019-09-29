@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package epe
+package eve
 
 import (
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
 
-// Node is the common interface for all epe nodes
+// Node is the common interface for all eve nodes
 type Node interface {
 	ki.Ki
 
@@ -40,7 +40,7 @@ type Node interface {
 	UpdatePhys(par *NodeBase)
 }
 
-// NodeBase is the basic epe node, which has position, rotation, velocity
+// NodeBase is the basic eve node, which has position, rotation, velocity
 // and computed bounding boxes, etc.
 // There are only three different kinds of Nodes: Group, Body, and Joint
 type NodeBase struct {

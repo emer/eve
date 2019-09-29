@@ -1,6 +1,6 @@
-# Emergent Physics Engine
+# Emergent Virtual Engine
 
-The *Emergent Physics Engine* is a scenegraph-based physics simulator for creating virtual environments for neural network models to grow up in.
+The *Emergent Virtual Engine* (EVE) is a scenegraph-based physics simulator for creating virtual environments for neural network models to grow up in.
 
 Ultimately we hope to figure out how the Bullet simulator works and get that running here, in a clean and simple implementation.
 
