@@ -4,7 +4,10 @@
 
 package vpe
 
-import "github.com/goki/ki/ki"
+import (
+	"github.com/goki/ki/ki"
+	"github.com/goki/ki/kit"
+)
 
 // Group is a container of bodies, joints, or other groups
 // it should be used strategically to partition the space
@@ -12,6 +15,14 @@ import "github.com/goki/ki/ki"
 // Use a group for the top-level World node as well.
 type Group struct {
 	NodeBase
+}
+
+var KiT_Group = kit.Types.AddType(&Group{}, nil)
+
+// AddNewGroup adds a new group of given name to given parent
+func AddNewGroup(parent ki.Ki, name string) *Group {
+	gp := parent.AddNewChild(KiT_Group, name).(*Group)
+	return gp
 }
 
 func (gp *Group) NodeType() NodeTypes {
