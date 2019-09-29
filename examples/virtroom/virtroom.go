@@ -269,9 +269,11 @@ func (ev *Env) ConfigGui() {
 	//////////////////////////////////////////
 	//    Scene
 
-	sc := gi3d.AddNewScene(scfr, "scene")
-	sc.SetStretchMaxWidth()
-	sc.SetStretchMaxHeight()
+	scvw := gi3d.AddNewSceneView(scfr, "sceneview")
+	scvw.SetStretchMaxWidth()
+	scvw.SetStretchMaxHeight()
+	scvw.Config()
+	sc := scvw.Scene()
 
 	// first, add lights, set camera
 	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
