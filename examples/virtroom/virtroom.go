@@ -92,7 +92,7 @@ func (ev *Env) StepForward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
 	ev.World.UpdateWorld()
 	ev.View.Sync() // todo: just pos
-	// ev.Snapshot()
+	ev.Snapshot()
 }
 
 // StepBackward moves Emer backward in current facing direction one step, and takes Snapshot
@@ -100,7 +100,7 @@ func (ev *Env) StepBackward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
 	ev.World.UpdateWorld()
 	ev.View.Sync()
-	// ev.Snapshot()
+	ev.Snapshot()
 }
 
 // MakeRoom constructs a new room in given parent group with given params
