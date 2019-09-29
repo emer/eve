@@ -17,7 +17,7 @@ type Group struct {
 	NodeBase
 }
 
-var KiT_Group = kit.Types.AddType(&Group{}, nil)
+var KiT_Group = kit.Types.AddType(&Group{}, GroupProps)
 
 // AddNewGroup adds a new group of given name to given parent
 func AddNewGroup(parent ki.Ki, name string) *Group {
@@ -74,4 +74,14 @@ func (gp *Group) InitWorld() {
 			return true
 		})
 
+}
+
+// GroupProps define the ToolBar and MenuBar for StructView
+var GroupProps = ki.Props{
+	"ToolBar": ki.PropSlice{
+		{"InitWorld", ki.Props{
+			"desc": "initialize all elements in the world.",
+			"icon": "reset",
+		}},
+	},
 }
