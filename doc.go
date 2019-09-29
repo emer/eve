@@ -3,8 +3,9 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package vpe is a virtual physics engine written in pure Go, for use in creating
-virtual environments for neural network models to grow up in.
+Package epe (Emergent Physics Engine) is a virtual physics engine
+written in pure Go, for use in creating virtual environments for
+neural network models to grow up in.
 
 Ultimately we hope to figure out how the Bullet simulator works and get that
 running here, in a clean and simple implementation.
@@ -22,4 +23,4 @@ mat32 math / matrix library.
 The basic physics however can be simulated entirely independent of the
 graphics rendering.
 */
-package vpe
+package epe

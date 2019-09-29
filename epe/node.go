@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package vpe
+package epe
 
 import (
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
 
-// Node is the common interface for all vpe nodes
+// Node is the common interface for all epe nodes
 type Node interface {
 	ki.Ki
 
@@ -34,7 +34,7 @@ type Node interface {
 	GroupBBox()
 }
 
-// NodeBase is the basic vpe node, which has position, rotation, velocity
+// NodeBase is the basic epe node, which has position, rotation, velocity
 // and computed bounding boxes, etc.
 // There are only three different kinds of Nodes: Group, Body, and Joint
 type NodeBase struct {
@@ -55,6 +55,10 @@ func (nb *NodeBase) AsBody() Body {
 
 // InitBase is the base-level initialization of basic Phys state from Initial conditions
 func (nb *NodeBase) InitBase(par *NodeBase) {
+	if nb.Initial.Quat.IsNil() {
+		nb.Initial.Quat.SetIdentity()
+	}
+
 	if par != nil {
 		nb.Cur.Pos = nb.Initial.Pos.MulQuat(nb.Initial.Quat).Add(par.Cur.Pos)
 		nb.Cur.LinVel = nb.Initial.LinVel.MulQuat(nb.Initial.Quat).Add(par.Cur.LinVel)
@@ -64,7 +68,7 @@ func (nb *NodeBase) InitBase(par *NodeBase) {
 		nb.Cur.Pos = nb.Initial.Pos
 		nb.Cur.LinVel = nb.Initial.LinVel
 		nb.Cur.AngVel = nb.Initial.AngVel
-		nb.Cur.Quat = par.Cur.Quat
+		nb.Cur.Quat.SetIdentity()
 	}
 }
 

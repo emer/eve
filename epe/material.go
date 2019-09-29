@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package vpe
+package epe
 
 // Material defines basic material properties (color, texture)
 // that can be used for rendering -- for more complete control you

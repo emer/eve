@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package vpe
+package epe
 
 // Surface defines the physical surface properties of bodies
 type Surface struct {

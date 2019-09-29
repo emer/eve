@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package vpe
+package epe
 
 import (
 	"github.com/goki/gi/mat32"
@@ -13,7 +13,7 @@ import (
 // Box is a rigid body box shape
 type Box struct {
 	BodyBase
-	Size mat32.Vec3 `desc:"size of box in each dimension"`
+	Size mat32.Vec3 `desc:"size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)"`
 }
 
 var KiT_Box = kit.Types.AddType(&Box{}, nil)

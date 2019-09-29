@@ -5,11 +5,12 @@
 package main
 
 import (
-	"github.com/emer/vpe/vpe"
-	"github.com/emer/vpe/vpev"
+	"github.com/emer/epe/epe"
+	"github.com/emer/epe/epev"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/gimain"
+	"github.com/goki/gi/giv"
 	"github.com/goki/gi/mat32"
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
@@ -22,15 +23,24 @@ func main() {
 }
 
 // MakeWorld constructs a new virtual physics world
-func MakeWorld() *vpe.Group {
-	world := &vpe.Group{}
+func MakeWorld() *epe.Group {
+	world := &epe.Group{}
 	world.InitName(world, "RoomWorld")
 
+	rm1 := epe.AddNewGroup(world, "room1")
+
 	thick := float32(.05)
-	width := float32(2)
-	height := float32(2)
-	bwall := vpe.AddNewBox(world, "back-wall", mat32.Vec3{0, height / 2, width / 2}, mat32.Vec3{width, height, thick})
-	bwall.Mat.Color = "brown"
+	width := float32(10)
+	depth := float32(10)
+	height := float32(10)
+	bwall := epe.AddNewBox(rm1, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
+	bwall.Mat.Color = "tan"
+	lwall := epe.AddNewBox(rm1, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	lwall.Mat.Color = "red"
+	rwall := epe.AddNewBox(rm1, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	rwall.Mat.Color = "green"
+
+	world.InitWorld()
 	return world
 }
 
@@ -48,10 +58,10 @@ func mainrun() {
 	rec.InitName(&rec, "rec") // this is essential for root objects not owned by other Ki tree nodes
 
 	gi.SetAppName("gi3d")
-	gi.SetAppAbout(`This is a demo of the 3D graphics aspect of the <b>GoGi</b> graphical interface system, within the <b>GoKi</b> tree framework.  See <a href="https://github.com/goki">GoKi on GitHub</a>.
-<p>The <a href="https://github.com/goki/gi/blob/master/examples/gi3d/README.md">README</a> page for this example app has further info.</p>`)
+	gi.SetAppAbout(`This is a demo of the Emergent Physics Engine.  See <a href="https://github.com/emer/epe">epe on GitHub</a>.
+<p>The <a href="https://github.com/emer/epe/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`)
 
-	win := gi.NewWindow2D("vpe-demo", "Emergent Physics Engine", width, height, true) // true = pixel sizes
+	win := gi.NewWindow2D("epe-demo", "Emergent Physics Engine", width, height, true) // true = pixel sizes
 
 	vp := win.WinViewport2D()
 	updt := vp.UpdateStart()
@@ -63,8 +73,8 @@ func mainrun() {
 	trow.SetStretchMaxWidth()
 
 	title := gi.AddNewLabel(trow, "title", `This is a demonstration of the
-<a href="https://github.com/goki/gi/gi">GoGi</a> <i>3D</i> Framework<br>
-See <a href="https://github.com/goki/gi/blob/master/examples/gi3d/README.md">README</a> for detailed info and things to try.`)
+<a href="https://github.com/emer/epe">epe</a> <i>3D</i> Framework<br>
+See <a href="https://github.com/emer/epe/blob/master/examples/virtroomd/README.md">README</a> for detailed info and things to try.`)
 	title.SetProp("white-space", gi.WhiteSpaceNormal) // wrap
 	title.SetProp("text-align", gi.AlignCenter)       // note: this also sets horizontal-align, which controls the "box" that the text is rendered in..
 	title.SetProp("vertical-align", gi.AlignCenter)
@@ -73,17 +83,46 @@ See <a href="https://github.com/goki/gi/blob/master/examples/gi3d/README.md">REA
 	title.SetStretchMaxWidth()
 	title.SetStretchMaxHeight()
 
+	//////////////////////////////////////////
+	//    world
+
 	world := MakeWorld()
+
+	//////////////////////////////////////////
+	//    Splitter
+
+	split := gi.AddNewSplitView(mfr, "split")
+	split.Dim = gi.X
+
+	tvfr := gi.AddNewFrame(split, "tvfr", gi.LayoutHoriz)
+	svfr := gi.AddNewFrame(split, "svfr", gi.LayoutHoriz)
+	scfr := gi.AddNewFrame(split, "scfr", gi.LayoutHoriz)
+	split.SetSplits(.2, .2, .6)
+
+	tv := giv.AddNewTreeView(tvfr, "tv")
+	tv.SetRootNode(world)
+
+	sv := giv.AddNewStructView(svfr, "sv")
+	sv.SetStretchMaxWidth()
+	sv.SetStretchMaxHeight()
+	sv.SetStruct(world)
+
+	tv.TreeViewSig.Connect(sv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		if data == nil {
+			return
+		}
+		// tvr, _ := send.Embed(giv.KiT_TreeView).(*gi.TreeView) // root is sender
+		tvn, _ := data.(ki.Ki).Embed(giv.KiT_TreeView).(*giv.TreeView)
+		svr, _ := recv.Embed(giv.KiT_StructView).(*giv.StructView)
+		if sig == int64(giv.TreeViewSelected) {
+			svr.SetStruct(tvn.SrcNode)
+		}
+	})
 
 	//////////////////////////////////////////
 	//    Scene
 
-	gi.AddNewSpace(mfr, "scspc")
-	scrow := gi.AddNewLayout(mfr, "scrow", gi.LayoutHoriz)
-	scrow.SetStretchMaxWidth()
-	scrow.SetStretchMaxHeight()
-
-	sc := gi3d.AddNewScene(scrow, "scene")
+	sc := gi3d.AddNewScene(scfr, "scene")
 	sc.SetStretchMaxWidth()
 	sc.SetStretchMaxHeight()
 
@@ -96,7 +135,7 @@ See <a href="https://github.com/goki/gi/blob/master/examples/gi3d/README.md">REA
 
 	wgp := gi3d.AddNewGroup(sc, sc, "world")
 
-	wview := vpev.NewView(world, wgp)
+	wview := epev.NewView(world, wgp)
 	wview.Sync(sc)
 
 	// grtx := gi3d.AddNewTextureFile(sc, "ground", "ground.png")
@@ -111,7 +150,8 @@ See <a href="https://github.com/goki/gi/blob/master/examples/gi3d/README.md">REA
 	// floor.Mat.SetTexture(sc, grtx)
 	// floor.Mat.Tiling.Repeat.Set(40, 40)
 
-	sc.Camera.LookAt(mat32.Vec3Zero, mat32.Vec3Y) // defaults to looking at origin
+	sc.Camera.Pose.Pos = mat32.Vec3{0, 20, 30}
+	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y) // defaults to looking at origin
 
 	appnm := gi.AppName()
 	mmen := win.MainMenu
