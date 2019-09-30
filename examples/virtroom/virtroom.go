@@ -29,31 +29,34 @@ func main() {
 
 // Env encapsulates the virtual environment
 type Env struct {
-	EmerHt   float32         `desc:"height of emer"`
-	MoveStep float32         `desc:"how far to move every step"`
-	RotStep  float32         `desc:"how far to rotate every step"`
-	Width    float32         `desc:"width of room"`
-	Depth    float32         `desc:"depth of room"`
-	Height   float32         `desc:"height of room"`
-	Thick    float32         `desc:"thickness of walls of room"`
-	Camera   evev.Camera     `desc:"offscreen render camera settings"`
-	World    *eve.Group      `view:"-" desc:"world"`
-	View     *evev.View      `view:"-" desc:"view of world"`
-	Emer     *eve.Group      `view:"-" desc:"emer group"`
-	EyeR     eve.Body        `view:"-" desc:"Right eye of emer"`
-	Win      *gi.Window      `view:"-" desc:"gui window"`
-	SnapImg  *gi.Bitmap      `view:"-" desc:"snapshot bitmap view"`
-	Frame    gpu.Framebuffer `view:"-" desc:"offscreen render buffer"`
+	EmerHt   float32          `desc:"height of emer"`
+	MoveStep float32          `desc:"how far to move every step"`
+	RotStep  float32          `desc:"how far to rotate every step"`
+	Width    float32          `desc:"width of room"`
+	Depth    float32          `desc:"depth of room"`
+	Height   float32          `desc:"height of room"`
+	Thick    float32          `desc:"thickness of walls of room"`
+	Camera   evev.Camera      `desc:"offscreen render camera settings"`
+	DepthMap giv.ColorMapName `desc:"color map to use for rendering depth map"`
+	World    *eve.Group       `view:"-" desc:"world"`
+	View     *evev.View       `view:"-" desc:"view of world"`
+	Emer     *eve.Group       `view:"-" desc:"emer group"`
+	EyeR     eve.Body         `view:"-" desc:"Right eye of emer"`
+	Win      *gi.Window       `view:"-" desc:"gui window"`
+	SnapImg  *gi.Bitmap       `view:"-" desc:"snapshot bitmap view"`
+	DepthImg *gi.Bitmap       `view:"-" desc:"depth map bitmap view"`
+	Frame    gpu.Framebuffer  `view:"-" desc:"offscreen render buffer"`
 }
 
 func (ev *Env) Defaults() {
 	ev.Width = 10
 	ev.Depth = 15
-	ev.Height = 8
+	ev.Height = 2
 	ev.Thick = 0.2
 	ev.EmerHt = 1
 	ev.MoveStep = ev.EmerHt * .2
 	ev.RotStep = 15
+	ev.DepthMap = giv.ColorMapName("ColdHot")
 	ev.Camera.Defaults()
 	ev.Camera.FOV = 90
 }
@@ -100,14 +103,25 @@ func (ev *Env) Snapshot() {
 		return
 	}
 	var img image.Image
+	var depth []float32
 	oswin.TheApp.RunOnMain(func() {
 		tex := ev.Frame.Texture()
 		tex.SetBotZero(true)
 		img = tex.GrabImage()
+		depth = ev.Frame.DepthAll()
 	})
 	ev.SnapImg.SetImage(img, 0, 0)
+	ev.ViewDepth(depth)
 	ev.View.Scene.Render2D()
 	ev.View.Scene.DirectWinUpload()
+}
+
+// ViewDepth updates depth bitmap with depth data
+func (ev *Env) ViewDepth(depth []float32) {
+	cmap := giv.AvailColorMaps[string(ev.DepthMap)]
+	ev.DepthImg.Resize(ev.Camera.Size)
+	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
+	ev.DepthImg.UpdateSig()
 }
 
 // StepForward moves Emer forward in current facing direction one step, and takes Snapshot
@@ -163,6 +177,8 @@ func (ev *Env) RotHeadRight() {
 // MakeRoom constructs a new room in given parent group with given params
 func MakeRoom(par *eve.Group, name string, width, depth, height, thick float32) *eve.Group {
 	rm := eve.AddNewGroup(par, name)
+	floor := eve.AddNewBox(rm, "floor", mat32.Vec3{0, -thick / 2, 0}, mat32.Vec3{width, thick, depth})
+	floor.Mat.Color = "grey"
 	bwall := eve.AddNewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
 	bwall.Mat.Color = "blue"
 	lwall := eve.AddNewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
@@ -312,10 +328,18 @@ func (ev *Env) ConfigGui() {
 	//////////////////////////////////////////
 	//    Bitmap
 
-	ev.SnapImg = gi.AddNewBitmap(imfr, "snapimg")
+	imfr.Lay = gi.LayoutVert
+	gi.AddNewLabel(imfr, "lab-img", "Right Eye Image:")
+	ev.SnapImg = gi.AddNewBitmap(imfr, "snap-img")
 	ev.SnapImg.Resize(ev.Camera.Size)
 	ev.SnapImg.LayoutToImgSize()
 	ev.SnapImg.SetProp("vertical-align", gi.AlignTop)
+
+	gi.AddNewLabel(imfr, "lab-depth", "Right Eye Depth:")
+	ev.DepthImg = gi.AddNewBitmap(imfr, "depth-img")
+	ev.DepthImg.Resize(ev.Camera.Size)
+	ev.DepthImg.LayoutToImgSize()
+	ev.DepthImg.SetProp("vertical-align", gi.AlignTop)
 
 	tbar.AddAction(gi.ActOpts{Label: "Edit Env", Icon: "edit", Tooltip: "Edit the settings for the environment."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		sv.SetStruct(ev)
