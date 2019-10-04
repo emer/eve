@@ -219,20 +219,11 @@ func (ev *Env) ConfigGui() {
 	width := 1024
 	height := 768
 
-	// turn these on to see a traces of various stages of processing..
-	// ki.SignalTrace = true
-	// gi.WinEventTrace = true
-	// gi3d.Update3DTrace = true
-	// gi.Update2DTrace = true
-
-	rec := ki.Node{}          // receiver for events
-	rec.InitName(&rec, "rec") // this is essential for root objects not owned by other Ki tree nodes
-
-	gi.SetAppName("gi3d")
+	gi.SetAppName("virtroom")
 	gi.SetAppAbout(`This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
 <p>The <a href="https://github.com/emer/eve/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`)
 
-	win := gi.NewWindow2D("eve-demo", "Emergent Virtual Engine", width, height, true) // true = pixel sizes
+	win := gi.NewWindow2D("virtroom", "Emergent Virtual Engine", width, height, true) // true = pixel sizes
 	ev.Win = win
 
 	vp := win.WinViewport2D()
