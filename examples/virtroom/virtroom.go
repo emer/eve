@@ -223,7 +223,7 @@ func (ev *Env) ConfigGui() {
 	gi.SetAppAbout(`This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
 <p>The <a href="https://github.com/emer/eve/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`)
 
-	win := gi.NewWindow2D("virtroom", "Emergent Virtual Engine", width, height, true) // true = pixel sizes
+	win := gi.NewMainWindow("virtroom", "Emergent Virtual Engine", width, height)
 	ev.Win = win
 
 	vp := win.WinViewport2D()

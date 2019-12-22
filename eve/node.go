@@ -122,4 +122,4 @@ const (
 
 //go:generate stringer -type=NodeTypes
 
-var KiT_NodeTypes = kit.Enums.AddEnum(NodeTypesN, false, nil)
+var KiT_NodeTypes = kit.Enums.AddEnum(NodeTypesN, kit.NotBitFlag, nil)
