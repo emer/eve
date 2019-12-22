@@ -101,6 +101,7 @@ func (ps *Phys) RotateEulerRad(x, y, z, angle float32) {
 
 // PhysProps define the ToolBar and MenuBar for StructView
 var PhysProps = ki.Props{
+	"EnumType:Flag": ki.KiT_Flags,
 	"ToolBar": ki.PropSlice{
 		{"SetEulerRotation", ki.Props{
 			"desc": "Set the local rotation (relative to parent) using Euler angles, in degrees.",

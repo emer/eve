@@ -113,6 +113,7 @@ func (gp *Group) UpdateWorld() {
 
 // GroupProps define the ToolBar and MenuBar for StructView
 var GroupProps = ki.Props{
+	"EnumType:Flag": ki.KiT_Flags,
 	"ToolBar": ki.PropSlice{
 		{"InitWorld", ki.Props{
 			"desc": "initialize all elements in the world.",

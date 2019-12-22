@@ -16,7 +16,11 @@ type Box struct {
 	Size mat32.Vec3 `desc:"size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)"`
 }
 
-var KiT_Box = kit.Types.AddType(&Box{}, nil)
+var KiT_Box = kit.Types.AddType(&Box{}, BoxProps)
+
+var BoxProps = ki.Props{
+	"EnumType:Flag": ki.KiT_Flags,
+}
 
 // AddNewBox adds a new box of given name, initial position and size to given parent
 func AddNewBox(parent ki.Ki, name string, pos, size mat32.Vec3) *Box {
