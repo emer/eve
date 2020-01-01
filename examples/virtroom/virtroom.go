@@ -295,7 +295,7 @@ func (ev *Env) ConfigGui() {
 	// wdtx := gi3d.AddNewTextureFile(sc, "wood", "wood.png")
 
 	// floorp := gi3d.AddNewPlane(sc, "floor-plane", 100, 100)
-	// floor := gi3d.AddNewObject(sc, sc, "floor", floorp.Name())
+	// floor := gi3d.AddNewSolid(sc, sc, "floor", floorp.Name())
 	// floor.Pose.Pos.Set(0, -5, 0)
 	// // floor.Mat.Color.SetName("tan")
 	// // floor.Mat.Emissive.SetName("brown")

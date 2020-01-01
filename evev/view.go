@@ -88,7 +88,7 @@ func SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 			ntyp = gi3d.KiT_Group
 		// todo could have switch to ignore joints
 		default:
-			ntyp = gi3d.KiT_Object
+			ntyp = gi3d.KiT_Solid
 		}
 		tnl.Add(ntyp, skid.UniqueName())
 	}
@@ -118,7 +118,7 @@ func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	case "eve.Box":
 		nm := "eveBox"
 		bx := wn.(*eve.Box)
-		vo := vn.(*gi3d.Object)
+		vo := vn.(*gi3d.Solid)
 		bm := sc.MeshByName(nm)
 		if bm == nil {
 			bm = gi3d.AddNewBox(sc, nm, 1, 1, 1)
