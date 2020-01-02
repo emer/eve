@@ -76,16 +76,20 @@ func (ev *Env) MakeWorld() {
 // InitWorld does init on world and re-syncs
 func (ev *Env) InitWorld() {
 	ev.World.InitWorld()
-	ev.View.Sync()
-	ev.Snapshot()
+	if ev.View != nil {
+		ev.View.Sync()
+		ev.Snapshot()
+	}
 }
 
 // ReMakeWorld rebuilds the world and re-syncs with gui
 func (ev *Env) ReMakeWorld() {
 	ev.MakeWorld()
 	ev.View.World = ev.World
-	ev.View.Sync()
-	ev.Snapshot()
+	if ev.View != nil {
+		ev.View.Sync()
+		ev.Snapshot()
+	}
 }
 
 // MakeView makes the view
