@@ -92,6 +92,9 @@ func (ev *Env) ReMakeWorld() {
 func (ev *Env) MakeView(sc *gi3d.Scene) {
 	wgp := gi3d.AddNewGroup(sc, sc, "world")
 	ev.View = evev.NewView(ev.World, sc, wgp)
+	ev.View.InitLibrary() // this makes a basic library based on body shapes, sizes
+	// at this point the library can be updated to configure custom visualizations
+	// for any of the named bodies.
 	ev.View.Sync()
 }
 
@@ -178,15 +181,15 @@ func (ev *Env) RotHeadRight() {
 func MakeRoom(par *eve.Group, name string, width, depth, height, thick float32) *eve.Group {
 	rm := eve.AddNewGroup(par, name)
 	floor := eve.AddNewBox(rm, "floor", mat32.Vec3{0, -thick / 2, 0}, mat32.Vec3{width, thick, depth})
-	floor.Mat.Color = "grey"
+	floor.Color = "grey"
 	bwall := eve.AddNewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
-	bwall.Mat.Color = "blue"
+	bwall.Color = "blue"
 	lwall := eve.AddNewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
-	lwall.Mat.Color = "red"
+	lwall.Color = "red"
 	rwall := eve.AddNewBox(rm, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
-	rwall.Mat.Color = "green"
+	rwall.Color = "green"
 	fwall := eve.AddNewBox(rm, "front-wall", mat32.Vec3{0, height / 2, depth / 2}, mat32.Vec3{width, height, thick})
-	fwall.Mat.Color = "yellow"
+	fwall.Color = "yellow"
 	return rm
 }
 
@@ -196,7 +199,7 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 	width := height * .4
 	depth := height * .15
 	body := eve.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
-	body.Mat.Color = "purple"
+	body.Color = "purple"
 
 	headsz := depth * 1.5
 	hhsz := .5 * headsz
@@ -204,12 +207,12 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 	hgp.Initial.Pos = mat32.Vec3{0, height + hhsz, 0}
 
 	head := eve.AddNewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
-	head.Mat.Color = "tan"
+	head.Color = "tan"
 	eyesz := headsz * .2
 	eyel := eve.AddNewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
-	eyel.Mat.Color = "green"
+	eyel.Color = "green"
 	eyer := eve.AddNewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
-	eyer.Mat.Color = "green"
+	eyer.Color = "green"
 	return emr
 }
 

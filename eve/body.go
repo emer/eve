@@ -15,8 +15,9 @@ type Body interface {
 // BodyBase is the base type for all specific Body types
 type BodyBase struct {
 	NodeBase
-	Surf Surface  `desc:"surface properties, including friction and bouncyness"`
-	Mat  Material `desc:"material properties, only for rendering but convenient to specify here in one place"`
+	Surf  Surface `desc:"surface properties, including friction and bouncyness"`
+	Vis   string  `desc:"visualization name -- looks up an entry in the scene library that provides the visual representation of this body"`
+	Color string  `desc:"default color of body for basic InitLibrary configuration"`
 }
 
 func (bb *BodyBase) NodeType() NodeTypes {
