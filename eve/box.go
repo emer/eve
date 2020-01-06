@@ -10,7 +10,7 @@ import (
 	"github.com/goki/ki/kit"
 )
 
-// Box is a rigid body box shape
+// Box is a box body shape
 type Box struct {
 	BodyBase
 	Size mat32.Vec3 `desc:"size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)"`
@@ -30,14 +30,17 @@ func AddNewBox(parent ki.Ki, name string, pos, size mat32.Vec3) *Box {
 	return bx
 }
 
-func (bx *Box) InitPhys(par *NodeBase) {
-	bx.InitBase(par)
+func (bx *Box) SetBBox() {
 	bx.BBox.SetBounds(bx.Size.MulScalar(-.5), bx.Size.MulScalar(.5))
 	bx.BBox.XForm(bx.Abs.Quat, bx.Abs.Pos)
 }
 
+func (bx *Box) InitPhys(par *NodeBase) {
+	bx.InitBase(par)
+	bx.SetBBox()
+}
+
 func (bx *Box) UpdatePhys(par *NodeBase) {
 	bx.UpdateBase(par)
-	bx.BBox.SetBounds(bx.Size.MulScalar(-.5), bx.Size.MulScalar(.5))
-	bx.BBox.XForm(bx.Abs.Quat, bx.Abs.Pos)
+	bx.SetBBox()
 }

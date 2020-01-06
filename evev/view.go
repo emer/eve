@@ -124,6 +124,42 @@ func InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 		if bx.Color != "" {
 			sld.Mat.Color.SetName(bx.Color)
 		}
+	case "eve.Cylinder":
+		mnm := "eveCylinder"
+		cy := bod.(*eve.Cylinder)
+		cm := sc.MeshByName(mnm)
+		if cm == nil {
+			cm = gi3d.AddNewCylinder(sc, mnm, 1, 1, 32, 1, true, true)
+		}
+		sld.SetMeshName(sc, mnm)
+		sld.Pose.Scale.Set(cy.BotRad, cy.Height, cy.BotRad)
+		if cy.Color != "" {
+			sld.Mat.Color.SetName(cy.Color)
+		}
+	case "eve.Capsule":
+		mnm := "eveCapsule"
+		cp := bod.(*eve.Capsule)
+		cm := sc.MeshByName(mnm)
+		if cm == nil {
+			cm = gi3d.AddNewCapsule(sc, mnm, 1, 1, 32, 1)
+		}
+		sld.SetMeshName(sc, mnm)
+		sld.Pose.Scale.Set(cp.BotRad, cp.Height, cp.BotRad)
+		if cp.Color != "" {
+			sld.Mat.Color.SetName(cp.Color)
+		}
+	case "eve.Sphere":
+		mnm := "eveSphere"
+		sp := bod.(*eve.Sphere)
+		sm := sc.MeshByName(mnm)
+		if sm == nil {
+			sm = gi3d.AddNewSphere(sc, mnm, 1, 32)
+		}
+		sld.SetMeshName(sc, mnm)
+		sld.Pose.Scale.SetScalar(sp.Radius)
+		if sp.Color != "" {
+			sld.Mat.Color.SetName(sp.Color)
+		}
 	}
 }
 
