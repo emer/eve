@@ -252,7 +252,7 @@ func (ev *Env) ConfigGui() {
 	//    Splitter
 
 	split := gi.AddNewSplitView(mfr, "split")
-	split.Dim = gi.X
+	split.Dim = mat32.X
 
 	tvfr := gi.AddNewFrame(split, "tvfr", gi.LayoutHoriz)
 	svfr := gi.AddNewFrame(split, "svfr", gi.LayoutHoriz)
