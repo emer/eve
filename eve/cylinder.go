@@ -5,9 +5,9 @@
 package eve
 
 import (
-	"github.com/goki/gi/mat32"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.
