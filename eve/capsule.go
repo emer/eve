@@ -22,7 +22,7 @@ type Capsule struct {
 var KiT_Capsule = kit.Types.AddType(&Capsule{}, CapsuleProps)
 
 var CapsuleProps = ki.Props{
-	"EnumType:Flag": ki.KiT_Flags,
+	"EnumType:Flag": KiT_NodeFlags,
 }
 
 // AddNewCapsule adds a new capsule of given name, initial position
@@ -43,12 +43,20 @@ func (cp *Capsule) SetBBox() {
 	cp.BBox.XForm(cp.Abs.Quat, cp.Abs.Pos)
 }
 
-func (cp *Capsule) InitPhys(par *NodeBase) {
-	cp.InitBase(par)
+func (cp *Capsule) InitAbs(par *NodeBase) {
+	cp.InitAbsBase(par)
 	cp.SetBBox()
+	cp.BBox.VelNilProject()
 }
 
-func (cp *Capsule) UpdatePhys(par *NodeBase) {
-	cp.UpdateBase(par)
+func (cp *Capsule) RelToAbs(par *NodeBase) {
+	cp.RelToAbsBase(par)
 	cp.SetBBox()
+	cp.BBox.VelProject(cp.Abs.LinVel, 1)
+}
+
+func (cp *Capsule) StepPhys(step float32) {
+	cp.StepPhysBase(step)
+	cp.SetBBox()
+	cp.BBox.VelProject(cp.Abs.LinVel, step)
 }

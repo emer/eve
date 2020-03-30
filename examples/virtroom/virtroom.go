@@ -5,8 +5,10 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"log"
+	"math/rand"
 
 	"github.com/emer/eve/eve"
 	"github.com/emer/eve/evev"
@@ -42,6 +44,7 @@ type Env struct {
 	View     *evev.View       `view:"-" desc:"view of world"`
 	Emer     *eve.Group       `view:"-" desc:"emer group"`
 	EyeR     eve.Body         `view:"-" desc:"Right eye of emer"`
+	Contacts eve.Contacts     `view:"-" desc:"contacts from last step, for body"`
 	Win      *gi.Window       `view:"-" desc:"gui window"`
 	SnapImg  *gi.Bitmap       `view:"-" desc:"snapshot bitmap view"`
 	DepthImg *gi.Bitmap       `view:"-" desc:"depth map bitmap view"`
@@ -70,12 +73,12 @@ func (ev *Env) MakeWorld() {
 	ev.Emer = MakeEmer(ev.World, ev.EmerHt)
 	ev.EyeR = ev.Emer.ChildByName("head", 1).ChildByName("eye-r", 2).(eve.Body)
 
-	ev.World.InitWorld()
+	ev.World.WorldInit()
 }
 
 // InitWorld does init on world and re-syncs
-func (ev *Env) InitWorld() {
-	ev.World.InitWorld()
+func (ev *Env) WorldInit() {
+	ev.World.WorldInit()
 	if ev.View != nil {
 		ev.View.Sync()
 		ev.Snapshot()
@@ -131,54 +134,66 @@ func (ev *Env) ViewDepth(depth []float32) {
 	ev.DepthImg.UpdateSig()
 }
 
+// WorldStep does one step of the world
+func (ev *Env) WorldStep() {
+	ev.World.WorldRelToAbs()
+	cts := ev.World.WorldCollide(eve.DynsTopGps)
+	ev.Contacts = nil
+	for _, cl := range cts {
+		if len(cl) > 1 {
+			for _, c := range cl {
+				if c.A.Name() == "body" {
+					ev.Contacts = cl
+				}
+				fmt.Printf("A: %v  B: %v\n", c.A.Name(), c.B.Name())
+			}
+		}
+	}
+	if len(ev.Contacts) > 1 { // turn around
+		fmt.Printf("hit wall: turn around!\n")
+		rot := 100.0 + 90.0*rand.Float32()
+		ev.Emer.Rel.RotateOnAxis(0, 1, 0, rot)
+	}
+	ev.View.UpdatePose()
+	ev.Snapshot()
+}
+
 // StepForward moves Emer forward in current facing direction one step, and takes Snapshot
 func (ev *Env) StepForward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
-	ev.World.UpdateWorld()
-	ev.View.UpdatePose()
-	ev.Snapshot()
+	ev.WorldStep()
 }
 
 // StepBackward moves Emer backward in current facing direction one step, and takes Snapshot
 func (ev *Env) StepBackward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
-	ev.World.UpdateWorld()
-	ev.View.UpdatePose()
-	ev.Snapshot()
+	ev.WorldStep()
 }
 
 // RotBodyLeft rotates emer left and takes Snapshot
 func (ev *Env) RotBodyLeft() {
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
-	ev.World.UpdateWorld()
-	ev.View.UpdatePose()
-	ev.Snapshot()
+	ev.WorldStep()
 }
 
 // RotBodyRight rotates emer right and takes Snapshot
 func (ev *Env) RotBodyRight() {
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
-	ev.World.UpdateWorld()
-	ev.View.UpdatePose()
-	ev.Snapshot()
+	ev.WorldStep()
 }
 
 // RotHeadLeft rotates emer left and takes Snapshot
 func (ev *Env) RotHeadLeft() {
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
-	ev.World.UpdateWorld()
-	ev.View.UpdatePose()
-	ev.Snapshot()
+	ev.WorldStep()
 }
 
 // RotHeadRight rotates emer right and takes Snapshot
 func (ev *Env) RotHeadRight() {
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
-	ev.World.UpdateWorld()
-	ev.View.UpdatePose()
-	ev.Snapshot()
+	ev.WorldStep()
 }
 
 // MakeRoom constructs a new room in given parent group with given params
@@ -204,6 +219,7 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 	depth := height * .15
 	body := eve.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
 	body.Color = "purple"
+	body.SetDynamic()
 
 	headsz := depth * 1.5
 	hhsz := .5 * headsz
@@ -212,11 +228,14 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 
 	head := eve.AddNewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
 	head.Color = "tan"
+	head.SetDynamic()
 	eyesz := headsz * .2
 	eyel := eve.AddNewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyel.Color = "green"
+	eyel.SetDynamic()
 	eyer := eve.AddNewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyer.Color = "green"
+	eyer.SetDynamic()
 	return emr
 }
 
@@ -343,7 +362,7 @@ func (ev *Env) ConfigGui() {
 		sv.SetStruct(ev)
 	})
 	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "Initialize virtual world -- go back to starting positions etc."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.InitWorld()
+		ev.WorldInit()
 	})
 	tbar.AddAction(gi.ActOpts{Label: "Make", Icon: "update", Tooltip: "Re-make virtual world -- do this if you have changed any of the world parameters."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.ReMakeWorld()

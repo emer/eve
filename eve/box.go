@@ -19,7 +19,7 @@ type Box struct {
 var KiT_Box = kit.Types.AddType(&Box{}, BoxProps)
 
 var BoxProps = ki.Props{
-	"EnumType:Flag": ki.KiT_Flags,
+	"EnumType:Flag": KiT_NodeFlags,
 }
 
 // AddNewBox adds a new box of given name, initial position and size to given parent
@@ -35,12 +35,20 @@ func (bx *Box) SetBBox() {
 	bx.BBox.XForm(bx.Abs.Quat, bx.Abs.Pos)
 }
 
-func (bx *Box) InitPhys(par *NodeBase) {
-	bx.InitBase(par)
+func (bx *Box) InitAbs(par *NodeBase) {
+	bx.InitAbsBase(par)
 	bx.SetBBox()
+	bx.BBox.VelNilProject()
 }
 
-func (bx *Box) UpdatePhys(par *NodeBase) {
-	bx.UpdateBase(par)
+func (bx *Box) RelToAbs(par *NodeBase) {
+	bx.RelToAbsBase(par)
 	bx.SetBBox()
+	bx.BBox.VelProject(bx.Abs.LinVel, 1)
+}
+
+func (bx *Box) StepPhys(step float32) {
+	bx.StepPhysBase(step)
+	bx.SetBBox()
+	bx.BBox.VelProject(bx.Abs.LinVel, step)
 }

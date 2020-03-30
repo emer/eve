@@ -22,7 +22,7 @@ type Cylinder struct {
 var KiT_Cylinder = kit.Types.AddType(&Cylinder{}, CylinderProps)
 
 var CylinderProps = ki.Props{
-	"EnumType:Flag": ki.KiT_Flags,
+	"EnumType:Flag": KiT_NodeFlags,
 }
 
 // AddNewCylinder adds a new cylinder of given name, initial position
@@ -53,12 +53,20 @@ func (cy *Cylinder) SetBBox() {
 	cy.BBox.XForm(cy.Abs.Quat, cy.Abs.Pos)
 }
 
-func (cy *Cylinder) InitPhys(par *NodeBase) {
-	cy.InitBase(par)
+func (cy *Cylinder) InitAbs(par *NodeBase) {
+	cy.InitAbsBase(par)
 	cy.SetBBox()
+	cy.BBox.VelNilProject()
 }
 
-func (cy *Cylinder) UpdatePhys(par *NodeBase) {
-	cy.UpdateBase(par)
+func (cy *Cylinder) RelToAbs(par *NodeBase) {
+	cy.RelToAbsBase(par)
 	cy.SetBBox()
+	cy.BBox.VelProject(cy.Abs.LinVel, 1)
+}
+
+func (cy *Cylinder) StepPhys(step float32) {
+	cy.StepPhysBase(step)
+	cy.SetBBox()
+	cy.BBox.VelProject(cy.Abs.LinVel, step)
 }

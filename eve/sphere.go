@@ -19,7 +19,7 @@ type Sphere struct {
 var KiT_Sphere = kit.Types.AddType(&Sphere{}, SphereProps)
 
 var SphereProps = ki.Props{
-	"EnumType:Flag": ki.KiT_Flags,
+	"EnumType:Flag": KiT_NodeFlags,
 }
 
 // AddNewSphere adds a new sphere of given name, initial position
@@ -36,12 +36,20 @@ func (sp *Sphere) SetBBox() {
 	sp.BBox.XForm(sp.Abs.Quat, sp.Abs.Pos)
 }
 
-func (sp *Sphere) InitPhys(par *NodeBase) {
-	sp.InitBase(par)
+func (sp *Sphere) InitAbs(par *NodeBase) {
+	sp.InitAbsBase(par)
 	sp.SetBBox()
+	sp.BBox.VelNilProject()
 }
 
-func (sp *Sphere) UpdatePhys(par *NodeBase) {
-	sp.UpdateBase(par)
+func (sp *Sphere) RelToAbs(par *NodeBase) {
+	sp.RelToAbsBase(par)
 	sp.SetBBox()
+	sp.BBox.VelProject(sp.Abs.LinVel, 1)
+}
+
+func (sp *Sphere) StepPhys(step float32) {
+	sp.StepPhysBase(step)
+	sp.SetBBox()
+	sp.BBox.VelProject(sp.Abs.LinVel, step)
 }

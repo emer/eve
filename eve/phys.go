@@ -5,19 +5,21 @@
 package eve
 
 import (
+	"math"
+
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 	"github.com/goki/mat32"
 )
 
-// Phys contains the full specification of a given object's physical properties
-// including position, orientation, velocity.
+// Phys contains the basic physical properties including position, orientation, velocity.
+// These are only the values that can be either relative or absolute -- other physical
+// state values such as Mass should go in Rigid.
 type Phys struct {
 	Pos    mat32.Vec3 `desc:"position of center of mass of object"`
 	Quat   mat32.Quat `desc:"rotation specified as a Quat"`
 	LinVel mat32.Vec3 `desc:"linear velocity"`
 	AngVel mat32.Vec3 `desc:"angular velocity"`
-	//	RotInertia mat32.Mat3   `desc:"Last calculated rotational inertia matrix in local coords"`
 }
 
 var KiT_Phys = kit.Types.AddType(&Phys{}, PhysProps)
@@ -30,20 +32,72 @@ func (ps *Phys) Defaults() {
 }
 
 ///////////////////////////////////////////////////////
+// 	State updates
+
+// FromRel sets state from relative values compared to a parent state
+func (ps *Phys) FromRel(rel, par *Phys) {
+	ps.Quat = rel.Quat.Mul(par.Quat)
+	ps.Pos = rel.Pos.MulQuat(par.Quat).Add(par.Pos)
+	ps.LinVel = rel.LinVel.MulQuat(rel.Quat).Add(par.LinVel)
+	ps.AngVel = rel.AngVel.MulQuat(rel.Quat).Add(par.AngVel)
+}
+
+// AngMotionMax is maximum angular motion that can be taken per update
+const AngMotionMax = math.Pi / 4
+
+// StepByAngVel steps the Quat rotation from angular velocity
+func (ps *Phys) StepByAngVel(step float32) {
+	ang := mat32.Sqrt(ps.AngVel.Dot(ps.AngVel))
+
+	// limit the angular motion
+	if ang*step > AngMotionMax {
+		ang = AngMotionMax / step
+	}
+	var axis mat32.Vec3
+	if ang < 0.001 {
+		// use Taylor's expansions of sync function
+		axis = ps.AngVel.MulScalar(0.5*step - (step*step*step)*0.020833333333*ang*ang)
+	} else {
+		// sync(fAngle) = sin(c*fAngle)/t
+		axis = ps.AngVel.MulScalar(mat32.Sin(0.5*ang*step) / ang)
+	}
+	var dq mat32.Quat
+	dq.SetFromAxisAngle(axis, ang*step)
+	ps.Quat = dq.Mul(ps.Quat)
+	ps.Quat.Normalize()
+}
+
+// StepByLinVel steps the Pos from the linear velocity
+func (ps *Phys) StepByLinVel(step float32) {
+	ps.Pos = ps.Pos.Add(ps.LinVel.MulScalar(step))
+}
+
+///////////////////////////////////////////////////////
 // 		Moving
 
-// Note: you can just directly add to .Pos too..
+// Move moves (translates) Pos by given amount, and sets the LinVel to the given
+// delta -- this can be useful for Scripted motion to track movement.
+func (ps *Phys) Move(delta mat32.Vec3) {
+	ps.LinVel = delta
+	ps.Pos.SetAdd(delta)
+}
 
 // MoveOnAxis moves (translates) the specified distance on the specified local axis,
 // relative to the current rotation orientation.
+// The axis is normalized prior to aplying the distance factor.
+// Sets the LinVel to motion vector.
 func (ps *Phys) MoveOnAxis(x, y, z, dist float32) {
-	ps.Pos.SetAdd(mat32.NewVec3(x, y, z).Normal().MulQuat(ps.Quat).MulScalar(dist))
+	ps.LinVel = mat32.NewVec3(x, y, z).Normal().MulQuat(ps.Quat).MulScalar(dist)
+	ps.Pos.SetAdd(ps.LinVel)
 }
 
 // MoveOnAxisAbs moves (translates) the specified distance on the specified local axis,
-// in absolute X,Y,Z coordinates.
+// in absolute X,Y,Z coordinates (does not apply the Quat rotation factor.
+// The axis is normalized prior to aplying the distance factor.
+// Sets the LinVel to motion vector.
 func (ps *Phys) MoveOnAxisAbs(x, y, z, dist float32) {
-	ps.Pos.SetAdd(mat32.NewVec3(x, y, z).Normal().MulScalar(dist))
+	ps.LinVel = mat32.NewVec3(x, y, z).Normal().MulScalar(dist)
+	ps.Pos.SetAdd(ps.LinVel)
 }
 
 ///////////////////////////////////////////////////////
@@ -101,7 +155,6 @@ func (ps *Phys) RotateEulerRad(x, y, z, angle float32) {
 
 // PhysProps define the ToolBar and MenuBar for StructView
 var PhysProps = ki.Props{
-	"EnumType:Flag": ki.KiT_Flags,
 	"ToolBar": ki.PropSlice{
 		{"SetEulerRotation", ki.Props{
 			"desc": "Set the local rotation (relative to parent) using Euler angles, in degrees.",

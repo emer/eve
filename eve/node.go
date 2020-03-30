@@ -23,21 +23,34 @@ type Node interface {
 	// AsBody returns a generic Body interface for our node -- nil if not a Body
 	AsBody() Body
 
-	// InitPhys sets current physical state parameters from Initial values
-	// which are local, relative to parent -- is passed the parent (nil = top).
-	// Body nodes should also set their bounding boxes.
-	// called in a FuncDownMeFirst traversal.
-	InitPhys(par *NodeBase)
+	// IsDynamic returns true if node has Dynamic flag set -- otherwise static
+	// Groups that contain dynamic objects set their dynamic flags.
+	IsDynamic() bool
 
 	// GroupBBox sets bounding boxes for groups based on groups or bodies.
 	// called in a FuncDownMeLast traversal.
 	GroupBBox()
 
-	// UpdatePhys updates current world physical state parameters based on propagated
-	// updates from higher levels -- is passed the parent (nil = top).
+	// InitAbs sets current Abs physical state parameters from Initial values
+	// which are local, relative to parent -- is passed the parent (nil = top).
+	// Body nodes should also set their bounding boxes.
+	// Called in a FuncDownMeFirst traversal.
+	InitAbs(par *NodeBase)
+
+	// RelToAbs updates current world Abs physical state parameters
+	// based on Rel values added to updated Abs values at higher levels.
+	// Abs.LinVel is updated from the resulting change from prior position.
+	// This is useful for manual updating of relative positions (scripted movement).
+	// It is passed the parent (nil = top).
 	// Body nodes should also update their bounding boxes.
-	// called in a FuncDownMeFirst traversal.
-	UpdatePhys(par *NodeBase)
+	// Called in a FuncDownMeFirst traversal.
+	RelToAbs(par *NodeBase)
+
+	// StepPhys computes one update of the world Abs physical state parameters,
+	// using *current* velocities -- add forces prior to calling.
+	// Use this for physics-based state updates.
+	// Body nodes should also update their bounding boxes.
+	StepPhys(step float32)
 }
 
 // NodeBase is the basic eve node, which has position, rotation, velocity
@@ -45,11 +58,16 @@ type Node interface {
 // There are only three different kinds of Nodes: Group, Body, and Joint
 type NodeBase struct {
 	ki.Node
-	Initial Phys    `view:"inline" desc:"initial position, orientation, velocity in *local* coordinates (relative to parent)"`
-	Rel     Phys    `view:"inline" desc:"current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom"`
-	Abs     Phys    `inactive:"+" view:"inline" desc:"current absolute (world) position, orientation, velocity"`
-	Mass    float32 `desc:"mass of body or aggregate mass of group of bodies (just fyi for groups) -- 0 mass = no dynamics"`
-	BBox    BBox    `desc:"bounding box in world coordinates (aggregated for groups)"`
+	Initial Phys `view:"inline" desc:"initial position, orientation, velocity in *local* coordinates (relative to parent)"`
+	Rel     Phys `view:"inline" desc:"current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom"`
+	Abs     Phys `inactive:"+" view:"inline" desc:"current absolute (world) position, orientation, velocity"`
+	BBox    BBox `desc:"bounding box in world coordinates (aggregated for groups)"`
+}
+
+var KiT_NodeBase = kit.Types.AddType(&NodeBase{}, NodeBaseProps)
+
+var NodeBaseProps = ki.Props{
+	"EnumType:Flag": KiT_NodeFlags,
 }
 
 func (nb *NodeBase) AsNodeBase() *NodeBase {
@@ -60,38 +78,55 @@ func (nb *NodeBase) AsBody() Body {
 	return nil
 }
 
-// InitBase is the base-level initialization of basic Phys state from Initial conditions
-func (nb *NodeBase) InitBase(par *NodeBase) {
+func (nb *NodeBase) IsDynamic() bool {
+	return nb.HasFlag(int(Dynamic))
+}
+
+// InitAbsBase is the base-level version of InitAbs -- most nodes call this.
+// InitAbs sets current Abs physical state parameters from Initial values
+// which are local, relative to parent -- is passed the parent (nil = top).
+// Body nodes should also set their bounding boxes.
+// Called in a FuncDownMeFirst traversal.
+func (nb *NodeBase) InitAbsBase(par *NodeBase) {
 	if nb.Initial.Quat.IsNil() {
 		nb.Initial.Quat.SetIdentity()
 	}
 	nb.Rel = nb.Initial
 	if par != nil {
-		nb.Abs.Quat = nb.Initial.Quat.Mul(par.Abs.Quat)
-		nb.Abs.Pos = nb.Initial.Pos.MulQuat(par.Abs.Quat).Add(par.Abs.Pos)
-		nb.Abs.LinVel = nb.Initial.LinVel.MulQuat(nb.Initial.Quat).Add(par.Abs.LinVel)
-		nb.Abs.AngVel = nb.Initial.AngVel.MulQuat(nb.Initial.Quat).Add(par.Abs.AngVel)
+		nb.Abs.FromRel(&nb.Initial, &par.Abs)
 	} else {
-		nb.Abs.Pos = nb.Initial.Pos
-		nb.Abs.LinVel = nb.Initial.LinVel
-		nb.Abs.AngVel = nb.Initial.AngVel
-		nb.Abs.Quat = nb.Initial.Quat
+		nb.Abs = nb.Initial
 	}
 }
 
-// UpdateBase is the base-level update of Phys state based on current relative values
-func (nb *NodeBase) UpdateBase(par *NodeBase) {
+// RelToAbsBase is the base-level version of RelToAbs -- most nodes call this.
+// note: Group WorldRelToAbs ensures only called on Dynamic nodes.
+// RelToAbs updates current world Abs physical state parameters
+// based on Rel values added to updated Abs values at higher levels.
+// Abs.LinVel is updated from the resulting change from prior position.
+// This is useful for manual updating of relative positions (scripted movement).
+// It is passed the parent (nil = top).
+// Body nodes should also update their bounding boxes.
+// Called in a FuncDownMeFirst traversal.
+func (nb *NodeBase) RelToAbsBase(par *NodeBase) {
+	ppos := nb.Abs.Pos
 	if par != nil {
-		nb.Abs.Quat = nb.Rel.Quat.Mul(par.Abs.Quat)
-		nb.Abs.Pos = nb.Rel.Pos.MulQuat(par.Abs.Quat).Add(par.Abs.Pos)
-		nb.Abs.LinVel = nb.Rel.LinVel.MulQuat(nb.Rel.Quat).Add(par.Abs.LinVel)
-		nb.Abs.AngVel = nb.Rel.AngVel.MulQuat(nb.Rel.Quat).Add(par.Abs.AngVel)
+		nb.Abs.FromRel(&nb.Rel, &par.Abs)
 	} else {
-		nb.Abs.Pos = nb.Rel.Pos
-		nb.Abs.LinVel = nb.Rel.LinVel
-		nb.Abs.AngVel = nb.Rel.AngVel
-		nb.Abs.Quat = nb.Rel.Quat
+		nb.Abs = nb.Rel
 	}
+	nb.Abs.LinVel = nb.Abs.Pos.Sub(ppos) // needed for VelBBox prjn
+}
+
+// StepPhysBase is base-level version of StepPhys -- most nodes call this.
+// note: Group WorldRelToAbs ensures only called on Dynamic nodes.
+// Computes one update of the world Abs physical state parameters,
+// using *current* velocities -- add forces prior to calling.
+// Use this for physics-based state updates.
+// Body nodes should also update their bounding boxes.
+func (nb *NodeBase) StepPhysBase(step float32) {
+	nb.Abs.StepByAngVel(step)
+	nb.Abs.StepByLinVel(step)
 }
 
 // KiToNode converts Ki to a Node interface and a Node3DBase obj -- nil if not.
@@ -123,3 +158,23 @@ const (
 //go:generate stringer -type=NodeTypes
 
 var KiT_NodeTypes = kit.Enums.AddEnum(NodeTypesN, kit.NotBitFlag, nil)
+
+/////////////////////////////////////////////////////////////////////
+// NodeFlags
+
+// NodeFlags define eve node bitflags -- uses ki Flags field (64 bit capacity)
+type NodeFlags int
+
+//go:generate stringer -type=NodeFlags
+
+var KiT_NodeFlags = kit.Enums.AddEnumExt(ki.KiT_Flags, NodeFlagsN, kit.BitFlag, nil)
+
+const (
+	// Dynamic means that this node can move -- if not so marked, it is
+	// a Static node.  Any top-level group that is not Dynamic is immediately
+	// pruned from further consideration, so top-level groups should be
+	// separated into Dynamic and Static nodes at the start.
+	Dynamic NodeFlags = NodeFlags(ki.FlagsN) + iota
+
+	NodeFlagsN
+)
