@@ -18,7 +18,7 @@ clean:
 	$(GOCLEAN)
 	
 # NOTE: MUST update version number here prior to running 'make release'
-VERS=v0.5.1
+VERS=v0.6.0
 PACKAGE=eve
 GIT_COMMIT=`git rev-parse --short HEAD`
 VERS_DATE=`date -u +%Y-%m-%d\ %H:%M`
