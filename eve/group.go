@@ -7,6 +7,7 @@ package eve
 import (
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // Group is a container of bodies, joints, or other groups
@@ -214,6 +215,35 @@ func (gp *Group) WorldCollide(dynTop bool) []Contacts {
 		}
 	}
 	return cts
+}
+
+// BodyPoint contains a Body and a Point on that body
+type BodyPoint struct {
+	Body  Body
+	Point mat32.Vec3
+}
+
+// RayBodyIntersections returns a list of bodies whose bounding box intersects
+// with the given ray, with the point of intersection
+func (gp *Group) RayBodyIntersections(ray mat32.Ray) []*BodyPoint {
+	var bs []*BodyPoint
+	gp.FuncDownMeFirst(0, gp.This(), func(k ki.Ki, level int, d interface{}) bool {
+		nii, ni := KiToNode(k)
+		if nii == nil {
+			return false // going into a different type of thing, bail
+		}
+		pt, has := ray.IntersectBox(ni.BBox.BBox)
+		if !has {
+			return false
+		}
+		if nii.NodeType() != BODY {
+			return true
+		}
+		bd := nii.AsBody()
+		bs = append(bs, &BodyPoint{bd, pt})
+		return false
+	})
+	return bs
 }
 
 // GroupProps define the ToolBar and MenuBar for StructView
