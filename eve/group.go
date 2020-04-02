@@ -5,6 +5,8 @@
 package eve
 
 import (
+	"sort"
+
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 	"github.com/goki/mat32"
@@ -243,6 +245,13 @@ func (gp *Group) RayBodyIntersections(ray mat32.Ray) []*BodyPoint {
 		bs = append(bs, &BodyPoint{bd, pt})
 		return false
 	})
+
+	sort.Slice(bs, func(i, j int) bool {
+		di := bs[i].Point.DistTo(ray.Origin)
+		dj := bs[j].Point.DistTo(ray.Origin)
+		return di < dj
+	})
+
 	return bs
 }
 
