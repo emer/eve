@@ -87,7 +87,7 @@ func InitLibrary(wn eve.Node, sc *gi3d.Scene) {
 	if bod != nil {
 		InitLibSolid(bod, sc)
 	}
-	for idx, _ := range *wn.Children() {
+	for idx := range *wn.Children() {
 		wk := wn.Child(idx).(eve.Node)
 		InitLibrary(wk, sc)
 	}
@@ -191,7 +191,7 @@ func SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 	}
 	mod, updt := vn.ConfigChildren(tnl, false) // false = don't use unique names
 	modall := mod
-	for idx, _ := range skids {
+	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
 		vk := vn.Child(idx).(gi3d.Node3D)
 		ConfigView(wk, vk, sc)
@@ -213,7 +213,7 @@ func SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 // Essential that both trees are already synchronized.
 func UpdatePose(wn eve.Node, vn gi3d.Node3D) {
 	skids := *wn.Children()
-	for idx, _ := range skids {
+	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
 		vk := vn.Child(idx).(gi3d.Node3D)
 		wb := wn.AsNodeBase()
