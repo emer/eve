@@ -66,8 +66,8 @@ func (vw *View) RenderOffNode(frame *gpu.Framebuffer, node eve.Node, cam *Camera
 	sc.Camera.Pose.Pos = nb.Abs.Pos
 	sc.Camera.Pose.Quat = nb.Abs.Quat
 	sc.Camera.Pose.Scale.Set(1, 1, 1)
-	if !sc.ActivateOffFrame(frame, "eve-view", cam.Size, cam.MSample) {
-		return fmt.Errorf("could not activate offscreen framebuffer")
+	if err := sc.ActivateOffFrame(frame, "eve-view", cam.Size, cam.MSample); err != nil {
+		return fmt.Errorf("could not activate offscreen framebuffer: %w", err)
 	}
 	if !sc.RenderOffFrame() {
 		return fmt.Errorf("could not render to offscreen framebuffer")
