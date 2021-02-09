@@ -10,6 +10,7 @@ import (
 	"github.com/emer/eve/eve"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/oswin/gpu"
+	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
 
@@ -110,7 +111,7 @@ func InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 	} else {
 		sld = gi3d.AddNewSolid(sc, lgp, nm, "")
 	}
-	wt := kit.ShortTypeName(bod.Type())
+	wt := kit.ShortTypeName(ki.Type(bod.This()))
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
@@ -181,15 +182,14 @@ func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 // ConfigChildren to maximally preserve existing tree elements
 // returns true if view tree was modified (elements added / removed etc)
 func SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
-	nm := wn.UniqueName()
-	vn.SetNameRaw(nm) // guaranteed to be unique
-	vn.SetUniqueName(nm)
+	nm := wn.Name()
+	vn.SetName(nm) // guaranteed to be unique
 	skids := *wn.Children()
 	tnl := make(kit.TypeAndNameList, 0, len(skids))
 	for _, skid := range skids {
-		tnl.Add(gi3d.KiT_Group, skid.UniqueName())
+		tnl.Add(gi3d.KiT_Group, skid.Name())
 	}
-	mod, updt := vn.ConfigChildren(tnl, false) // false = don't use unique names
+	mod, updt := vn.ConfigChildren(tnl)
 	modall := mod
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)

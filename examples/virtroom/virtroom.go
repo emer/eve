@@ -15,6 +15,7 @@ import (
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/gimain"
+	"github.com/goki/gi/gist"
 	"github.com/goki/gi/giv"
 	"github.com/goki/gi/oswin"
 	"github.com/goki/gi/oswin/gpu"
@@ -129,7 +130,7 @@ func (ev *Env) Snapshot() {
 // ViewDepth updates depth bitmap with depth data
 func (ev *Env) ViewDepth(depth []float32) {
 	cmap := giv.AvailColorMaps[string(ev.DepthMap)]
-	ev.DepthImg.Resize(ev.Camera.Size)
+	ev.DepthImg.SetSize(ev.Camera.Size)
 	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
 	ev.DepthImg.UpdateSig()
 }
@@ -348,15 +349,15 @@ func (ev *Env) ConfigGui() {
 	imfr.Lay = gi.LayoutVert
 	gi.AddNewLabel(imfr, "lab-img", "Right Eye Image:")
 	ev.SnapImg = gi.AddNewBitmap(imfr, "snap-img")
-	ev.SnapImg.Resize(ev.Camera.Size)
+	ev.SnapImg.SetSize(ev.Camera.Size)
 	ev.SnapImg.LayoutToImgSize()
-	ev.SnapImg.SetProp("vertical-align", gi.AlignTop)
+	ev.SnapImg.SetProp("vertical-align", gist.AlignTop)
 
 	gi.AddNewLabel(imfr, "lab-depth", "Right Eye Depth:")
 	ev.DepthImg = gi.AddNewBitmap(imfr, "depth-img")
-	ev.DepthImg.Resize(ev.Camera.Size)
+	ev.DepthImg.SetSize(ev.Camera.Size)
 	ev.DepthImg.LayoutToImgSize()
-	ev.DepthImg.SetProp("vertical-align", gi.AlignTop)
+	ev.DepthImg.SetProp("vertical-align", gist.AlignTop)
 
 	tbar.AddAction(gi.ActOpts{Label: "Edit Env", Icon: "edit", Tooltip: "Edit the settings for the environment."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		sv.SetStruct(ev)
