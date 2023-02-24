@@ -20,7 +20,7 @@ Also, Nodes must be specifically flagged as being `Dynamic` -- otherwise they ar
 
 # Updating Modes 
 
-There are two major modes of updating: Scripted, Physics -- scripted requires a program to control what happens on every time step, while physics uses computed forces from contacts, plus joint constraints, to update velocities (not yet supported).  The update modes are just about which methods you call.
+There are two major modes of updating: Scripted or Physics -- scripted requires a program to control what happens on every time step, while physics uses computed forces from contacts, plus joint constraints, to update velocities (not yet supported).  The update modes are just about which methods you call.
 
 The `Group` has a set of `World*` methods that should be used on the top-level world Group node node to do all the init and update steps. The update loops automatically exclude non Dynamic nodes.
 

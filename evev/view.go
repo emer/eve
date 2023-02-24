@@ -6,10 +6,10 @@ package evev
 
 import (
 	"fmt"
+	"image"
 
 	"github.com/emer/eve/eve"
 	"github.com/goki/gi/gi3d"
-	"github.com/goki/gi/oswin/gpu"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
 )
@@ -40,7 +40,6 @@ func (vw *View) InitLibrary() {
 // Sync synchronizes the view to the world
 func (vw *View) Sync() bool {
 	rval := SyncNode(vw.World, vw.Root, vw.Scene)
-	vw.Scene.Init3D()
 	return rval
 }
 
@@ -50,12 +49,10 @@ func (vw *View) UpdatePose() {
 	UpdatePose(vw.World, vw.Root)
 }
 
-// RenderOffNode does an offscreen render using given node for the camera position and
-// orientation, and given parameters for field-of-view (in degrees, e.g., 30)
-// near plane (.01 default) and far plane (1000 default).
-// and multisampling number (4 = default for good antialiasing, 0 if not hardware accelerated).
+// RenderOffNode does an offscreen render using given node
+// for the camera position and orientation.
 // Current scene camera is saved and restored
-func (vw *View) RenderOffNode(frame *gpu.Framebuffer, node eve.Node, cam *Camera) error {
+func (vw *View) RenderOffNode(node eve.Node, cam *Camera) error {
 	sc := vw.Scene
 	camnm := "eve-view-renderoff-save"
 	sc.SaveCamera(camnm)
@@ -67,14 +64,50 @@ func (vw *View) RenderOffNode(frame *gpu.Framebuffer, node eve.Node, cam *Camera
 	sc.Camera.Pose.Pos = nb.Abs.Pos
 	sc.Camera.Pose.Quat = nb.Abs.Quat
 	sc.Camera.Pose.Scale.Set(1, 1, 1)
-	if err := sc.ActivateOffFrame(frame, "eve-view", cam.Size, cam.MSample); err != nil {
-		return fmt.Errorf("could not activate offscreen framebuffer: %w", err)
+	sz := sc.Geom.Size
+	sc.Geom.Size = cam.Size
+	sc.Frame.SetSize(sc.Geom.Size) // nop if same
+	ok := sc.RenderOffscreen()
+	sc.Geom.Size = sz
+	if !ok {
+		return fmt.Errorf("could not render scene")
 	}
-	if !sc.RenderOffFrame() {
-		return fmt.Errorf("could not render to offscreen framebuffer")
-	}
-	(*frame).Rendered()
 	return nil
+}
+
+// Image returns the current rendered image
+func (vw *View) Image() (*image.RGBA, error) {
+	fr := vw.Scene.Frame
+	if fr == nil {
+		return nil, fmt.Errorf("eve.View Image: Scene does not have a Frame")
+	}
+	sy := &vw.Scene.Phong.Sys
+	tcmd := sy.MemCmdStart()
+	fr.GrabImage(tcmd, 0)
+	sy.MemCmdEndSubmitWaitFree()
+	gimg, err := fr.Render.Grab.DevGoImage()
+	if err == nil {
+		return gimg, err
+	}
+	return nil, err
+}
+
+// DepthImage returns the current rendered depth image
+func (vw *View) DepthImage() ([]float32, error) {
+	fr := vw.Scene.Frame
+	if fr == nil {
+		return nil, fmt.Errorf("eve.View Image: Scene does not have a Frame")
+	}
+	sy := &vw.Scene.Phong.Sys
+	tcmd := sy.MemCmdStart()
+	fr.GrabDepthImage(tcmd)
+	sy.MemCmdEndSubmitWaitFree()
+
+	depth, err := fr.Render.DepthImageArray()
+	if err == nil {
+		return depth, err
+	}
+	return nil, err
 }
 
 ///////////////////////////////////////////////////////////////
@@ -142,10 +175,10 @@ func InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 		cp := bod.(*eve.Capsule)
 		cm := sc.MeshByName(mnm)
 		if cm == nil {
-			cm = gi3d.AddNewCapsule(sc, mnm, 1, 1, 32, 1)
+			cm = gi3d.AddNewCapsule(sc, mnm, 1, .2, 32, 1)
 		}
 		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale.Set(cp.BotRad, cp.Height, cp.BotRad)
+		sld.Pose.Scale.Set(cp.BotRad/.2, cp.Height/1.4, cp.BotRad/.2)
 		if cp.Color != "" {
 			sld.Mat.Color.SetName(cp.Color)
 		}
@@ -164,6 +197,37 @@ func InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 	}
 }
 
+// ConfigBodySolid configures a solid for a body with current values
+func ConfigBodySolid(bod eve.Body, sld *gi3d.Solid) {
+	wt := kit.ShortTypeName(ki.Type(bod.This()))
+	switch wt {
+	case "eve.Box":
+		bx := bod.(*eve.Box)
+		sld.Pose.Scale = bx.Size
+		if bx.Color != "" {
+			sld.Mat.Color.SetName(bx.Color)
+		}
+	case "eve.Cylinder":
+		cy := bod.(*eve.Cylinder)
+		sld.Pose.Scale.Set(cy.BotRad, cy.Height, cy.BotRad)
+		if cy.Color != "" {
+			sld.Mat.Color.SetName(cy.Color)
+		}
+	case "eve.Capsule":
+		cp := bod.(*eve.Capsule)
+		sld.Pose.Scale.Set(cp.BotRad/.2, cp.Height/1.4, cp.BotRad/.2)
+		if cp.Color != "" {
+			sld.Mat.Color.SetName(cp.Color)
+		}
+	case "eve.Sphere":
+		sp := bod.(*eve.Sphere)
+		sld.Pose.Scale.SetScalar(sp.Radius)
+		if sp.Color != "" {
+			sld.Mat.Color.SetName(sp.Color)
+		}
+	}
+}
+
 // ConfigView configures the view node to properly display world node
 func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	wb := wn.AsNodeBase()
@@ -174,6 +238,14 @@ func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	if bod != nil {
 		if !vb.HasChildren() {
 			sc.AddFmLibrary(bod.AsBodyBase().Vis, vb)
+		} else {
+			bgp := vb.Child(0)
+			if bgp.HasChildren() {
+				sld, has := bgp.Child(0).(*gi3d.Solid)
+				if has {
+					ConfigBodySolid(bod, sld)
+				}
+			}
 		}
 	}
 }

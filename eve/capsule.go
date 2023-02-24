@@ -26,7 +26,8 @@ var CapsuleProps = ki.Props{
 }
 
 // AddNewCapsule adds a new capsule of given name, initial position
-// and height, radius to given parent.
+// and height, radius to given parent.  height specified is total height including radii
+// so capsule.Height = height - 2 * radius
 func AddNewCapsule(parent ki.Ki, name string, pos mat32.Vec3, height, radius float32) *Capsule {
 	cp := parent.AddNewChild(KiT_Capsule, name).(*Capsule)
 	cp.Initial.Pos = pos

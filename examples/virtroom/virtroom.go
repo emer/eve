@@ -6,22 +6,21 @@ package main
 
 import (
 	"fmt"
-	"image"
 	"log"
 	"math/rand"
 
 	"github.com/emer/eve/eve"
 	"github.com/emer/eve/evev"
+	"github.com/goki/gi/colormap"
 	"github.com/goki/gi/gi"
 	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/gimain"
 	"github.com/goki/gi/gist"
 	"github.com/goki/gi/giv"
-	"github.com/goki/gi/oswin"
-	"github.com/goki/gi/oswin/gpu"
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"github.com/goki/mat32"
+	"github.com/goki/vgpu/vgpu"
 )
 
 func main() {
@@ -32,24 +31,24 @@ func main() {
 
 // Env encapsulates the virtual environment
 type Env struct {
-	EmerHt   float32          `desc:"height of emer"`
-	MoveStep float32          `desc:"how far to move every step"`
-	RotStep  float32          `desc:"how far to rotate every step"`
-	Width    float32          `desc:"width of room"`
-	Depth    float32          `desc:"depth of room"`
-	Height   float32          `desc:"height of room"`
-	Thick    float32          `desc:"thickness of walls of room"`
-	Camera   evev.Camera      `desc:"offscreen render camera settings"`
-	DepthMap giv.ColorMapName `desc:"color map to use for rendering depth map"`
-	World    *eve.Group       `view:"-" desc:"world"`
-	View     *evev.View       `view:"-" desc:"view of world"`
-	Emer     *eve.Group       `view:"-" desc:"emer group"`
-	EyeR     eve.Body         `view:"-" desc:"Right eye of emer"`
-	Contacts eve.Contacts     `view:"-" desc:"contacts from last step, for body"`
-	Win      *gi.Window       `view:"-" desc:"gui window"`
-	SnapImg  *gi.Bitmap       `view:"-" desc:"snapshot bitmap view"`
-	DepthImg *gi.Bitmap       `view:"-" desc:"depth map bitmap view"`
-	Frame    gpu.Framebuffer  `view:"-" desc:"offscreen render buffer"`
+	EmerHt    float32          `desc:"height of emer"`
+	MoveStep  float32          `desc:"how far to move every step"`
+	RotStep   float32          `desc:"how far to rotate every step"`
+	Width     float32          `desc:"width of room"`
+	Depth     float32          `desc:"depth of room"`
+	Height    float32          `desc:"height of room"`
+	Thick     float32          `desc:"thickness of walls of room"`
+	DepthVals []float32        `desc:"current depth map"`
+	Camera    evev.Camera      `desc:"offscreen render camera settings"`
+	DepthMap  giv.ColorMapName `desc:"color map to use for rendering depth map"`
+	World     *eve.Group       `view:"-" desc:"world"`
+	View      *evev.View       `view:"-" desc:"view of world"`
+	Emer      *eve.Group       `view:"-" desc:"emer group"`
+	EyeR      eve.Body         `view:"-" desc:"Right eye of emer"`
+	Contacts  eve.Contacts     `view:"-" desc:"contacts from last step, for body"`
+	Win       *gi.Window       `view:"-" desc:"gui window"`
+	SnapImg   *gi.Bitmap       `view:"-" desc:"snapshot bitmap view"`
+	DepthImg  *gi.Bitmap       `view:"-" desc:"depth map bitmap view"`
 }
 
 func (ev *Env) Defaults() {
@@ -108,28 +107,30 @@ func (ev *Env) MakeView(sc *gi3d.Scene) {
 
 // Snapshot takes a snapshot from the perspective of Emer's right eye
 func (ev *Env) Snapshot() {
-	err := ev.View.RenderOffNode(&ev.Frame, ev.EyeR, &ev.Camera)
+	err := ev.View.RenderOffNode(ev.EyeR, &ev.Camera)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	var img image.Image
-	var depth []float32
-	oswin.TheApp.RunOnMain(func() {
-		tex := ev.Frame.Texture()
-		tex.SetBotZero(true)
-		img = tex.GrabImage()
-		depth = ev.Frame.DepthAll()
-	})
-	ev.SnapImg.SetImage(img, 0, 0)
-	ev.ViewDepth(depth)
+	img, err := ev.View.Image()
+	if err == nil && img != nil {
+		ev.SnapImg.SetImage(img, 0, 0)
+	} else {
+		log.Println(err)
+	}
+
+	depth, err := ev.View.DepthImage()
+	if err == nil && depth != nil {
+		ev.DepthVals = depth
+		ev.ViewDepth(depth)
+	}
 	ev.View.Scene.Render2D()
 	ev.View.Scene.DirectWinUpload()
 }
 
 // ViewDepth updates depth bitmap with depth data
 func (ev *Env) ViewDepth(depth []float32) {
-	cmap := giv.AvailColorMaps[string(ev.DepthMap)]
+	cmap := colormap.AvailMaps[string(ev.DepthMap)]
 	ev.DepthImg.SetSize(ev.Camera.Size)
 	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
 	ev.DepthImg.UpdateSig()
@@ -219,6 +220,8 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 	width := height * .4
 	depth := height * .15
 	body := eve.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
+	// body := eve.AddNewCapsule(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
+	// body := eve.AddNewCylinder(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
 	body.Color = "purple"
 	body.SetDynamic()
 
@@ -245,6 +248,8 @@ var TheEnv Env
 func (ev *Env) ConfigGui() {
 	width := 1024
 	height := 768
+
+	vgpu.Debug = true
 
 	gi.SetAppName("virtroom")
 	gi.SetAppAbout(`This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.

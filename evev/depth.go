@@ -7,8 +7,8 @@ package evev
 import (
 	"image"
 
-	"github.com/chewxy/math32"
-	"github.com/goki/gi/giv"
+	"github.com/goki/gi/colormap"
+	"github.com/goki/mat32"
 )
 
 // DepthNorm renders a normalized linear depth map from GPU (0-1 normalized floats) to
@@ -31,7 +31,7 @@ func DepthNorm(nd *[]float32, depth []float32, cam *Camera, flipY bool) {
 	fmn := cam.Far - cam.Near
 	var norm float32
 	if cam.LogD {
-		norm = 1 / math32.Log(1+cam.MaxD)
+		norm = 1 / mat32.Log(1+cam.MaxD)
 	} else {
 		norm = 1 / cam.MaxD
 	}
@@ -50,7 +50,7 @@ func DepthNorm(nd *[]float32, depth []float32, cam *Camera, flipY bool) {
 			effd := float32(1)
 			if lind < cam.MaxD {
 				if cam.LogD {
-					effd = norm * math32.Log(1+lind)
+					effd = norm * mat32.Log(1+lind)
 				} else {
 					effd = norm * lind
 				}
@@ -65,13 +65,13 @@ func DepthNorm(nd *[]float32, depth []float32, cam *Camera, flipY bool) {
 // Camera params determine whether log is used, and max cutoff distance for sensitive
 // range of distances -- also has Near / Far required to transform numbers into
 // linearized distance values.  Y axis is always flipped.
-func DepthImage(img *image.RGBA, depth []float32, cmap *giv.ColorMap, cam *Camera) {
+func DepthImage(img *image.RGBA, depth []float32, cmap *colormap.Map, cam *Camera) {
 	sz := img.Bounds().Size()
 	fpn := cam.Far + cam.Near
 	fmn := cam.Far - cam.Near
 	var norm float32
 	if cam.LogD {
-		norm = 1 / math32.Log(1+cam.MaxD)
+		norm = 1 / mat32.Log(1+cam.MaxD)
 	} else {
 		norm = 1 / cam.MaxD
 	}
@@ -86,7 +86,7 @@ func DepthImage(img *image.RGBA, depth []float32, cmap *giv.ColorMap, cam *Camer
 			effd := float32(1)
 			if lind < cam.MaxD {
 				if cam.LogD {
-					effd = norm * math32.Log(1+lind)
+					effd = norm * mat32.Log(1+lind)
 				} else {
 					effd = norm * lind
 				}
