@@ -97,6 +97,7 @@ func (ev *Env) ReMakeWorld() {
 
 // MakeView makes the view
 func (ev *Env) MakeView(sc *gi3d.Scene) {
+	sc.MultiSample = 1 // we are using depth grab so we need this = 1
 	wgp := gi3d.AddNewGroup(sc, sc, "world")
 	ev.View = evev.NewView(ev.World, sc, wgp)
 	ev.View.InitLibrary() // this makes a basic library based on body shapes, sizes
