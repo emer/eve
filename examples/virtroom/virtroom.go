@@ -20,7 +20,6 @@ import (
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"github.com/goki/mat32"
-	"github.com/goki/vgpu/vgpu"
 )
 
 func main() {
@@ -250,7 +249,7 @@ func (ev *Env) ConfigGui() {
 	width := 1024
 	height := 768
 
-	vgpu.Debug = true
+	// vgpu.Debug = true
 
 	gi.SetAppName("virtroom")
 	gi.SetAppAbout(`This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
