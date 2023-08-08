@@ -13,6 +13,8 @@ import (
 // Box is a box body shape
 type Box struct {
 	BodyBase
+
+	// size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
 	Size mat32.Vec3 `desc:"size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)"`
 }
 

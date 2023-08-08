@@ -8,11 +8,21 @@ import "github.com/goki/mat32"
 
 // BBox contains bounding box and other gross object properties
 type BBox struct {
-	BBox    mat32.Box3   `desc:"bounding box in world coords (Axis-Aligned Bounding Box = AABB)"`
-	VelBBox mat32.Box3   `desc:"velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis"`
+
+	// bounding box in world coords (Axis-Aligned Bounding Box = AABB)
+	BBox mat32.Box3 `desc:"bounding box in world coords (Axis-Aligned Bounding Box = AABB)"`
+
+	// velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis
+	VelBBox mat32.Box3 `desc:"velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis"`
+
+	// bounding sphere in local coords
 	BSphere mat32.Sphere `desc:"bounding sphere in local coords"`
-	Area    float32      `desc:"area"`
-	Volume  float32      `desc:"volume"`
+
+	// area
+	Area float32 `desc:"area"`
+
+	// volume
+	Volume float32 `desc:"volume"`
 }
 
 // SetBounds sets BBox from min, max and updates other factors based on that

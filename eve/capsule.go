@@ -14,8 +14,14 @@ import (
 // with separate radii for top and bottom.
 type Capsule struct {
 	BodyBase
+
+	// height of the cylinder portion of the capsule
 	Height float32 `desc:"height of the cylinder portion of the capsule"`
+
+	// radius of the top hemisphere
 	TopRad float32 `desc:"radius of the top hemisphere"`
+
+	// radius of the bottom hemisphere
 	BotRad float32 `desc:"radius of the bottom hemisphere"`
 }
 

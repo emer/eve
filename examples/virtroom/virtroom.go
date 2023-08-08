@@ -30,24 +30,60 @@ func main() {
 
 // Env encapsulates the virtual environment
 type Env struct {
-	EmerHt    float32          `desc:"height of emer"`
-	MoveStep  float32          `desc:"how far to move every step"`
-	RotStep   float32          `desc:"how far to rotate every step"`
-	Width     float32          `desc:"width of room"`
-	Depth     float32          `desc:"depth of room"`
-	Height    float32          `desc:"height of room"`
-	Thick     float32          `desc:"thickness of walls of room"`
-	DepthVals []float32        `desc:"current depth map"`
-	Camera    evev.Camera      `desc:"offscreen render camera settings"`
-	DepthMap  giv.ColorMapName `desc:"color map to use for rendering depth map"`
-	World     *eve.Group       `view:"-" desc:"world"`
-	View      *evev.View       `view:"-" desc:"view of world"`
-	Emer      *eve.Group       `view:"-" desc:"emer group"`
-	EyeR      eve.Body         `view:"-" desc:"Right eye of emer"`
-	Contacts  eve.Contacts     `view:"-" desc:"contacts from last step, for body"`
-	Win       *gi.Window       `view:"-" desc:"gui window"`
-	SnapImg   *gi.Bitmap       `view:"-" desc:"snapshot bitmap view"`
-	DepthImg  *gi.Bitmap       `view:"-" desc:"depth map bitmap view"`
+
+	// height of emer
+	EmerHt float32 `desc:"height of emer"`
+
+	// how far to move every step
+	MoveStep float32 `desc:"how far to move every step"`
+
+	// how far to rotate every step
+	RotStep float32 `desc:"how far to rotate every step"`
+
+	// width of room
+	Width float32 `desc:"width of room"`
+
+	// depth of room
+	Depth float32 `desc:"depth of room"`
+
+	// height of room
+	Height float32 `desc:"height of room"`
+
+	// thickness of walls of room
+	Thick float32 `desc:"thickness of walls of room"`
+
+	// current depth map
+	DepthVals []float32 `desc:"current depth map"`
+
+	// offscreen render camera settings
+	Camera evev.Camera `desc:"offscreen render camera settings"`
+
+	// color map to use for rendering depth map
+	DepthMap giv.ColorMapName `desc:"color map to use for rendering depth map"`
+
+	// [view: -] world
+	World *eve.Group `view:"-" desc:"world"`
+
+	// [view: -] view of world
+	View *evev.View `view:"-" desc:"view of world"`
+
+	// [view: -] emer group
+	Emer *eve.Group `view:"-" desc:"emer group"`
+
+	// [view: -] Right eye of emer
+	EyeR eve.Body `view:"-" desc:"Right eye of emer"`
+
+	// [view: -] contacts from last step, for body
+	Contacts eve.Contacts `view:"-" desc:"contacts from last step, for body"`
+
+	// [view: -] gui window
+	Win *gi.Window `view:"-" desc:"gui window"`
+
+	// [view: -] snapshot bitmap view
+	SnapImg *gi.Bitmap `view:"-" desc:"snapshot bitmap view"`
+
+	// [view: -] depth map bitmap view
+	DepthImg *gi.Bitmap `view:"-" desc:"depth map bitmap view"`
 }
 
 func (ev *Env) Defaults() {

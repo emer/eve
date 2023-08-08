@@ -20,8 +20,14 @@ type Body interface {
 // BodyBase is the base type for all specific Body types
 type BodyBase struct {
 	NodeBase
-	Rigid Rigid  `desc:"rigid body properties, including mass, bounce, friction etc"`
-	Vis   string `desc:"visualization name -- looks up an entry in the scene library that provides the visual representation of this body"`
+
+	// rigid body properties, including mass, bounce, friction etc
+	Rigid Rigid `desc:"rigid body properties, including mass, bounce, friction etc"`
+
+	// visualization name -- looks up an entry in the scene library that provides the visual representation of this body
+	Vis string `desc:"visualization name -- looks up an entry in the scene library that provides the visual representation of this body"`
+
+	// default color of body for basic InitLibrary configuration
 	Color string `desc:"default color of body for basic InitLibrary configuration"`
 }
 

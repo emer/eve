@@ -13,11 +13,21 @@ import (
 // Contacts are represented in spherical terms relative to the
 // spherical BBox of A and B.
 type Contact struct {
-	A     Body       `desc:"one body"`
-	B     Body       `desc:"the other body"`
+
+	// one body
+	A Body `desc:"one body"`
+
+	// the other body
+	B Body `desc:"the other body"`
+
+	// normal pointing from center of B to center of A
 	NormB mat32.Vec3 `desc:"normal pointing from center of B to center of A"`
-	PtB   mat32.Vec3 `desc:"point on spherical shell of B where A is contacting"`
-	Dist  float32    `desc:"distance from PtB along NormB to contact point on spherical shell of A"`
+
+	// point on spherical shell of B where A is contacting
+	PtB mat32.Vec3 `desc:"point on spherical shell of B where A is contacting"`
+
+	// distance from PtB along NormB to contact point on spherical shell of A
+	Dist float32 `desc:"distance from PtB along NormB to contact point on spherical shell of A"`
 }
 
 // UpdtDist updates the distance information for the contact

@@ -16,9 +16,17 @@ import (
 // These are only the values that can be either relative or absolute -- other physical
 // state values such as Mass should go in Rigid.
 type Phys struct {
-	Pos    mat32.Vec3 `desc:"position of center of mass of object"`
-	Quat   mat32.Quat `desc:"rotation specified as a Quat"`
+
+	// position of center of mass of object
+	Pos mat32.Vec3 `desc:"position of center of mass of object"`
+
+	// rotation specified as a Quat
+	Quat mat32.Quat `desc:"rotation specified as a Quat"`
+
+	// linear velocity
 	LinVel mat32.Vec3 `desc:"linear velocity"`
+
+	// angular velocity
 	AngVel mat32.Vec3 `desc:"angular velocity"`
 }
 

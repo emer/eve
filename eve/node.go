@@ -58,10 +58,18 @@ type Node interface {
 // There are only three different kinds of Nodes: Group, Body, and Joint
 type NodeBase struct {
 	ki.Node
+
+	// [view: inline] initial position, orientation, velocity in *local* coordinates (relative to parent)
 	Initial Phys `view:"inline" desc:"initial position, orientation, velocity in *local* coordinates (relative to parent)"`
-	Rel     Phys `view:"inline" desc:"current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom"`
-	Abs     Phys `inactive:"+" view:"inline" desc:"current absolute (world) position, orientation, velocity"`
-	BBox    BBox `desc:"bounding box in world coordinates (aggregated for groups)"`
+
+	// [view: inline] current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom
+	Rel Phys `view:"inline" desc:"current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom"`
+
+	// [view: inline] current absolute (world) position, orientation, velocity
+	Abs Phys `inactive:"+" view:"inline" desc:"current absolute (world) position, orientation, velocity"`
+
+	// bounding box in world coordinates (aggregated for groups)
+	BBox BBox `desc:"bounding box in world coordinates (aggregated for groups)"`
 }
 
 var KiT_NodeBase = kit.Types.AddType(&NodeBase{}, NodeBaseProps)

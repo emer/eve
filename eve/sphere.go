@@ -13,6 +13,8 @@ import (
 // Sphere is a spherical body shape.
 type Sphere struct {
 	BodyBase
+
+	// radius
 	Radius float32 `desc:"radius"`
 }
 
