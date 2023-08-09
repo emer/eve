@@ -6,17 +6,14 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 
 	"github.com/emer/eve/eve"
-	"github.com/emer/eve/evev"
-	"github.com/goki/gi/colormap"
+	"github.com/emer/eve/eve2d"
 	"github.com/goki/gi/gi"
-	"github.com/goki/gi/gi3d"
 	"github.com/goki/gi/gimain"
-	"github.com/goki/gi/gist"
 	"github.com/goki/gi/giv"
+	"github.com/goki/gi/svg"
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"github.com/goki/mat32"
@@ -50,38 +47,20 @@ type Env struct {
 	// thickness of walls of room
 	Thick float32 `desc:"thickness of walls of room"`
 
-	// current depth map
-	DepthVals []float32 `desc:"current depth map"`
-
-	// offscreen render camera settings
-	Camera evev.Camera `desc:"offscreen render camera settings"`
-
-	// color map to use for rendering depth map
-	DepthMap giv.ColorMapName `desc:"color map to use for rendering depth map"`
-
 	// [view: -] world
 	World *eve.Group `view:"-" desc:"world"`
 
 	// [view: -] view of world
-	View *evev.View `view:"-" desc:"view of world"`
+	View *eve2d.View `view:"-" desc:"view of world"`
 
 	// [view: -] emer group
 	Emer *eve.Group `view:"-" desc:"emer group"`
-
-	// [view: -] Right eye of emer
-	EyeR eve.Body `view:"-" desc:"Right eye of emer"`
 
 	// [view: -] contacts from last step, for body
 	Contacts eve.Contacts `view:"-" desc:"contacts from last step, for body"`
 
 	// [view: -] gui window
 	Win *gi.Window `view:"-" desc:"gui window"`
-
-	// [view: -] snapshot bitmap view
-	SnapImg *gi.Bitmap `view:"-" desc:"snapshot bitmap view"`
-
-	// [view: -] depth map bitmap view
-	DepthImg *gi.Bitmap `view:"-" desc:"depth map bitmap view"`
 }
 
 func (ev *Env) Defaults() {
@@ -92,9 +71,6 @@ func (ev *Env) Defaults() {
 	ev.EmerHt = 1
 	ev.MoveStep = ev.EmerHt * .2
 	ev.RotStep = 15
-	ev.DepthMap = giv.ColorMapName("ColdHot")
-	ev.Camera.Defaults()
-	ev.Camera.FOV = 90
 }
 
 // MakeWorld constructs a new virtual physics world
@@ -102,9 +78,8 @@ func (ev *Env) MakeWorld() {
 	ev.World = &eve.Group{}
 	ev.World.InitName(ev.World, "RoomWorld")
 
-	MakeRoom(ev.World, "room1", ev.Width, ev.Depth, ev.Height, ev.Thick)
+	MakeRoom(ev.World, "room1", ev.Width, ev.Depth, ev.Thick)
 	ev.Emer = MakeEmer(ev.World, ev.EmerHt)
-	ev.EyeR = ev.Emer.ChildByName("head", 1).ChildByName("eye-r", 2).(eve.Body)
 
 	ev.World.WorldInit()
 }
@@ -114,7 +89,6 @@ func (ev *Env) WorldInit() {
 	ev.World.WorldInit()
 	if ev.View != nil {
 		ev.View.Sync()
-		ev.Snapshot()
 	}
 }
 
@@ -124,50 +98,17 @@ func (ev *Env) ReMakeWorld() {
 	ev.View.World = ev.World
 	if ev.View != nil {
 		ev.View.Sync()
-		ev.Snapshot()
 	}
 }
 
 // MakeView makes the view
-func (ev *Env) MakeView(sc *gi3d.Scene) {
-	sc.MultiSample = 1 // we are using depth grab so we need this = 1
-	wgp := gi3d.AddNewGroup(sc, sc, "world")
-	ev.View = evev.NewView(ev.World, sc, wgp)
+func (ev *Env) MakeView(sc *svg.Editor) {
+	wgp := svg.AddNewGroup(sc, "world")
+	ev.View = eve2d.NewView(ev.World, &sc.SVG, wgp)
 	ev.View.InitLibrary() // this makes a basic library based on body shapes, sizes
 	// at this point the library can be updated to configure custom visualizations
 	// for any of the named bodies.
 	ev.View.Sync()
-}
-
-// Snapshot takes a snapshot from the perspective of Emer's right eye
-func (ev *Env) Snapshot() {
-	err := ev.View.RenderOffNode(ev.EyeR, &ev.Camera)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	img, err := ev.View.Image()
-	if err == nil && img != nil {
-		ev.SnapImg.SetImage(img, 0, 0)
-	} else {
-		log.Println(err)
-	}
-
-	depth, err := ev.View.DepthImage()
-	if err == nil && depth != nil {
-		ev.DepthVals = depth
-		ev.ViewDepth(depth)
-	}
-	ev.View.Scene.Render2D()
-	ev.View.Scene.DirectWinUpload()
-}
-
-// ViewDepth updates depth bitmap with depth data
-func (ev *Env) ViewDepth(depth []float32) {
-	cmap := colormap.AvailMaps[string(ev.DepthMap)]
-	ev.DepthImg.SetSize(ev.Camera.Size)
-	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
-	ev.DepthImg.UpdateSig()
 }
 
 // WorldStep does one step of the world
@@ -191,41 +132,40 @@ func (ev *Env) WorldStep() {
 		ev.Emer.Rel.RotateOnAxis(0, 1, 0, rot)
 	}
 	ev.View.UpdatePose()
-	ev.Snapshot()
 }
 
-// StepForward moves Emer forward in current facing direction one step, and takes Snapshot
+// StepForward moves Emer forward in current facing direction one step
 func (ev *Env) StepForward() {
-	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
+	ev.Emer.Rel.MoveOnAxis(0, 1, 0, -ev.MoveStep)
 	ev.WorldStep()
 }
 
-// StepBackward moves Emer backward in current facing direction one step, and takes Snapshot
+// StepBackward moves Emer backward in current facing direction one step
 func (ev *Env) StepBackward() {
-	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
+	ev.Emer.Rel.MoveOnAxis(0, 1, 0, ev.MoveStep)
 	ev.WorldStep()
 }
 
-// RotBodyLeft rotates emer left and takes Snapshot
+// RotBodyLeft rotates emer left
 func (ev *Env) RotBodyLeft() {
-	ev.Emer.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
+	ev.Emer.Rel.RotateOnAxis(0, 0, 1, ev.RotStep)
 	ev.WorldStep()
 }
 
-// RotBodyRight rotates emer right and takes Snapshot
+// RotBodyRight rotates emer right
 func (ev *Env) RotBodyRight() {
-	ev.Emer.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
+	ev.Emer.Rel.RotateOnAxis(0, 0, 1, -ev.RotStep)
 	ev.WorldStep()
 }
 
-// RotHeadLeft rotates emer left and takes Snapshot
+// RotHeadLeft rotates emer left
 func (ev *Env) RotHeadLeft() {
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.WorldStep()
 }
 
-// RotHeadRight rotates emer right and takes Snapshot
+// RotHeadRight rotates emer right
 func (ev *Env) RotHeadRight() {
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
@@ -233,18 +173,18 @@ func (ev *Env) RotHeadRight() {
 }
 
 // MakeRoom constructs a new room in given parent group with given params
-func MakeRoom(par *eve.Group, name string, width, depth, height, thick float32) *eve.Group {
+func MakeRoom(par *eve.Group, name string, width, depth, thick float32) *eve.Group {
 	rm := eve.AddNewGroup(par, name)
-	floor := eve.AddNewBox(rm, "floor", mat32.Vec3{0, -thick / 2, 0}, mat32.Vec3{width, thick, depth})
-	floor.Color = "grey"
-	bwall := eve.AddNewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
+	// floor := eve.AddNewBox(rm, "floor", mat32.Vec3{0, -thick / 2, 0}, mat32.Vec3{width, thick, depth})
+	// floor.Color = "grey"
+	bwall := eve.AddNewBox(rm, "back-wall", mat32.Vec3{0, -depth / 2, 0}, mat32.Vec3{width, thick, 0})
 	bwall.Color = "blue"
-	lwall := eve.AddNewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	lwall := eve.AddNewBox(rm, "left-wall", mat32.Vec3{-width / 2, 0, 0}, mat32.Vec3{thick, depth, 0})
 	lwall.Color = "red"
-	rwall := eve.AddNewBox(rm, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	rwall := eve.AddNewBox(rm, "right-wall", mat32.Vec3{width / 2, 0, 0}, mat32.Vec3{thick, depth, 0})
 	rwall.Color = "green"
-	fwall := eve.AddNewBox(rm, "front-wall", mat32.Vec3{0, height / 2, depth / 2}, mat32.Vec3{width, height, thick})
-	fwall.Color = "yellow"
+	fwall := eve.AddNewBox(rm, "front-wall", mat32.Vec3{0, depth / 2, 0}, mat32.Vec3{width, thick, 0})
+	fwall.Color = "brown"
 	return rm
 }
 
@@ -285,11 +225,11 @@ func (ev *Env) ConfigGui() {
 
 	// vgpu.Debug = true
 
-	gi.SetAppName("virtroom")
+	gi.SetAppName("virtroom2d")
 	gi.SetAppAbout(`This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
 <p>The <a href="https://github.com/emer/eve/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`)
 
-	win := gi.NewMainWindow("virtroom", "Emergent Virtual Engine", width, height)
+	win := gi.NewMainWindow("virtroom2d", "Emergent 2D Virtual Engine", width, height)
 	ev.Win = win
 
 	vp := win.WinViewport2D()
@@ -315,9 +255,8 @@ func (ev *Env) ConfigGui() {
 
 	tvfr := gi.AddNewFrame(split, "tvfr", gi.LayoutHoriz)
 	svfr := gi.AddNewFrame(split, "svfr", gi.LayoutHoriz)
-	imfr := gi.AddNewFrame(split, "imfr", gi.LayoutHoriz)
 	scfr := gi.AddNewFrame(split, "scfr", gi.LayoutHoriz)
-	split.SetSplits(.1, .2, .2, .5)
+	split.SetSplits(.1, .3, .6)
 
 	tv := giv.AddNewTreeView(tvfr, "tv")
 	tv.SetRootNode(ev.World)
@@ -342,61 +281,17 @@ func (ev *Env) ConfigGui() {
 	//////////////////////////////////////////
 	//    Scene
 
-	scvw := gi3d.AddNewSceneView(scfr, "sceneview")
+	scvw := svg.AddNewEditor(scfr, "sceneview")
+	scvw.Fill = true
+	scvw.SetProp("background-color", "white")
 	scvw.SetStretchMaxWidth()
 	scvw.SetStretchMaxHeight()
-	scvw.Config()
-	sc := scvw.Scene()
+	scvw.InitScale()
+	scvw.Trans.Set(600, 540)
+	scvw.Scale = 60
+	scvw.SetTransform()
 
-	// first, add lights, set camera
-	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
-	gi3d.AddNewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
-
-	dir := gi3d.AddNewDirLight(sc, "dir", 1, gi3d.DirectSun)
-	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
-
-	ev.MakeView(sc)
-
-	// grtx := gi3d.AddNewTextureFile(sc, "ground", "ground.png")
-	// wdtx := gi3d.AddNewTextureFile(sc, "wood", "wood.png")
-
-	// floorp := gi3d.AddNewPlane(sc, "floor-plane", 100, 100)
-	// floor := gi3d.AddNewSolid(sc, sc, "floor", floorp.Name())
-	// floor.Pose.Pos.Set(0, -5, 0)
-	// // floor.Mat.Color.SetName("tan")
-	// // floor.Mat.Emissive.SetName("brown")
-	// floor.Mat.Bright = 2 // .5 for wood / brown
-	// floor.Mat.SetTexture(sc, grtx)
-	// floor.Mat.Tiling.Reveat.Set(40, 40)
-
-	sc.Camera.Pose.Pos = mat32.Vec3{0, 40, 3.5}
-	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
-	sc.SaveCamera("3")
-
-	sc.Camera.Pose.Pos = mat32.Vec3{0, 20, 30}
-	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
-	sc.SaveCamera("2")
-
-	sc.Camera.Pose.Pos = mat32.Vec3{-.86, .97, 2.7}
-	sc.Camera.LookAt(mat32.Vec3{0, .8, 0}, mat32.Vec3Y)
-	sc.SaveCamera("1")
-	sc.SaveCamera("default")
-
-	//////////////////////////////////////////
-	//    Bitmap
-
-	imfr.Lay = gi.LayoutVert
-	gi.AddNewLabel(imfr, "lab-img", "Right Eye Image:")
-	ev.SnapImg = gi.AddNewBitmap(imfr, "snap-img")
-	ev.SnapImg.SetSize(ev.Camera.Size)
-	ev.SnapImg.LayoutToImgSize()
-	ev.SnapImg.SetProp("vertical-align", gist.AlignTop)
-
-	gi.AddNewLabel(imfr, "lab-depth", "Right Eye Depth:")
-	ev.DepthImg = gi.AddNewBitmap(imfr, "depth-img")
-	ev.DepthImg.SetSize(ev.Camera.Size)
-	ev.DepthImg.LayoutToImgSize()
-	ev.DepthImg.SetProp("vertical-align", gist.AlignTop)
+	ev.MakeView(scvw)
 
 	tbar.AddAction(gi.ActOpts{Label: "Edit Env", Icon: "edit", Tooltip: "Edit the settings for the environment."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		sv.SetStruct(ev)
@@ -406,9 +301,6 @@ func (ev *Env) ConfigGui() {
 	})
 	tbar.AddAction(gi.ActOpts{Label: "Make", Icon: "update", Tooltip: "Re-make virtual world -- do this if you have changed any of the world parameters."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.ReMakeWorld()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Snap", Icon: "file-image", Tooltip: "Take a snapshot from perspective of the right eye of emer virtual robot."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.Snapshot()
 	})
 	tbar.AddSeparator("mv-sep")
 	tbar.AddAction(gi.ActOpts{Label: "Fwd", Icon: "wedge-up", Tooltip: "Take a step Forward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {

@@ -136,70 +136,45 @@ func InitLibrary(wn eve.Node, sc *gi3d.Scene) {
 // InitLibSolid initializes Scene library with Solid for given body
 func InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 	nm := bod.Name()
-	lgp, has := sc.Library[nm]
-	if !has {
-		lgp = sc.NewInLibrary(nm)
+	bb := bod.AsBodyBase()
+	if bb.Vis == "" {
+		bb.Vis = nm
 	}
-	bod.AsBodyBase().Vis = nm
-	var sld *gi3d.Solid
-	if lgp.HasChildren() {
-		sld, has = lgp.Child(0).(*gi3d.Solid)
-		if !has {
-			return // some other kind of thing already configured
-		}
-	} else {
-		sld = gi3d.AddNewSolid(sc, lgp, nm, "")
+	if _, has := sc.Library[nm]; has {
+		return
 	}
+	lgp := sc.NewInLibrary(nm)
+	sld := gi3d.AddNewSolid(sc, lgp, nm, "")
 	wt := kit.ShortTypeName(ki.Type(bod.This()))
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
-		bx := bod.(*eve.Box)
 		bm := sc.MeshByName(mnm)
 		if bm == nil {
 			bm = gi3d.AddNewBox(sc, mnm, 1, 1, 1)
 		}
 		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale = bx.Size
-		if bx.Color != "" {
-			sld.Mat.Color.SetName(bx.Color)
-		}
 	case "eve.Cylinder":
 		mnm := "eveCylinder"
-		cy := bod.(*eve.Cylinder)
 		cm := sc.MeshByName(mnm)
 		if cm == nil {
 			cm = gi3d.AddNewCylinder(sc, mnm, 1, 1, 32, 1, true, true)
 		}
 		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale.Set(cy.BotRad, cy.Height, cy.BotRad)
-		if cy.Color != "" {
-			sld.Mat.Color.SetName(cy.Color)
-		}
 	case "eve.Capsule":
 		mnm := "eveCapsule"
-		cp := bod.(*eve.Capsule)
 		cm := sc.MeshByName(mnm)
 		if cm == nil {
 			cm = gi3d.AddNewCapsule(sc, mnm, 1, .2, 32, 1)
 		}
 		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale.Set(cp.BotRad/.2, cp.Height/1.4, cp.BotRad/.2)
-		if cp.Color != "" {
-			sld.Mat.Color.SetName(cp.Color)
-		}
 	case "eve.Sphere":
 		mnm := "eveSphere"
-		sp := bod.(*eve.Sphere)
 		sm := sc.MeshByName(mnm)
 		if sm == nil {
 			sm = gi3d.AddNewSphere(sc, mnm, 1, 32)
 		}
 		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale.SetScalar(sp.Radius)
-		if sp.Color != "" {
-			sld.Mat.Color.SetName(sp.Color)
-		}
 	}
 }
 
@@ -241,17 +216,17 @@ func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	vb.Pose.Pos = wb.Rel.Pos
 	vb.Pose.Quat = wb.Rel.Quat
 	bod := wn.AsBody()
-	if bod != nil {
-		if !vb.HasChildren() {
-			sc.AddFmLibrary(bod.AsBodyBase().Vis, vb)
-		} else {
-			bgp := vb.Child(0)
-			if bgp.HasChildren() {
-				sld, has := bgp.Child(0).(*gi3d.Solid)
-				if has {
-					ConfigBodySolid(bod, sld)
-				}
-			}
+	if bod == nil {
+		return
+	}
+	if !vb.HasChildren() {
+		sc.AddFmLibrary(bod.AsBodyBase().Vis, vb)
+	}
+	bgp := vb.Child(0)
+	if bgp.HasChildren() {
+		sld, has := bgp.Child(0).(*gi3d.Solid)
+		if has {
+			ConfigBodySolid(bod, sld)
 		}
 	}
 }

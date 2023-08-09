@@ -12,6 +12,7 @@ import (
 	"github.com/goki/gi/svg"
 	"github.com/goki/ki/ki"
 	"github.com/goki/ki/kit"
+	"github.com/goki/mat32"
 )
 
 // View connects a Virtual World with a 2D SVG Scene to visualize the world
@@ -39,23 +40,24 @@ func NewView(world *eve.Group, sc *svg.SVG, root *svg.Group) *View {
 	return vw
 }
 
-// InitLibrary initializes Scene library with basic Solid shapes
+// InitLibrary initializes Scene library with basic shapes
 // based on bodies in the virtual world.  More complex visualizations
 // can be configured after this.
 func (vw *View) InitLibrary() {
-	InitLibrary(vw.World, vw.Scene)
+	vw.InitLibraryBody(vw.World)
 }
 
 // Sync synchronizes the view to the world
 func (vw *View) Sync() bool {
-	rval := SyncNode(vw.World, vw.Root, vw.Scene)
+	rval := vw.SyncNode(vw.World, vw.Root)
 	return rval
 }
 
 // UpdatePose updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
 func (vw *View) UpdatePose() {
-	UpdatePose(vw.World, vw.Root)
+	vw.UpdatePoseNode(vw.World, vw.Root)
+	vw.Scene.UpdateSig()
 }
 
 // Image returns the current rendered image
@@ -70,147 +72,140 @@ func (vw *View) Image() (*image.RGBA, error) {
 ///////////////////////////////////////////////////////////////
 // Sync, Config
 
-// InitLibrary initializes Scene library with basic Solid shapes
-// based on bodies in the virtual world.  More complex visualizations
-// can be configured after this.
-func (vw *View) InitLibrary(wn eve.Node) {
-	bod := wn.AsBody()
-	if bod != nil {
-		vw.InitLibSolid(bod)
-	}
-	for idx := range *wn.Children() {
-		wk := wn.Child(idx).(eve.Node)
-		vw.InitLibrary(wk)
-	}
-}
-
 // NewInLibrary adds a new item of given name in library
-func (vw *View) NewInLibrary(nm string) {
+func (vw *View) NewInLibrary(nm string) *svg.Group {
 	if vw.Library == nil {
 		vw.Library = make(map[string]*svg.Group)
 	}
-	// vw.Library[nm] =
+	gp := &svg.Group{}
+	gp.InitName(gp, nm)
+	vw.Library[nm] = gp
+	return gp
 }
 
-// InitLibSolid initializes Scene library with Solid for given body
-func (vw *View) InitLibSolid(bod eve.Body) {
-	nm := bod.Name()
+// AddFmLibrary adds shape from library to given group
+func (vw *View) AddFmLibrary(nm string, gp *svg.Group) {
 	lgp, has := vw.Library[nm]
 	if !has {
-		lgp = vw.NewInLibrary(nm)
+		return
 	}
-	bod.AsBodyBase().Vis = nm
-	var sld *svg.Solid
-	// if lgp.HasChildren() {
-	// 	sld, has = lgp.Child(0).(*svg.Solid)
-	// 	if !has {
-	// 		return // some other kind of thing already configured
-	// 	}
-	// } else {
-	sld = svg.AddNewSolid(sc, lgp, nm, "")
-	// }
+	gp.AddChild(lgp.Clone())
+}
+
+// InitLibraryBody initializes Scene library with basic shapes
+// based on bodies in the virtual world.  More complex visualizations
+// can be configured after this.
+func (vw *View) InitLibraryBody(wn eve.Node) {
+	bod := wn.AsBody()
+	if bod != nil {
+		vw.InitLibShape(bod)
+	}
+	for idx := range *wn.Children() {
+		wk := wn.Child(idx).(eve.Node)
+		vw.InitLibraryBody(wk)
+	}
+}
+
+// InitLibShape initializes Scene library with basic shape for given body
+func (vw *View) InitLibShape(bod eve.Body) {
+	nm := bod.Name()
+	bb := bod.AsBodyBase()
+	if bb.Vis == "" {
+		bb.Vis = nm
+	}
+	if _, has := vw.Library[nm]; has {
+		return
+	}
+	lgp := vw.NewInLibrary(nm)
 	wt := kit.ShortTypeName(ki.Type(bod.This()))
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
-		bx := bod.(*eve.Box)
-		bm := sc.MeshByName(mnm)
-		if bm == nil {
-			bm = svg.AddNewBox(sc, mnm, 1, 1, 1)
-		}
-		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale = bx.Size
-		if bx.Color != "" {
-			sld.Mat.Color.SetName(bx.Color)
-		}
+		svg.AddNewRect(lgp, mnm, 0, 0, 1, 1)
 	case "eve.Cylinder":
 		mnm := "eveCylinder"
-		cy := bod.(*eve.Cylinder)
-		cm := sc.MeshByName(mnm)
-		if cm == nil {
-			cm = svg.AddNewCylinder(sc, mnm, 1, 1, 32, 1, true, true)
-		}
-		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale.Set(cy.BotRad, cy.Height, cy.BotRad)
-		if cy.Color != "" {
-			sld.Mat.Color.SetName(cy.Color)
-		}
+		svg.AddNewCircle(lgp, mnm, 0, 0, 1)
 	case "eve.Capsule":
 		mnm := "eveCapsule"
-		cp := bod.(*eve.Capsule)
-		cm := sc.MeshByName(mnm)
-		if cm == nil {
-			cm = svg.AddNewCapsule(sc, mnm, 1, .2, 32, 1)
-		}
-		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale.Set(cp.BotRad/.2, cp.Height/1.4, cp.BotRad/.2)
-		if cp.Color != "" {
-			sld.Mat.Color.SetName(cp.Color)
-		}
+		svg.AddNewCircle(lgp, mnm, 0, 0, 1)
 	case "eve.Sphere":
 		mnm := "eveSphere"
-		sp := bod.(*eve.Sphere)
-		sm := sc.MeshByName(mnm)
-		if sm == nil {
-			sm = svg.AddNewSphere(sc, mnm, 1, 32)
-		}
-		sld.SetMeshName(sc, mnm)
-		sld.Pose.Scale.SetScalar(sp.Radius)
-		if sp.Color != "" {
-			sld.Mat.Color.SetName(sp.Color)
-		}
+		svg.AddNewCircle(lgp, mnm, 0, 0, 1)
 	}
 }
 
-// ConfigBodySolid configures a solid for a body with current values
-func ConfigBodySolid(bod eve.Body, sld *svg.Solid) {
+func NewVec2Fm3(v3 mat32.Vec3) mat32.Vec2 {
+	return mat32.NewVec2(v3.X, v3.Y)
+}
+
+// ConfigBodyShape configures a shape for a body with current values
+func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 	wt := kit.ShortTypeName(ki.Type(bod.This()))
+	sb := shp.AsSVGNode()
 	switch wt {
 	case "eve.Box":
 		bx := bod.(*eve.Box)
-		sld.Pose.Scale = bx.Size
+		shp.SetSize(NewVec2Fm3(bx.Size))
+		sb.Pnt.XForm = mat32.Translate2D(-bx.Size.X/2, -bx.Size.Y/2)
+		shp.SetProp("transform", sb.Pnt.XForm.String())
+		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("fill", "none")
 		if bx.Color != "" {
-			sld.Mat.Color.SetName(bx.Color)
+			shp.SetProp("stroke", bx.Color)
 		}
 	case "eve.Cylinder":
 		cy := bod.(*eve.Cylinder)
-		sld.Pose.Scale.Set(cy.BotRad, cy.Height, cy.BotRad)
+		shp.SetSize(mat32.NewVec2(cy.BotRad*2, cy.BotRad*2))
+		sb.Pnt.XForm = mat32.Translate2D(-cy.BotRad, -cy.BotRad)
+		shp.SetProp("transform", sb.Pnt.XForm.String())
+		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("fill", "none")
 		if cy.Color != "" {
-			sld.Mat.Color.SetName(cy.Color)
+			shp.SetProp("stroke", cy.Color)
 		}
 	case "eve.Capsule":
 		cp := bod.(*eve.Capsule)
-		sld.Pose.Scale.Set(cp.BotRad/.2, cp.Height/1.4, cp.BotRad/.2)
+		shp.SetSize(mat32.NewVec2(cp.BotRad*2, cp.BotRad*2))
+		sb.Pnt.XForm = mat32.Translate2D(-cp.BotRad, -cp.BotRad)
+		shp.SetProp("transform", sb.Pnt.XForm.String())
+		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("fill", "none")
 		if cp.Color != "" {
-			sld.Mat.Color.SetName(cp.Color)
+			shp.SetProp("stroke", cp.Color)
 		}
 	case "eve.Sphere":
 		sp := bod.(*eve.Sphere)
-		sld.Pose.Scale.SetScalar(sp.Radius)
+		shp.SetSize(mat32.NewVec2(sp.Radius*2, sp.Radius*2))
+		sb.Pnt.XForm = mat32.Translate2D(-sp.Radius, -sp.Radius)
+		shp.SetProp("transform", sb.Pnt.XForm.String())
+		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("fill", "none")
 		if sp.Color != "" {
-			sld.Mat.Color.SetName(sp.Color)
+			shp.SetProp("stroke", sp.Color)
 		}
 	}
 }
 
 // ConfigView configures the view node to properly display world node
-func ConfigView(wn eve.Node, vn svg.Node3D, sc *svg.SVG) {
+func (vw *View) ConfigView(wn eve.Node, vn svg.NodeSVG) {
 	wb := wn.AsNodeBase()
 	vb := vn.(*svg.Group)
-	vb.Pose.Pos = wb.Rel.Pos
-	vb.Pose.Quat = wb.Rel.Quat
+	ps := NewVec2Fm3(wb.Rel.Pos)
+	vb.Pnt.XForm = mat32.Translate2D(ps.X, ps.Y)
+	vb.SetProp("transform", vb.Pnt.XForm.String())
+	// fmt.Printf("wb: %s  pos: %v  vb: %s\n", wb.Name(), ps, vb.Name())
 	bod := wn.AsBody()
-	if bod != nil {
-		if !vb.HasChildren() {
-			sc.AddFmLibrary(bod.AsBodyBase().Vis, vb)
-		} else {
-			bgp := vb.Child(0)
-			if bgp.HasChildren() {
-				sld, has := bgp.Child(0).(*svg.Solid)
-				if has {
-					ConfigBodySolid(bod, sld)
-				}
-			}
+	if bod == nil {
+		return
+	}
+	if !vb.HasChildren() {
+		vw.AddFmLibrary(bod.AsBodyBase().Vis, vb)
+	}
+	bgp := vb.Child(0)
+	if bgp.HasChildren() {
+		shp, has := bgp.Child(0).(svg.NodeSVG)
+		if has {
+			vw.ConfigBodyShape(bod, shp)
 		}
 	}
 }
@@ -218,7 +213,7 @@ func ConfigView(wn eve.Node, vn svg.Node3D, sc *svg.SVG) {
 // SyncNode updates the view tree to match the world tree, using
 // ConfigChildren to maximally preserve existing tree elements
 // returns true if view tree was modified (elements added / removed etc)
-func SyncNode(wn eve.Node, vn svg.Node3D, sc *svg.SVG) bool {
+func (vw *View) SyncNode(wn eve.Node, vn svg.NodeSVG) bool {
 	nm := wn.Name()
 	vn.SetName(nm) // guaranteed to be unique
 	skids := *wn.Children()
@@ -230,10 +225,10 @@ func SyncNode(wn eve.Node, vn svg.Node3D, sc *svg.SVG) bool {
 	modall := mod
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(svg.Node3D)
-		ConfigView(wk, vk, sc)
+		vk := vn.Child(idx).(svg.NodeSVG)
+		vw.ConfigView(wk, vk)
 		if wk.HasChildren() {
-			kmod := SyncNode(wk, vk, sc)
+			kmod := vw.SyncNode(wk, vk)
 			if kmod {
 				modall = true
 			}
@@ -248,15 +243,16 @@ func SyncNode(wn eve.Node, vn svg.Node3D, sc *svg.SVG) bool {
 
 // UpdatePose updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
-func UpdatePose(wn eve.Node, vn svg.Node3D) {
+func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.NodeSVG) {
 	skids := *wn.Children()
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(svg.Node3D)
-		wb := wn.AsNodeBase()
-		vb := vn.AsNode3D()
-		vb.Pose.Pos = wb.Rel.Pos
-		vb.Pose.Quat = wb.Rel.Quat
-		UpdatePose(wk, vk)
+		vk := vn.Child(idx).(svg.NodeSVG).(*svg.Group)
+		wb := wk.AsNodeBase()
+		ps := NewVec2Fm3(wb.Rel.Pos)
+		vk.Pnt.XForm = mat32.Translate2D(ps.X, ps.Y)
+		vk.SetProp("transform", vk.Pnt.XForm.String())
+		// fmt.Printf("wk: %s  pos: %v  vk: %s\n", wk.Name(), ps, vk.Child(0).Name())
+		vw.UpdatePoseNode(wk, vk)
 	}
 }
