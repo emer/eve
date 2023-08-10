@@ -18,6 +18,9 @@ import (
 // View connects a Virtual World with a 2D SVG Scene to visualize the world
 type View struct {
 
+	// width of lines for shape rendering, in normalized units
+	LineWidth float32 `desc:"width of lines for shape rendering, in normalized units"`
+
 	// projection matrix for converting 3D to 2D -- resulting X, Y coordinates are used from Vec3
 	Prjn mat32.Mat4 `desc:"projection matrix for converting 3D to 2D -- resulting X, Y coordinates are used from Vec3"`
 
@@ -41,6 +44,7 @@ func NewView(world *eve.Group, sc *svg.SVG, root *svg.Group) *View {
 	vw := &View{World: world, Scene: sc, Root: root}
 	vw.Library = make(map[string]*svg.Group)
 	vw.ProjectXZ() // more typical
+	vw.LineWidth = 0.05
 	return vw
 }
 
@@ -187,7 +191,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 		shp.SetSize(sz)
 		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
-		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("stroke-width", vw.LineWidth)
 		shp.SetProp("fill", "none")
 		if bx.Color != "" {
 			shp.SetProp("stroke", bx.Color)
@@ -199,7 +203,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 		shp.SetSize(sz)
 		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
-		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("stroke-width", vw.LineWidth)
 		shp.SetProp("fill", "none")
 		if cy.Color != "" {
 			shp.SetProp("stroke", cy.Color)
@@ -211,7 +215,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 		shp.SetSize(sz)
 		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
-		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("stroke-width", vw.LineWidth)
 		shp.SetProp("fill", "none")
 		if cp.Color != "" {
 			shp.SetProp("stroke", cp.Color)
@@ -223,7 +227,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 		shp.SetSize(sz)
 		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
-		shp.SetProp("stroke-width", 0.05)
+		shp.SetProp("stroke-width", vw.LineWidth)
 		shp.SetProp("fill", "none")
 		if sp.Color != "" {
 			shp.SetProp("stroke", sp.Color)
