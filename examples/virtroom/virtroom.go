@@ -10,6 +10,7 @@ import (
 	"math/rand"
 
 	"github.com/emer/eve/eve"
+	"github.com/emer/eve/eve2d"
 	"github.com/emer/eve/evev"
 	"github.com/goki/gi/colormap"
 	"github.com/goki/gi/gi"
@@ -17,6 +18,7 @@ import (
 	"github.com/goki/gi/gimain"
 	"github.com/goki/gi/gist"
 	"github.com/goki/gi/giv"
+	"github.com/goki/gi/svg"
 	"github.com/goki/gi/units"
 	"github.com/goki/ki/ki"
 	"github.com/goki/mat32"
@@ -62,8 +64,11 @@ type Env struct {
 	// [view: -] world
 	World *eve.Group `view:"-" desc:"world"`
 
-	// [view: -] view of world
-	View *evev.View `view:"-" desc:"view of world"`
+	// 3D view of world
+	View3D *evev.View `desc:"3D view of world"`
+
+	// view of world
+	View2D *eve2d.View `desc:"view of world"`
 
 	// [view: -] emer group
 	Emer *eve.Group `view:"-" desc:"emer group"`
@@ -112,54 +117,70 @@ func (ev *Env) MakeWorld() {
 // InitWorld does init on world and re-syncs
 func (ev *Env) WorldInit() {
 	ev.World.WorldInit()
-	if ev.View != nil {
-		ev.View.Sync()
+	if ev.View3D != nil {
+		ev.View3D.Sync()
 		ev.Snapshot()
+	}
+	if ev.View2D != nil {
+		ev.View2D.Sync()
 	}
 }
 
 // ReMakeWorld rebuilds the world and re-syncs with gui
 func (ev *Env) ReMakeWorld() {
 	ev.MakeWorld()
-	ev.View.World = ev.World
-	if ev.View != nil {
-		ev.View.Sync()
+	ev.View3D.World = ev.World
+	if ev.View3D != nil {
+		ev.View3D.Sync()
 		ev.Snapshot()
+	}
+	if ev.View2D != nil {
+		ev.View2D.Sync()
 	}
 }
 
-// MakeView makes the view
-func (ev *Env) MakeView(sc *gi3d.Scene) {
+// MakeView3D makes the 3D view
+func (ev *Env) MakeView3D(sc *gi3d.Scene) {
 	sc.MultiSample = 1 // we are using depth grab so we need this = 1
 	wgp := gi3d.AddNewGroup(sc, sc, "world")
-	ev.View = evev.NewView(ev.World, sc, wgp)
-	ev.View.InitLibrary() // this makes a basic library based on body shapes, sizes
+	ev.View3D = evev.NewView(ev.World, sc, wgp)
+	ev.View3D.InitLibrary() // this makes a basic library based on body shapes, sizes
 	// at this point the library can be updated to configure custom visualizations
 	// for any of the named bodies.
-	ev.View.Sync()
+	ev.View3D.Sync()
+}
+
+// MakeView2D makes the 2D view
+func (ev *Env) MakeView2D(sc *svg.Editor) {
+	wgp := svg.AddNewGroup(sc, "world")
+	ev.View2D = eve2d.NewView(ev.World, &sc.SVG, wgp)
+	ev.View2D.InitLibrary() // this makes a basic library based on body shapes, sizes
+	// at this point the library can be updated to configure custom visualizations
+	// for any of the named bodies.
+	ev.View2D.Sync()
 }
 
 // Snapshot takes a snapshot from the perspective of Emer's right eye
 func (ev *Env) Snapshot() {
-	err := ev.View.RenderOffNode(ev.EyeR, &ev.Camera)
+	err := ev.View3D.RenderOffNode(ev.EyeR, &ev.Camera)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	img, err := ev.View.Image()
+	img, err := ev.View3D.Image()
 	if err == nil && img != nil {
 		ev.SnapImg.SetImage(img, 0, 0)
 	} else {
 		log.Println(err)
 	}
 
-	depth, err := ev.View.DepthImage()
+	depth, err := ev.View3D.DepthImage()
 	if err == nil && depth != nil {
 		ev.DepthVals = depth
 		ev.ViewDepth(depth)
 	}
-	ev.View.Scene.Render2D()
-	ev.View.Scene.DirectWinUpload()
+	ev.View3D.Scene.Render2D()
+	ev.View3D.Scene.DirectWinUpload()
 }
 
 // ViewDepth updates depth bitmap with depth data
@@ -190,8 +211,10 @@ func (ev *Env) WorldStep() {
 		rot := 100.0 + 90.0*rand.Float32()
 		ev.Emer.Rel.RotateOnAxis(0, 1, 0, rot)
 	}
-	ev.View.UpdatePose()
+	ev.View3D.UpdatePose()
 	ev.Snapshot()
+	ev.View2D.UpdatePose()
+	ev.View2D.Scene.UpdateSig()
 }
 
 // StepForward moves Emer forward in current facing direction one step, and takes Snapshot
@@ -316,15 +339,22 @@ func (ev *Env) ConfigGui() {
 	tvfr := gi.AddNewFrame(split, "tvfr", gi.LayoutHoriz)
 	svfr := gi.AddNewFrame(split, "svfr", gi.LayoutHoriz)
 	imfr := gi.AddNewFrame(split, "imfr", gi.LayoutHoriz)
-	scfr := gi.AddNewFrame(split, "scfr", gi.LayoutHoriz)
+	tbvw := gi.AddNewTabView(split, "tbvw")
+	scfr := tbvw.AddNewTab(gi.KiT_Frame, "3D View").(*gi.Frame)
+	twofr := tbvw.AddNewTab(gi.KiT_Frame, "2D View").(*gi.Frame)
+
+	tbvw.SetStretchMax()
+	scfr.SetStretchMax()
+	scfr.SetStretchMax()
+	twofr.SetStretchMax()
+
 	split.SetSplits(.1, .2, .2, .5)
 
 	tv := giv.AddNewTreeView(tvfr, "tv")
 	tv.SetRootNode(ev.World)
 
 	sv := giv.AddNewStructView(svfr, "sv")
-	sv.SetStretchMaxWidth()
-	sv.SetStretchMaxHeight()
+	sv.SetStretchMax()
 	sv.SetStruct(ev)
 
 	tv.TreeViewSig.Connect(sv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
@@ -340,11 +370,10 @@ func (ev *Env) ConfigGui() {
 	})
 
 	//////////////////////////////////////////
-	//    Scene
+	//    3D Scene
 
 	scvw := gi3d.AddNewSceneView(scfr, "sceneview")
-	scvw.SetStretchMaxWidth()
-	scvw.SetStretchMaxHeight()
+	scvw.SetStretchMax()
 	scvw.Config()
 	sc := scvw.Scene()
 
@@ -355,7 +384,7 @@ func (ev *Env) ConfigGui() {
 	dir := gi3d.AddNewDirLight(sc, "dir", 1, gi3d.DirectSun)
 	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
 
-	ev.MakeView(sc)
+	ev.MakeView3D(sc)
 
 	// grtx := gi3d.AddNewTextureFile(sc, "ground", "ground.png")
 	// wdtx := gi3d.AddNewTextureFile(sc, "wood", "wood.png")
@@ -397,6 +426,23 @@ func (ev *Env) ConfigGui() {
 	ev.DepthImg.SetSize(ev.Camera.Size)
 	ev.DepthImg.LayoutToImgSize()
 	ev.DepthImg.SetProp("vertical-align", gist.AlignTop)
+
+	//////////////////////////////////////////
+	//    2D Scene
+
+	twov := svg.AddNewEditor(twofr, "sceneview")
+	twov.Fill = true
+	twov.SetProp("background-color", "white")
+	twov.SetStretchMax()
+	twov.InitScale()
+	twov.Trans.Set(440, 512)
+	twov.Scale = 60
+	twov.SetTransform()
+
+	ev.MakeView2D(twov)
+
+	//////////////////////////////////////////
+	//    Toolbar
 
 	tbar.AddAction(gi.ActOpts{Label: "Edit Env", Icon: "edit", Tooltip: "Edit the settings for the environment."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		sv.SetStruct(ev)

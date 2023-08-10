@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/goki/gi v1.3.21
 	github.com/goki/ki v1.1.15
-	github.com/goki/mat32 v1.0.15
+	github.com/goki/mat32 v1.0.17
 )
 
 require (
@@ -43,10 +43,10 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/srwiley/scanx v0.0.0-20190309010443-e94503791388 // indirect
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
-	golang.org/x/image v0.6.0 // indirect
+	golang.org/x/image v0.11.0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 )

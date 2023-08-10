@@ -18,6 +18,9 @@ import (
 // View connects a Virtual World with a 2D SVG Scene to visualize the world
 type View struct {
 
+	// projection matrix for converting 3D to 2D -- resulting X, Y coordinates are used from Vec3
+	Prjn mat32.Mat4 `desc:"projection matrix for converting 3D to 2D -- resulting X, Y coordinates are used from Vec3"`
+
 	// the root Group node of the virtual world
 	World *eve.Group `desc:"the root Group node of the virtual world"`
 
@@ -37,6 +40,7 @@ var KiT_View = kit.Types.AddType(&View{}, nil)
 func NewView(world *eve.Group, sc *svg.SVG, root *svg.Group) *View {
 	vw := &View{World: world, Scene: sc, Root: root}
 	vw.Library = make(map[string]*svg.Group)
+	vw.ProjectXZ() // more typical
 	return vw
 }
 
@@ -67,6 +71,44 @@ func (vw *View) Image() (*image.RGBA, error) {
 		return nil, fmt.Errorf("eve2d.View Image: is nil")
 	}
 	return img, nil
+}
+
+// ProjectXY sets 2D projection to reflect 3D X,Y coords
+func (vw *View) ProjectXY() {
+	vw.Prjn.SetIdentity()
+}
+
+// ProjectXZ sets 2D projection to reflect 3D X,Z coords
+func (vw *View) ProjectXZ() {
+	vw.Prjn.SetIdentity()
+	vw.Prjn[5] = 0 // Y->Y
+	vw.Prjn[9] = 1 // Z->Y
+}
+
+// todo: more projections
+
+// Prjn2D projects position from 3D to 2D
+func (vw *View) Prjn2D(pos mat32.Vec3) mat32.Vec2 {
+	v2 := pos.MulMat4(&vw.Prjn)
+	return mat32.NewVec2(v2.X, v2.Y)
+}
+
+// XForm2D returns the full 2D transform matrix for a given position and quat rotation in 3D
+func (vw *View) XForm2D(phys *eve.Phys) mat32.Mat2 {
+	pos2 := phys.Pos.MulMat4(&vw.Prjn)
+	xyaxis := mat32.Vec3{1, 1, 0}
+	xyaxis.SetNormal()
+	inv := vw.Prjn.Transpose()
+	axis := xyaxis.MulMat4(inv)
+	axis.SetNormal()
+	rot := axis.MulQuat(phys.Quat)
+	rot.SetNormal()
+	xyrot := rot.MulMat4(&vw.Prjn)
+	xyrot.Z = 0
+	xyrot.SetNormal()
+	ang := xyrot.AngleTo(xyaxis)
+	xf2 := mat32.Translate2D(pos2.X, pos2.Y).Rotate(ang)
+	return xf2
 }
 
 ///////////////////////////////////////////////////////////////
@@ -134,10 +176,6 @@ func (vw *View) InitLibShape(bod eve.Body) {
 	}
 }
 
-func NewVec2Fm3(v3 mat32.Vec3) mat32.Vec2 {
-	return mat32.NewVec2(v3.X, v3.Y)
-}
-
 // ConfigBodyShape configures a shape for a body with current values
 func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 	wt := kit.ShortTypeName(ki.Type(bod.This()))
@@ -145,8 +183,9 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 	switch wt {
 	case "eve.Box":
 		bx := bod.(*eve.Box)
-		shp.SetSize(NewVec2Fm3(bx.Size))
-		sb.Pnt.XForm = mat32.Translate2D(-bx.Size.X/2, -bx.Size.Y/2)
+		sz := vw.Prjn2D(bx.Size)
+		shp.SetSize(sz)
+		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
 		shp.SetProp("stroke-width", 0.05)
 		shp.SetProp("fill", "none")
@@ -155,8 +194,10 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 		}
 	case "eve.Cylinder":
 		cy := bod.(*eve.Cylinder)
-		shp.SetSize(mat32.NewVec2(cy.BotRad*2, cy.BotRad*2))
-		sb.Pnt.XForm = mat32.Translate2D(-cy.BotRad, -cy.BotRad)
+		sz3 := mat32.NewVec3(cy.BotRad*2, cy.Height, cy.TopRad*2)
+		sz := vw.Prjn2D(sz3)
+		shp.SetSize(sz)
+		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
 		shp.SetProp("stroke-width", 0.05)
 		shp.SetProp("fill", "none")
@@ -165,8 +206,10 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 		}
 	case "eve.Capsule":
 		cp := bod.(*eve.Capsule)
-		shp.SetSize(mat32.NewVec2(cp.BotRad*2, cp.BotRad*2))
-		sb.Pnt.XForm = mat32.Translate2D(-cp.BotRad, -cp.BotRad)
+		sz3 := mat32.NewVec3(cp.BotRad*2, cp.Height, cp.TopRad*2)
+		sz := vw.Prjn2D(sz3)
+		shp.SetSize(sz)
+		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
 		shp.SetProp("stroke-width", 0.05)
 		shp.SetProp("fill", "none")
@@ -175,8 +218,10 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 		}
 	case "eve.Sphere":
 		sp := bod.(*eve.Sphere)
-		shp.SetSize(mat32.NewVec2(sp.Radius*2, sp.Radius*2))
-		sb.Pnt.XForm = mat32.Translate2D(-sp.Radius, -sp.Radius)
+		sz3 := mat32.NewVec3(sp.Radius*2, sp.Radius*2, sp.Radius*2)
+		sz := vw.Prjn2D(sz3)
+		shp.SetSize(sz)
+		sb.Pnt.XForm = mat32.Translate2D(-sz.X/2, -sz.Y/2)
 		shp.SetProp("transform", sb.Pnt.XForm.String())
 		shp.SetProp("stroke-width", 0.05)
 		shp.SetProp("fill", "none")
@@ -190,10 +235,8 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 func (vw *View) ConfigView(wn eve.Node, vn svg.NodeSVG) {
 	wb := wn.AsNodeBase()
 	vb := vn.(*svg.Group)
-	ps := NewVec2Fm3(wb.Rel.Pos)
-	vb.Pnt.XForm = mat32.Translate2D(ps.X, ps.Y)
+	vb.Pnt.XForm = vw.XForm2D(&wb.Rel)
 	vb.SetProp("transform", vb.Pnt.XForm.String())
-	// fmt.Printf("wb: %s  pos: %v  vb: %s\n", wb.Name(), ps, vb.Name())
 	bod := wn.AsBody()
 	if bod == nil {
 		return
@@ -249,8 +292,7 @@ func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.NodeSVG) {
 		wk := wn.Child(idx).(eve.Node)
 		vk := vn.Child(idx).(svg.NodeSVG).(*svg.Group)
 		wb := wk.AsNodeBase()
-		ps := NewVec2Fm3(wb.Rel.Pos)
-		vk.Pnt.XForm = mat32.Translate2D(ps.X, ps.Y)
+		vk.Pnt.XForm = vw.XForm2D(&wb.Rel)
 		vk.SetProp("transform", vk.Pnt.XForm.String())
 		// fmt.Printf("wk: %s  pos: %v  vk: %s\n", wk.Name(), ps, vk.Child(0).Name())
 		vw.UpdatePoseNode(wk, vk)
