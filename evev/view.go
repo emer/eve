@@ -55,6 +55,12 @@ func (vw *View) UpdatePose() {
 	UpdatePose(vw.World, vw.Root)
 }
 
+// UpdateBodyView updates the display properties of given body name
+// recurses the tree until this body name is found.
+func (vw *View) UpdateBodyView(bodyNames []string) {
+	UpdateBodyView(bodyNames, vw.World, vw.Root)
+}
+
 // RenderOffNode does an offscreen render using given node
 // for the camera position and orientation.
 // Current scene camera is saved and restored
@@ -269,10 +275,40 @@ func UpdatePose(wn eve.Node, vn gi3d.Node3D) {
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
 		vk := vn.Child(idx).(gi3d.Node3D)
-		wb := wn.AsNodeBase()
-		vb := vn.AsNode3D()
+		wb := wk.AsNodeBase()
+		vb := vk.AsNode3D()
 		vb.Pose.Pos = wb.Rel.Pos
 		vb.Pose.Quat = wb.Rel.Quat
 		UpdatePose(wk, vk)
+	}
+}
+
+// UpdateBodyView updates the body view info for given name(s)
+// Essential that both trees are already synchronized.
+func UpdateBodyView(bodyNames []string, wn eve.Node, vn gi3d.Node3D) {
+	skids := *wn.Children()
+	for idx := range skids {
+		wk := wn.Child(idx).(eve.Node)
+		vk := vn.Child(idx).(gi3d.Node3D)
+		match := false
+		if _, isBod := wk.(eve.Body); isBod {
+			for _, nm := range bodyNames {
+				if wk.Name() == nm {
+					match = true
+					break
+				}
+			}
+		}
+		if match {
+			wb := wk.(eve.Body)
+			bgp := vk.Child(0)
+			if bgp.HasChildren() {
+				sld, has := bgp.Child(0).(*gi3d.Solid)
+				if has {
+					ConfigBodySolid(wb, sld)
+				}
+			}
+		}
+		UpdateBodyView(bodyNames, wk, vk)
 	}
 }
