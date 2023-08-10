@@ -3,8 +3,8 @@
 package eve
 
 const (
-	Version     = "v0.9.1"
-	GitCommit   = "5c8c1e4" // the commit JUST BEFORE the release
-	VersionDate = "2023-08-10 04:06" // UTC
+	Version     = "v0.9.2"
+	GitCommit   = "31161ec" // the commit JUST BEFORE the release
+	VersionDate = "2023-08-10 20:32" // UTC
 )
 
