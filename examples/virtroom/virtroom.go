@@ -83,7 +83,7 @@ type Env struct {
 	Win *gi.Window `view:"-" desc:"gui window"`
 
 	// [view: -] snapshot bitmap view
-	SnapImg *gi.Bitmap `view:"-" desc:"snapshot bitmap view"`
+	EyeRImg *gi.Bitmap `view:"-" desc:"snapshot bitmap view"`
 
 	// [view: -] depth map bitmap view
 	DepthImg *gi.Bitmap `view:"-" desc:"depth map bitmap view"`
@@ -119,7 +119,7 @@ func (ev *Env) WorldInit() {
 	ev.World.WorldInit()
 	if ev.View3D != nil {
 		ev.View3D.Sync()
-		ev.Snapshot()
+		ev.GrabEyeImg()
 	}
 	if ev.View2D != nil {
 		ev.View2D.Sync()
@@ -132,7 +132,7 @@ func (ev *Env) ReMakeWorld() {
 	ev.View3D.World = ev.World
 	if ev.View3D != nil {
 		ev.View3D.Sync()
-		ev.Snapshot()
+		ev.GrabEyeImg()
 	}
 	if ev.View2D != nil {
 		ev.View2D.Sync()
@@ -160,8 +160,8 @@ func (ev *Env) MakeView2D(sc *svg.Editor) {
 	ev.View2D.Sync()
 }
 
-// Snapshot takes a snapshot from the perspective of Emer's right eye
-func (ev *Env) Snapshot() {
+// GrabEyeImg takes a snapshot from the perspective of Emer's right eye
+func (ev *Env) GrabEyeImg() {
 	err := ev.View3D.RenderOffNode(ev.EyeR, &ev.Camera)
 	if err != nil {
 		log.Println(err)
@@ -169,7 +169,7 @@ func (ev *Env) Snapshot() {
 	}
 	img, err := ev.View3D.Image()
 	if err == nil && img != nil {
-		ev.SnapImg.SetImage(img, 0, 0)
+		ev.EyeRImg.SetImage(img, 0, 0)
 	} else {
 		log.Println(err)
 	}
@@ -212,43 +212,43 @@ func (ev *Env) WorldStep() {
 		ev.Emer.Rel.RotateOnAxis(0, 1, 0, rot)
 	}
 	ev.View3D.UpdatePose()
-	ev.Snapshot()
+	ev.GrabEyeImg()
 	ev.View2D.UpdatePose()
 	ev.View2D.Scene.UpdateSig()
 }
 
-// StepForward moves Emer forward in current facing direction one step, and takes Snapshot
+// StepForward moves Emer forward in current facing direction one step, and takes GrabEyeImg
 func (ev *Env) StepForward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
 	ev.WorldStep()
 }
 
-// StepBackward moves Emer backward in current facing direction one step, and takes Snapshot
+// StepBackward moves Emer backward in current facing direction one step, and takes GrabEyeImg
 func (ev *Env) StepBackward() {
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
 	ev.WorldStep()
 }
 
-// RotBodyLeft rotates emer left and takes Snapshot
+// RotBodyLeft rotates emer left and takes GrabEyeImg
 func (ev *Env) RotBodyLeft() {
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.WorldStep()
 }
 
-// RotBodyRight rotates emer right and takes Snapshot
+// RotBodyRight rotates emer right and takes GrabEyeImg
 func (ev *Env) RotBodyRight() {
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.WorldStep()
 }
 
-// RotHeadLeft rotates emer left and takes Snapshot
+// RotHeadLeft rotates emer left and takes GrabEyeImg
 func (ev *Env) RotHeadLeft() {
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.WorldStep()
 }
 
-// RotHeadRight rotates emer right and takes Snapshot
+// RotHeadRight rotates emer right and takes GrabEyeImg
 func (ev *Env) RotHeadRight() {
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
@@ -416,10 +416,10 @@ func (ev *Env) ConfigGui() {
 
 	imfr.Lay = gi.LayoutVert
 	gi.AddNewLabel(imfr, "lab-img", "Right Eye Image:")
-	ev.SnapImg = gi.AddNewBitmap(imfr, "snap-img")
-	ev.SnapImg.SetSize(ev.Camera.Size)
-	ev.SnapImg.LayoutToImgSize()
-	ev.SnapImg.SetProp("vertical-align", gist.AlignTop)
+	ev.EyeRImg = gi.AddNewBitmap(imfr, "eye-r-img")
+	ev.EyeRImg.SetSize(ev.Camera.Size)
+	ev.EyeRImg.LayoutToImgSize()
+	ev.EyeRImg.SetProp("vertical-align", gist.AlignTop)
 
 	gi.AddNewLabel(imfr, "lab-depth", "Right Eye Depth:")
 	ev.DepthImg = gi.AddNewBitmap(imfr, "depth-img")
@@ -453,8 +453,8 @@ func (ev *Env) ConfigGui() {
 	tbar.AddAction(gi.ActOpts{Label: "Make", Icon: "update", Tooltip: "Re-make virtual world -- do this if you have changed any of the world parameters."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
 		ev.ReMakeWorld()
 	})
-	tbar.AddAction(gi.ActOpts{Label: "Snap", Icon: "file-image", Tooltip: "Take a snapshot from perspective of the right eye of emer virtual robot."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.Snapshot()
+	tbar.AddAction(gi.ActOpts{Label: "Grab Img", Icon: "file-image", Tooltip: "Take a snapshot from perspective of the right eye of emer virtual robot."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
+		ev.GrabEyeImg()
 	})
 	tbar.AddSeparator("mv-sep")
 	tbar.AddAction(gi.ActOpts{Label: "Fwd", Icon: "wedge-up", Tooltip: "Take a step Forward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {

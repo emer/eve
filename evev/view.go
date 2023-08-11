@@ -40,25 +40,25 @@ func NewView(world *eve.Group, sc *gi3d.Scene, root *gi3d.Group) *View {
 // based on bodies in the virtual world.  More complex visualizations
 // can be configured after this.
 func (vw *View) InitLibrary() {
-	InitLibrary(vw.World, vw.Scene)
+	vw.InitLibraryBody(vw.World, vw.Scene)
 }
 
 // Sync synchronizes the view to the world
 func (vw *View) Sync() bool {
-	rval := SyncNode(vw.World, vw.Root, vw.Scene)
+	rval := vw.SyncNode(vw.World, vw.Root, vw.Scene)
 	return rval
 }
 
 // UpdatePose updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
 func (vw *View) UpdatePose() {
-	UpdatePose(vw.World, vw.Root)
+	vw.UpdatePoseNode(vw.World, vw.Root)
 }
 
 // UpdateBodyView updates the display properties of given body name
 // recurses the tree until this body name is found.
 func (vw *View) UpdateBodyView(bodyNames []string) {
-	UpdateBodyView(bodyNames, vw.World, vw.Root)
+	vw.UpdateBodyViewNode(bodyNames, vw.World, vw.Root)
 }
 
 // RenderOffNode does an offscreen render using given node
@@ -125,22 +125,22 @@ func (vw *View) DepthImage() ([]float32, error) {
 ///////////////////////////////////////////////////////////////
 // Sync, Config
 
-// InitLibrary initializes Scene library with basic Solid shapes
+// InitLibraryBody initializes Scene library with basic Solid shapes
 // based on bodies in the virtual world.  More complex visualizations
 // can be configured after this.
-func InitLibrary(wn eve.Node, sc *gi3d.Scene) {
+func (vw *View) InitLibraryBody(wn eve.Node, sc *gi3d.Scene) {
 	bod := wn.AsBody()
 	if bod != nil {
-		InitLibSolid(bod, sc)
+		vw.InitLibSolid(bod, sc)
 	}
 	for idx := range *wn.Children() {
 		wk := wn.Child(idx).(eve.Node)
-		InitLibrary(wk, sc)
+		vw.InitLibraryBody(wk, sc)
 	}
 }
 
 // InitLibSolid initializes Scene library with Solid for given body
-func InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
+func (vw *View) InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 	nm := bod.Name()
 	bb := bod.AsBodyBase()
 	if bb.Vis == "" {
@@ -185,7 +185,7 @@ func InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 }
 
 // ConfigBodySolid configures a solid for a body with current values
-func ConfigBodySolid(bod eve.Body, sld *gi3d.Solid) {
+func (vw *View) ConfigBodySolid(bod eve.Body, sld *gi3d.Solid) {
 	wt := kit.ShortTypeName(ki.Type(bod.This()))
 	switch wt {
 	case "eve.Box":
@@ -216,7 +216,7 @@ func ConfigBodySolid(bod eve.Body, sld *gi3d.Solid) {
 }
 
 // ConfigView configures the view node to properly display world node
-func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
+func (vw *View) ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	wb := wn.AsNodeBase()
 	vb := vn.(*gi3d.Group)
 	vb.Pose.Pos = wb.Rel.Pos
@@ -232,7 +232,7 @@ func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	if bgp.HasChildren() {
 		sld, has := bgp.Child(0).(*gi3d.Solid)
 		if has {
-			ConfigBodySolid(bod, sld)
+			vw.ConfigBodySolid(bod, sld)
 		}
 	}
 }
@@ -240,7 +240,7 @@ func ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 // SyncNode updates the view tree to match the world tree, using
 // ConfigChildren to maximally preserve existing tree elements
 // returns true if view tree was modified (elements added / removed etc)
-func SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
+func (vw *View) SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 	nm := wn.Name()
 	vn.SetName(nm) // guaranteed to be unique
 	skids := *wn.Children()
@@ -253,9 +253,9 @@ func SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
 		vk := vn.Child(idx).(gi3d.Node3D)
-		ConfigView(wk, vk, sc)
+		vw.ConfigView(wk, vk, sc)
 		if wk.HasChildren() {
-			kmod := SyncNode(wk, vk, sc)
+			kmod := vw.SyncNode(wk, vk, sc)
 			if kmod {
 				modall = true
 			}
@@ -268,9 +268,9 @@ func SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 ///////////////////////////////////////////////////////////////
 // UpdatePose
 
-// UpdatePose updates the view pose values only from world tree.
+// UpdatePoseNode updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
-func UpdatePose(wn eve.Node, vn gi3d.Node3D) {
+func (vw *View) UpdatePoseNode(wn eve.Node, vn gi3d.Node3D) {
 	skids := *wn.Children()
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
@@ -279,13 +279,13 @@ func UpdatePose(wn eve.Node, vn gi3d.Node3D) {
 		vb := vk.AsNode3D()
 		vb.Pose.Pos = wb.Rel.Pos
 		vb.Pose.Quat = wb.Rel.Quat
-		UpdatePose(wk, vk)
+		vw.UpdatePoseNode(wk, vk)
 	}
 }
 
-// UpdateBodyView updates the body view info for given name(s)
+// UpdateBodyViewNode updates the body view info for given name(s)
 // Essential that both trees are already synchronized.
-func UpdateBodyView(bodyNames []string, wn eve.Node, vn gi3d.Node3D) {
+func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn gi3d.Node3D) {
 	skids := *wn.Children()
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
@@ -305,10 +305,10 @@ func UpdateBodyView(bodyNames []string, wn eve.Node, vn gi3d.Node3D) {
 			if bgp.HasChildren() {
 				sld, has := bgp.Child(0).(*gi3d.Solid)
 				if has {
-					ConfigBodySolid(wb, sld)
+					vw.ConfigBodySolid(wb, sld)
 				}
 			}
 		}
-		UpdateBodyView(bodyNames, wk, vk)
+		vw.UpdateBodyViewNode(bodyNames, wk, vk)
 	}
 }

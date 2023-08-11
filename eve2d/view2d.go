@@ -65,7 +65,12 @@ func (vw *View) Sync() bool {
 // Essential that both trees are already synchronized.
 func (vw *View) UpdatePose() {
 	vw.UpdatePoseNode(vw.World, vw.Root)
-	vw.Scene.UpdateSig()
+}
+
+// UpdateBodyView updates the display properties of given body name
+// recurses the tree until this body name is found.
+func (vw *View) UpdateBodyView(bodyNames []string) {
+	vw.UpdateBodyViewNode(bodyNames, vw.World, vw.Root)
 }
 
 // Image returns the current rendered image
@@ -288,7 +293,7 @@ func (vw *View) SyncNode(wn eve.Node, vn svg.NodeSVG) bool {
 ///////////////////////////////////////////////////////////////
 // UpdatePose
 
-// UpdatePose updates the view pose values only from world tree.
+// UpdatePoseNode updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
 func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.NodeSVG) {
 	skids := *wn.Children()
@@ -300,5 +305,34 @@ func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.NodeSVG) {
 		vk.SetProp("transform", vk.Pnt.XForm.String())
 		// fmt.Printf("wk: %s  pos: %v  vk: %s\n", wk.Name(), ps, vk.Child(0).Name())
 		vw.UpdatePoseNode(wk, vk)
+	}
+}
+
+// UpdateBodyViewNode updates the body view info for given name(s)
+// Essential that both trees are already synchronized.
+func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn svg.NodeSVG) {
+	skids := *wn.Children()
+	for idx := range skids {
+		wk := wn.Child(idx).(eve.Node)
+		vk := vn.Child(idx).(svg.NodeSVG)
+		match := false
+		if _, isBod := wk.(eve.Body); isBod {
+			for _, nm := range bodyNames {
+				if wk.Name() == nm {
+					match = true
+					break
+				}
+			}
+		}
+		if match {
+			bgp := vk.Child(0)
+			if bgp.HasChildren() {
+				shp, has := bgp.Child(0).(svg.NodeSVG)
+				if has {
+					vw.ConfigBodyShape(wk.AsBody(), shp)
+				}
+			}
+		}
+		vw.UpdateBodyViewNode(bodyNames, wk, vk)
 	}
 }
