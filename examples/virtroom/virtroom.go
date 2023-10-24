@@ -6,8 +6,10 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"log"
 	"math/rand"
+	"os"
 
 	"github.com/emer/eve/eve"
 	"github.com/emer/eve/eve2d"
@@ -24,9 +26,9 @@ import (
 	"github.com/goki/mat32"
 )
 
-func main() {
-	gimain.Main(mainrun)
-}
+var NoGUI bool
+
+func main() { gimain.Main(app) }
 
 // Env encapsulates the virtual environment
 type Env struct {
@@ -160,14 +162,19 @@ func (ev *Env) MakeView2D(sc *svg.Editor) {
 	ev.View2D.Sync()
 }
 
-// GrabEyeImg takes a snapshot from the perspective of Emer's right eye
-func (ev *Env) GrabEyeImg() {
+// RenderEyeImg returns a snapshot from the perspective of Emer's right eye
+func (ev *Env) RenderEyeImg() (*image.RGBA, error) {
 	err := ev.View3D.RenderOffNode(ev.EyeR, &ev.Camera)
 	if err != nil {
 		log.Println(err)
-		return
+		return nil, err
 	}
-	img, err := ev.View3D.Image()
+	return ev.View3D.Image()
+}
+
+// GrabEyeImg takes a snapshot from the perspective of Emer's right eye
+func (ev *Env) GrabEyeImg() {
+	img, err := ev.RenderEyeImg()
 	if err == nil && img != nil {
 		ev.EyeRImg.SetImage(img, 0, 0)
 	} else {
@@ -179,8 +186,10 @@ func (ev *Env) GrabEyeImg() {
 		ev.DepthVals = depth
 		ev.ViewDepth(depth)
 	}
-	ev.View3D.Scene.Render2D()
-	ev.View3D.Scene.DirectWinUpload()
+	if !NoGUI {
+		ev.View3D.Scene.Render2D()
+		ev.View3D.Scene.DirectWinUpload()
+	}
 }
 
 // ViewDepth updates depth bitmap with depth data
@@ -491,9 +500,42 @@ func (ev *Env) ConfigGui() {
 	vp.UpdateEndNoSig(updt)
 }
 
-func mainrun() {
+func app() {
+	if len(os.Args) > 1 && os.Args[1] == "-nogui" {
+		NoGUI = true
+	}
 	ev := &TheEnv
 	ev.Defaults()
+	if NoGUI {
+		ev.NoGUIRun()
+		return
+	}
 	ev.ConfigGui()
 	ev.Win.StartEventLoop()
+}
+
+func (ev *Env) NoGUIRun() {
+	sc, _, _, err := evev.NoGUIScene("virtroom")
+	if err != nil {
+		panic(err)
+	}
+
+	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
+	gi3d.AddNewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
+
+	dir := gi3d.AddNewDirLight(sc, "dir", 1, gi3d.DirectSun)
+	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
+
+	ev.MakeWorld()
+	ev.MakeView3D(sc)
+
+	sc.Init3D()
+	sc.Style3D()
+
+	img, err := ev.RenderEyeImg()
+	if err == nil {
+		gi.SaveImage("eyer_0.png", img)
+	} else {
+		panic(err)
+	}
 }
