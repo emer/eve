@@ -515,10 +515,11 @@ func app() {
 }
 
 func (ev *Env) NoGUIRun() {
-	sc, _, _, err := evev.NoGUIScene("virtroom")
+	gp, dev, err := evev.NoDisplayGPU("virtroom")
 	if err != nil {
 		panic(err)
 	}
+	sc := evev.NoDisplayScene("virtroom", gp, dev)
 
 	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
 	gi3d.AddNewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
