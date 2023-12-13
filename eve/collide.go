@@ -5,8 +5,8 @@
 package eve
 
 import (
-	"github.com/goki/ki/ki"
-	"github.com/goki/mat32"
+	"goki.dev/ki/v2"
+	"goki.dev/mat32/v2"
 )
 
 // Contact is one pairwise point of contact between two bodies.
@@ -38,8 +38,8 @@ func (c *Contact) UpdtDist() {
 // Contacts is a slice list of contacts
 type Contacts []*Contact
 
-// AddNew adds a new contact to the list
-func (cs *Contacts) AddNew(a, b Body) *Contact {
+// New adds a new contact to the list
+func (cs *Contacts) New(a, b Body) *Contact {
 	c := &Contact{A: a, B: b}
 	*cs = append(*cs, c)
 	return c
@@ -51,8 +51,8 @@ func (cs *Contacts) AddNew(a, b Body) *Contact {
 // This is the broad first-pass filtering.
 func BodyVelBBoxIntersects(a, b Node) Contacts {
 	var cts Contacts
-	a.FuncDownMeFirst(0, a.This(), func(k ki.Ki, level int, d interface{}) bool {
-		aii, ai := KiToNode(k)
+	a.WalkPre(func(k ki.Ki) bool {
+		aii, ai := AsNode(k)
 		if aii == nil {
 			return false // going into a different type of thing, bail
 		}
@@ -61,8 +61,8 @@ func BodyVelBBoxIntersects(a, b Node) Contacts {
 		}
 		abod := aii.AsBody() // only consider bodies from a
 
-		b.FuncDownMeFirst(0, b.This(), func(k ki.Ki, level int, d interface{}) bool {
-			bii, bi := KiToNode(k)
+		b.WalkPre(func(k ki.Ki) bool {
+			bii, bi := AsNode(k)
 			if bii == nil {
 				return false // going into a different type of thing, bail
 			}
@@ -70,7 +70,7 @@ func BodyVelBBoxIntersects(a, b Node) Contacts {
 				return false // done
 			}
 			if bii.NodeType() == BODY {
-				cts.AddNew(abod, bii.AsBody())
+				cts.New(abod, bii.AsBody())
 				return false // done
 			}
 			return true // keep going

@@ -7,9 +7,8 @@ package eve
 import (
 	"sort"
 
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/ki/v2"
+	"goki.dev/mat32/v2"
 )
 
 // Group is a container of bodies, joints, or other groups
@@ -18,14 +17,6 @@ import (
 // Use a group for the top-level World node as well.
 type Group struct {
 	NodeBase
-}
-
-var KiT_Group = kit.Types.AddType(&Group{}, GroupProps)
-
-// AddNewGroup adds a new group of given name to given parent
-func AddNewGroup(parent ki.Ki, name string) *Group {
-	gp := parent.AddNewChild(KiT_Group, name).(*Group)
-	return gp
 }
 
 func (gp *Group) NodeType() NodeTypes {
@@ -49,7 +40,7 @@ func (gp *Group) GroupBBox() {
 	gp.BBox.BBox.SetEmpty()
 	gp.BBox.VelBBox.SetEmpty()
 	for _, kid := range gp.Kids {
-		nii, ni := KiToNode(kid)
+		nii, ni := AsNode(kid)
 		if nii == nil {
 			continue
 		}
@@ -59,78 +50,74 @@ func (gp *Group) GroupBBox() {
 			hasDyn = true
 		}
 	}
-	gp.SetFlagState(hasDyn, int(Dynamic))
+	gp.SetFlag(hasDyn, Dynamic)
 }
 
 // WorldDynGroupBBox does a GroupBBox on all dynamic nodes
 func (gp *Group) WorldDynGroupBBox() {
-	gp.FuncDownMeLast(0, gp.This(),
-		func(k ki.Ki, level int, d interface{}) bool {
-			nii, _ := KiToNode(k)
-			if nii == nil {
-				return false // going into a different type of thing, bail
-			}
-			if !nii.IsDynamic() {
-				return false
-			}
-			return true
-		},
-		func(k ki.Ki, level int, d interface{}) bool {
-			nii, _ := KiToNode(k)
-			if nii == nil {
-				return false // going into a different type of thing, bail
-			}
-			if !nii.IsDynamic() {
-				return false
-			}
-			nii.GroupBBox()
-			return true
-		})
+	gp.WalkPost(func(k ki.Ki) bool {
+		nii, _ := AsNode(k)
+		if nii == nil {
+			return false
+		}
+		if !nii.IsDynamic() {
+			return false
+		}
+		return true
+	}, func(k ki.Ki) bool {
+		nii, _ := AsNode(k)
+		if nii == nil {
+			return false
+		}
+		if !nii.IsDynamic() {
+			return false
+		}
+		nii.GroupBBox()
+		return true
+	})
 }
 
 // WorldInit does the full tree InitAbs and GroupBBox updates
 func (gp *Group) WorldInit() {
-	gp.FuncDownMeFirst(0, gp.This(), func(k ki.Ki, level int, d interface{}) bool {
-		nii, _ := KiToNode(k)
+	gp.WalkPre(func(k ki.Ki) bool {
+		nii, _ := AsNode(k)
 		if nii == nil {
-			return false // going into a different type of thing, bail
+			return false
 		}
-		_, pi := KiToNode(k.Parent())
+		_, pi := AsNode(k.Parent())
 		nii.InitAbs(pi)
 		return true
 	})
 
-	gp.FuncDownMeLast(0, gp.This(),
-		func(k ki.Ki, level int, d interface{}) bool {
-			nii, _ := KiToNode(k)
-			if nii == nil {
-				return false // going into a different type of thing, bail
-			}
-			return true
-		},
-		func(k ki.Ki, level int, d interface{}) bool {
-			nii, _ := KiToNode(k)
-			if nii == nil {
-				return false // going into a different type of thing, bail
-			}
-			nii.GroupBBox()
-			return true
-		})
+	gp.WalkPost(func(k ki.Ki) bool {
+		nii, _ := AsNode(k)
+		if nii == nil {
+			return false
+		}
+		return true
+	}, func(k ki.Ki) bool {
+		nii, _ := AsNode(k)
+		if nii == nil {
+			return false
+		}
+		nii.GroupBBox()
+		return true
+	})
 
 }
 
 // WorldRelToAbs does a full RelToAbs update for all Dynamic groups, for
 // Scripted mode updates with manual updating of Rel values.
 func (gp *Group) WorldRelToAbs() {
-	gp.FuncDownMeFirst(0, gp.This(), func(k ki.Ki, level int, d interface{}) bool {
-		nii, _ := KiToNode(k)
+	gp.WalkPre(func(k ki.Ki) bool {
+		nii, _ := AsNode(k)
 		if nii == nil {
 			return false // going into a different type of thing, bail
 		}
 		if !nii.IsDynamic() {
 			return false
 		}
-		_, pi := KiToNode(k.Parent())
+		_, pi := AsNode(k.Parent())
 		nii.RelToAbs(pi)
 		return true
 	})
@@ -141,8 +128,8 @@ func (gp *Group) WorldRelToAbs() {
 // WorldStepPhys does a full StepPhys update for all Dynamic nodes, for
 // either physics or scripted mode, based on current velocities.
 func (gp *Group) WorldStepPhys(step float32) {
-	gp.FuncDownMeFirst(0, gp.This(), func(k ki.Ki, level int, d interface{}) bool {
-		nii, _ := KiToNode(k)
+	gp.WalkPre(func(k ki.Ki) bool {
+		nii, _ := AsNode(k)
 		if nii == nil {
 			return false // going into a different type of thing, bail
 		}
@@ -175,7 +162,7 @@ func (gp *Group) WorldCollide(dynTop bool) []Contacts {
 	var stats []Node
 	var dyns []Node
 	for _, kid := range gp.Kids {
-		nii, _ := KiToNode(kid)
+		nii, _ := AsNode(kid)
 		if nii == nil {
 			continue
 		}
@@ -190,7 +177,7 @@ func (gp *Group) WorldCollide(dynTop bool) []Contacts {
 	if !dynTop {
 		for _, d := range dyns {
 			for _, dk := range *d.Children() {
-				nii, _ := KiToNode(dk)
+				nii, _ := AsNode(dk)
 				if nii == nil {
 					continue
 				}
@@ -229,8 +216,8 @@ type BodyPoint struct {
 // with the given ray, with the point of intersection
 func (gp *Group) RayBodyIntersections(ray mat32.Ray) []*BodyPoint {
 	var bs []*BodyPoint
-	gp.FuncDownMeFirst(0, gp.This(), func(k ki.Ki, level int, d interface{}) bool {
-		nii, ni := KiToNode(k)
+	gp.WalkPre(func(k ki.Ki) bool {
+		nii, ni := AsNode(k)
 		if nii == nil {
 			return false // going into a different type of thing, bail
 		}
@@ -253,15 +240,4 @@ func (gp *Group) RayBodyIntersections(ray mat32.Ray) []*BodyPoint {
 	})
 
 	return bs
-}
-
-// GroupProps define the ToolBar and MenuBar for StructView
-var GroupProps = ki.Props{
-	"EnumType:Flag": KiT_NodeFlags,
-	"ToolBar": ki.PropSlice{
-		{"WorldInit", ki.Props{
-			"desc": "initialize all elements in the world.",
-			"icon": "reset",
-		}},
-	},
 }

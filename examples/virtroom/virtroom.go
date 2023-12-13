@@ -11,19 +11,19 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/emer/eve/eve"
-	"github.com/emer/eve/eve2d"
-	"github.com/emer/eve/evev"
-	"github.com/goki/gi/colormap"
-	"github.com/goki/gi/gi"
-	"github.com/goki/gi/gi3d"
-	"github.com/goki/gi/gimain"
-	"github.com/goki/gi/gist"
-	"github.com/goki/gi/giv"
-	"github.com/goki/gi/svg"
-	"github.com/goki/gi/units"
-	"github.com/goki/ki/ki"
-	"github.com/goki/mat32"
+	"github.com/emer/eve/v2/eve"
+	"github.com/emer/eve/v2/eve2d"
+	"github.com/emer/eve/v2/evev"
+	"goki.dev/gi/v2/colormap"
+	"goki.dev/gi/v2/gi"
+	"goki.dev/gi/v2/gi3d"
+	"goki.dev/gi/v2/gimain"
+	"goki.dev/gi/v2/gist"
+	"goki.dev/gi/v2/giv"
+	"goki.dev/gi/v2/svg"
+	"goki.dev/gi/v2/units"
+	"goki.dev/ki/v2"
+	"goki.dev/mat32/v2"
 )
 
 var NoGUI bool
@@ -144,7 +144,7 @@ func (ev *Env) ReMakeWorld() {
 // MakeView3D makes the 3D view
 func (ev *Env) MakeView3D(sc *gi3d.Scene) {
 	sc.MultiSample = 1 // we are using depth grab so we need this = 1
-	wgp := gi3d.AddNewGroup(sc, sc, "world")
+	wgp := gi3d.NewGroup(sc, sc, "world")
 	ev.View3D = evev.NewView(ev.World, sc, wgp)
 	ev.View3D.InitLibrary() // this makes a basic library based on body shapes, sizes
 	// at this point the library can be updated to configure custom visualizations
@@ -154,7 +154,7 @@ func (ev *Env) MakeView3D(sc *gi3d.Scene) {
 
 // MakeView2D makes the 2D view
 func (ev *Env) MakeView2D(sc *svg.Editor) {
-	wgp := svg.AddNewGroup(sc, "world")
+	wgp := svg.NewGroup(sc, "world")
 	ev.View2D = eve2d.NewView(ev.World, &sc.SVG, wgp)
 	ev.View2D.InitLibrary() // this makes a basic library based on body shapes, sizes
 	// at this point the library can be updated to configure custom visualizations
@@ -266,44 +266,44 @@ func (ev *Env) RotHeadRight() {
 
 // MakeRoom constructs a new room in given parent group with given params
 func MakeRoom(par *eve.Group, name string, width, depth, height, thick float32) *eve.Group {
-	rm := eve.AddNewGroup(par, name)
-	floor := eve.AddNewBox(rm, "floor", mat32.Vec3{0, -thick / 2, 0}, mat32.Vec3{width, thick, depth})
+	rm := eve.NewGroup(par, name)
+	floor := eve.NewBox(rm, "floor", mat32.Vec3{0, -thick / 2, 0}, mat32.Vec3{width, thick, depth})
 	floor.Color = "grey"
-	bwall := eve.AddNewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
+	bwall := eve.NewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
 	bwall.Color = "blue"
-	lwall := eve.AddNewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	lwall := eve.NewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
 	lwall.Color = "red"
-	rwall := eve.AddNewBox(rm, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
+	rwall := eve.NewBox(rm, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
 	rwall.Color = "green"
-	fwall := eve.AddNewBox(rm, "front-wall", mat32.Vec3{0, height / 2, depth / 2}, mat32.Vec3{width, height, thick})
+	fwall := eve.NewBox(rm, "front-wall", mat32.Vec3{0, height / 2, depth / 2}, mat32.Vec3{width, height, thick})
 	fwall.Color = "yellow"
 	return rm
 }
 
 // MakeEmer constructs a new Emer virtual robot of given height (e.g., 1)
 func MakeEmer(par *eve.Group, height float32) *eve.Group {
-	emr := eve.AddNewGroup(par, "emer")
+	emr := eve.NewGroup(par, "emer")
 	width := height * .4
 	depth := height * .15
-	body := eve.AddNewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
-	// body := eve.AddNewCapsule(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
-	// body := eve.AddNewCylinder(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
+	body := eve.NewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
+	// body := eve.NewCapsule(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
+	// body := eve.NewCylinder(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
 	body.Color = "purple"
 	body.SetDynamic()
 
 	headsz := depth * 1.5
 	hhsz := .5 * headsz
-	hgp := eve.AddNewGroup(emr, "head")
+	hgp := eve.NewGroup(emr, "head")
 	hgp.Initial.Pos = mat32.Vec3{0, height + hhsz, 0}
 
-	head := eve.AddNewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
+	head := eve.NewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
 	head.Color = "tan"
 	head.SetDynamic()
 	eyesz := headsz * .2
-	eyel := eve.AddNewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
+	eyel := eve.NewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyel.Color = "green"
 	eyel.SetDynamic()
-	eyer := eve.AddNewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
+	eyer := eve.NewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
 	eyer.Color = "green"
 	eyer.SetDynamic()
 	return emr
@@ -335,22 +335,22 @@ func (ev *Env) ConfigGui() {
 
 	ev.MakeWorld()
 
-	tbar := gi.AddNewToolBar(mfr, "main-tbar")
+	tbar := gi.NewToolBar(mfr, "main-tbar")
 	tbar.SetStretchMaxWidth()
 	tbar.Viewport = vp
 
 	//////////////////////////////////////////
 	//    Splitter
 
-	split := gi.AddNewSplitView(mfr, "split")
+	split := gi.NewSplitView(mfr, "split")
 	split.Dim = mat32.X
 
-	tvfr := gi.AddNewFrame(split, "tvfr", gi.LayoutHoriz)
-	svfr := gi.AddNewFrame(split, "svfr", gi.LayoutHoriz)
-	imfr := gi.AddNewFrame(split, "imfr", gi.LayoutHoriz)
-	tbvw := gi.AddNewTabView(split, "tbvw")
-	scfr := tbvw.AddNewTab(gi.KiT_Frame, "3D View").(*gi.Frame)
-	twofr := tbvw.AddNewTab(gi.KiT_Frame, "2D View").(*gi.Frame)
+	tvfr := gi.NewFrame(split, "tvfr", gi.LayoutHoriz)
+	svfr := gi.NewFrame(split, "svfr", gi.LayoutHoriz)
+	imfr := gi.NewFrame(split, "imfr", gi.LayoutHoriz)
+	tbvw := gi.NewTabView(split, "tbvw")
+	scfr := tbvw.NewTab(gi.KiT_Frame, "3D View").(*gi.Frame)
+	twofr := tbvw.NewTab(gi.KiT_Frame, "2D View").(*gi.Frame)
 
 	tbvw.SetStretchMax()
 	scfr.SetStretchMax()
@@ -359,10 +359,10 @@ func (ev *Env) ConfigGui() {
 
 	split.SetSplits(.1, .2, .2, .5)
 
-	tv := giv.AddNewTreeView(tvfr, "tv")
+	tv := giv.NewTreeView(tvfr, "tv")
 	tv.SetRootNode(ev.World)
 
-	sv := giv.AddNewStructView(svfr, "sv")
+	sv := giv.NewStructView(svfr, "sv")
 	sv.SetStretchMax()
 	sv.SetStruct(ev)
 
@@ -381,25 +381,25 @@ func (ev *Env) ConfigGui() {
 	//////////////////////////////////////////
 	//    3D Scene
 
-	scvw := gi3d.AddNewSceneView(scfr, "sceneview")
+	scvw := gi3d.NewSceneView(scfr, "sceneview")
 	scvw.SetStretchMax()
 	scvw.Config()
 	sc := scvw.Scene()
 
 	// first, add lights, set camera
 	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
-	gi3d.AddNewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
+	gi3d.NewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
 
-	dir := gi3d.AddNewDirLight(sc, "dir", 1, gi3d.DirectSun)
+	dir := gi3d.NewDirLight(sc, "dir", 1, gi3d.DirectSun)
 	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
 
 	ev.MakeView3D(sc)
 
-	// grtx := gi3d.AddNewTextureFile(sc, "ground", "ground.png")
-	// wdtx := gi3d.AddNewTextureFile(sc, "wood", "wood.png")
+	// grtx := gi3d.NewTextureFile(sc, "ground", "ground.png")
+	// wdtx := gi3d.NewTextureFile(sc, "wood", "wood.png")
 
-	// floorp := gi3d.AddNewPlane(sc, "floor-plane", 100, 100)
-	// floor := gi3d.AddNewSolid(sc, sc, "floor", floorp.Name())
+	// floorp := gi3d.NewPlane(sc, "floor-plane", 100, 100)
+	// floor := gi3d.NewSolid(sc, sc, "floor", floorp.Name())
 	// floor.Pose.Pos.Set(0, -5, 0)
 	// // floor.Mat.Color.SetName("tan")
 	// // floor.Mat.Emissive.SetName("brown")
@@ -424,14 +424,14 @@ func (ev *Env) ConfigGui() {
 	//    Bitmap
 
 	imfr.Lay = gi.LayoutVert
-	gi.AddNewLabel(imfr, "lab-img", "Right Eye Image:")
-	ev.EyeRImg = gi.AddNewBitmap(imfr, "eye-r-img")
+	gi.NewLabel(imfr, "lab-img", "Right Eye Image:")
+	ev.EyeRImg = gi.NewBitmap(imfr, "eye-r-img")
 	ev.EyeRImg.SetSize(ev.Camera.Size)
 	ev.EyeRImg.LayoutToImgSize()
 	ev.EyeRImg.SetProp("vertical-align", gist.AlignTop)
 
-	gi.AddNewLabel(imfr, "lab-depth", "Right Eye Depth:")
-	ev.DepthImg = gi.AddNewBitmap(imfr, "depth-img")
+	gi.NewLabel(imfr, "lab-depth", "Right Eye Depth:")
+	ev.DepthImg = gi.NewBitmap(imfr, "depth-img")
 	ev.DepthImg.SetSize(ev.Camera.Size)
 	ev.DepthImg.LayoutToImgSize()
 	ev.DepthImg.SetProp("vertical-align", gist.AlignTop)
@@ -439,7 +439,7 @@ func (ev *Env) ConfigGui() {
 	//////////////////////////////////////////
 	//    2D Scene
 
-	twov := svg.AddNewEditor(twofr, "sceneview")
+	twov := svg.NewEditor(twofr, "sceneview")
 	twov.Fill = true
 	twov.SetProp("background-color", "white")
 	twov.SetStretchMax()
@@ -522,9 +522,9 @@ func (ev *Env) NoGUIRun() {
 	sc := evev.NoDisplayScene("virtroom", gp, dev)
 
 	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
-	gi3d.AddNewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
+	gi3d.NewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
 
-	dir := gi3d.AddNewDirLight(sc, "dir", 1, gi3d.DirectSun)
+	dir := gi3d.NewDirLight(sc, "dir", 1, gi3d.DirectSun)
 	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
 
 	ev.MakeWorld()

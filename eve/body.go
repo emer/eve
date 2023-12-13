@@ -48,5 +48,5 @@ func (bb *BodyBase) GroupBBox() {
 }
 
 func (bb *BodyBase) SetDynamic() {
-	bb.SetFlag(int(Dynamic))
+	bb.SetFlag(true, Dynamic)
 }

@@ -4,9 +4,10 @@
 
 package eve
 
+//go:generate goki generate
+
 import (
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
+	"goki.dev/ki/v2"
 )
 
 // Node is the common interface for all eve nodes
@@ -72,12 +73,6 @@ type NodeBase struct {
 	BBox BBox `desc:"bounding box in world coordinates (aggregated for groups)"`
 }
 
-var KiT_NodeBase = kit.Types.AddType(&NodeBase{}, NodeBaseProps)
-
-var NodeBaseProps = ki.Props{
-	"EnumType:Flag": KiT_NodeFlags,
-}
-
 func (nb *NodeBase) AsNodeBase() *NodeBase {
 	return nb
 }
@@ -87,7 +82,7 @@ func (nb *NodeBase) AsBody() Body {
 }
 
 func (nb *NodeBase) IsDynamic() bool {
-	return nb.HasFlag(int(Dynamic))
+	return nb.Is(Dynamic)
 }
 
 // InitAbsBase is the base-level version of InitAbs -- most nodes call this.
@@ -137,8 +132,8 @@ func (nb *NodeBase) StepPhysBase(step float32) {
 	nb.Abs.StepByLinVel(step)
 }
 
-// KiToNode converts Ki to a Node interface and a Node3DBase obj -- nil if not.
-func KiToNode(k ki.Ki) (Node, *NodeBase) {
+// AsNode converts Ki to a Node interface and a Node3DBase obj -- nil if not.
+func AsNode(k ki.Ki) (Node, *NodeBase) {
 	if k == nil || k.This() == nil { // this also checks for destroyed
 		return nil, nil
 	}
@@ -153,29 +148,20 @@ func KiToNode(k ki.Ki) (Node, *NodeBase) {
 // NodeTypes
 
 // NodeTypes is a list of node types
-type NodeTypes int
+type NodeTypes int32 //enums:enum
 
 const (
 	// note: uppercase required to not conflict with type names
 	BODY NodeTypes = iota
 	GROUP
 	JOINT
-	NodeTypesN
 )
 
-//go:generate stringer -type=NodeTypes
-
-var KiT_NodeTypes = kit.Enums.AddEnum(NodeTypesN, kit.NotBitFlag, nil)
-
-/////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 // NodeFlags
 
 // NodeFlags define eve node bitflags -- uses ki Flags field (64 bit capacity)
-type NodeFlags int
-
-//go:generate stringer -type=NodeFlags
-
-var KiT_NodeFlags = kit.Enums.AddEnumExt(ki.KiT_Flags, NodeFlagsN, kit.BitFlag, nil)
+type NodeFlags ki.Flags //enums:bitflag
 
 const (
 	// Dynamic means that this node can move -- if not so marked, it is
@@ -183,6 +169,4 @@ const (
 	// pruned from further consideration, so top-level groups should be
 	// separated into Dynamic and Static nodes at the start.
 	Dynamic NodeFlags = NodeFlags(ki.FlagsN) + iota
-
-	NodeFlagsN
 )

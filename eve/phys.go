@@ -7,9 +7,7 @@ package eve
 import (
 	"math"
 
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // Phys contains the basic physical properties including position, orientation, velocity.
@@ -29,8 +27,6 @@ type Phys struct {
 	// angular velocity
 	AngVel mat32.Vec3 `desc:"angular velocity"`
 }
-
-var KiT_Phys = kit.Types.AddType(&Phys{}, PhysProps)
 
 // Defaults sets defaults only if current values are nil
 func (ps *Phys) Defaults() {
@@ -161,6 +157,8 @@ func (ps *Phys) RotateEulerRad(x, y, z, angle float32) {
 	ps.Quat.SetMul(mat32.NewQuatEuler(mat32.NewVec3(x, y, z)))
 }
 
+/*
+
 // PhysProps define the ToolBar and MenuBar for StructView
 var PhysProps = ki.Props{
 	"ToolBar": ki.PropSlice{
@@ -242,3 +240,5 @@ var PhysProps = ki.Props{
 		}},
 	},
 }
+
+*/

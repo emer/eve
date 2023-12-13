@@ -8,8 +8,8 @@ import (
 	"image"
 	"log"
 
-	"github.com/goki/gi/gi3d"
 	"github.com/goki/vgpu/vgpu"
+	"goki.dev/gi/v2/gi3d"
 
 	vk "github.com/goki/vulkan"
 )

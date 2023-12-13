@@ -5,9 +5,7 @@
 package eve
 
 import (
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // Capsule is a generalized cylinder body shape, with hemispheres at each end,
@@ -23,24 +21,6 @@ type Capsule struct {
 
 	// radius of the bottom hemisphere
 	BotRad float32 `desc:"radius of the bottom hemisphere"`
-}
-
-var KiT_Capsule = kit.Types.AddType(&Capsule{}, CapsuleProps)
-
-var CapsuleProps = ki.Props{
-	"EnumType:Flag": KiT_NodeFlags,
-}
-
-// AddNewCapsule adds a new capsule of given name, initial position
-// and height, radius to given parent.  height specified is total height including radii
-// so capsule.Height = height - 2 * radius
-func AddNewCapsule(parent ki.Ki, name string, pos mat32.Vec3, height, radius float32) *Capsule {
-	cp := parent.AddNewChild(KiT_Capsule, name).(*Capsule)
-	cp.Initial.Pos = pos
-	cp.Height = height
-	cp.TopRad = radius
-	cp.BotRad = radius
-	return cp
 }
 
 func (cp *Capsule) SetBBox() {

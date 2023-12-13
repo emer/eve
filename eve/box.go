@@ -5,9 +5,7 @@
 package eve
 
 import (
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // Box is a box body shape
@@ -16,20 +14,6 @@ type Box struct {
 
 	// size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
 	Size mat32.Vec3 `desc:"size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)"`
-}
-
-var KiT_Box = kit.Types.AddType(&Box{}, BoxProps)
-
-var BoxProps = ki.Props{
-	"EnumType:Flag": KiT_NodeFlags,
-}
-
-// AddNewBox adds a new box of given name, initial position and size to given parent
-func AddNewBox(parent ki.Ki, name string, pos, size mat32.Vec3) *Box {
-	bx := parent.AddNewChild(KiT_Box, name).(*Box)
-	bx.Initial.Pos = pos
-	bx.Size = size
-	return bx
 }
 
 func (bx *Box) SetBBox() {

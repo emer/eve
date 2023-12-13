@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"image"
 
-	"github.com/emer/eve/eve"
-	"github.com/goki/gi/svg"
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"github.com/emer/eve/v2/eve"
+	"goki.dev/ki/v2"
+	"goki.dev/mat32/v2"
+	"goki.dev/svg"
 )
 
 // View connects a Virtual World with a 2D SVG Scene to visualize the world
@@ -36,8 +35,6 @@ type View struct {
 	// library of shapes for bodies -- name matches Body.Vis
 	Library map[string]*svg.Group `desc:"library of shapes for bodies -- name matches Body.Vis"`
 }
-
-var KiT_View = kit.Types.AddType(&View{}, nil)
 
 // NewView returns a new View that links given world with given scene and root group
 func NewView(world *eve.Group, sc *svg.SVG, root *svg.Group) *View {
@@ -168,26 +165,27 @@ func (vw *View) InitLibShape(bod eve.Body) {
 		return
 	}
 	lgp := vw.NewInLibrary(nm)
-	wt := kit.ShortTypeName(ki.Type(bod.This()))
+	wt := "" // laser.ShortTypeName() // ki.Type(bod.This()))
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
-		svg.AddNewRect(lgp, mnm, 0, 0, 1, 1)
+		svg.NewRect(lgp, mnm, 0, 0, 1, 1)
 	case "eve.Cylinder":
 		mnm := "eveCylinder"
-		svg.AddNewCircle(lgp, mnm, 0, 0, 1)
+		svg.NewCircle(lgp, mnm, 0, 0, 1)
 	case "eve.Capsule":
 		mnm := "eveCapsule"
-		svg.AddNewCircle(lgp, mnm, 0, 0, 1)
+		svg.NewCircle(lgp, mnm, 0, 0, 1)
 	case "eve.Sphere":
 		mnm := "eveSphere"
-		svg.AddNewCircle(lgp, mnm, 0, 0, 1)
+		svg.NewCircle(lgp, mnm, 0, 0, 1)
 	}
 }
 
 // ConfigBodyShape configures a shape for a body with current values
-func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
-	wt := kit.ShortTypeName(ki.Type(bod.This()))
+func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.Node) {
+	// wt := kit.ShortTypeName(ki.Type(bod.This()))
+	wt := ""
 	sb := shp.AsSVGNode()
 	switch wt {
 	case "eve.Box":
@@ -241,7 +239,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.NodeSVG) {
 }
 
 // ConfigView configures the view node to properly display world node
-func (vw *View) ConfigView(wn eve.Node, vn svg.NodeSVG) {
+func (vw *View) ConfigView(wn eve.Node, vn svg.Node) {
 	wb := wn.AsNodeBase()
 	vb := vn.(*svg.Group)
 	vb.Pnt.XForm = vw.XForm2D(&wb.Rel)
@@ -255,7 +253,7 @@ func (vw *View) ConfigView(wn eve.Node, vn svg.NodeSVG) {
 	}
 	bgp := vb.Child(0)
 	if bgp.HasChildren() {
-		shp, has := bgp.Child(0).(svg.NodeSVG)
+		shp, has := bgp.Child(0).(svg.Node)
 		if has {
 			vw.ConfigBodyShape(bod, shp)
 		}
@@ -265,7 +263,7 @@ func (vw *View) ConfigView(wn eve.Node, vn svg.NodeSVG) {
 // SyncNode updates the view tree to match the world tree, using
 // ConfigChildren to maximally preserve existing tree elements
 // returns true if view tree was modified (elements added / removed etc)
-func (vw *View) SyncNode(wn eve.Node, vn svg.NodeSVG) bool {
+func (vw *View) SyncNode(wn eve.Node, vn svg.Node) bool {
 	nm := wn.Name()
 	vn.SetName(nm) // guaranteed to be unique
 	skids := *wn.Children()
@@ -277,7 +275,7 @@ func (vw *View) SyncNode(wn eve.Node, vn svg.NodeSVG) bool {
 	modall := mod
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(svg.NodeSVG)
+		vk := vn.Child(idx).(svg.Node)
 		vw.ConfigView(wk, vk)
 		if wk.HasChildren() {
 			kmod := vw.SyncNode(wk, vk)
@@ -295,11 +293,11 @@ func (vw *View) SyncNode(wn eve.Node, vn svg.NodeSVG) bool {
 
 // UpdatePoseNode updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
-func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.NodeSVG) {
+func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.Node) {
 	skids := *wn.Children()
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(svg.NodeSVG).(*svg.Group)
+		vk := vn.Child(idx).(svg.Node).(*svg.Group)
 		wb := wk.AsNodeBase()
 		vk.Pnt.XForm = vw.XForm2D(&wb.Rel)
 		vk.SetProp("transform", vk.Pnt.XForm.String())
@@ -310,11 +308,11 @@ func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.NodeSVG) {
 
 // UpdateBodyViewNode updates the body view info for given name(s)
 // Essential that both trees are already synchronized.
-func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn svg.NodeSVG) {
+func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn svg.Node) {
 	skids := *wn.Children()
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(svg.NodeSVG)
+		vk := vn.Child(idx).(svg.Node)
 		match := false
 		if _, isBod := wk.(eve.Body); isBod {
 			for _, nm := range bodyNames {
@@ -327,7 +325,7 @@ func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn svg.NodeS
 		if match {
 			bgp := vk.Child(0)
 			if bgp.HasChildren() {
-				shp, has := bgp.Child(0).(svg.NodeSVG)
+				shp, has := bgp.Child(0).(svg.Node)
 				if has {
 					vw.ConfigBodyShape(wk.AsBody(), shp)
 				}

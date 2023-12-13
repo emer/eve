@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"image"
 
-	"github.com/emer/eve/eve"
-	"github.com/goki/gi/gi3d"
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
+	"github.com/emer/eve/v2/eve"
+	"goki.dev/gi/v2/gi3d"
+	""goki.dev/ki/v2""
+	""goki.dev/ki/v2"/kit"
 )
 
 // View connects a Virtual World with a Gi3D Scene to visualize the world,
@@ -150,35 +150,35 @@ func (vw *View) InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 		return
 	}
 	lgp := sc.NewInLibrary(nm)
-	sld := gi3d.AddNewSolid(sc, lgp, nm, "")
+	sld := gi3d.NewSolid(sc, lgp, nm, "")
 	wt := kit.ShortTypeName(ki.Type(bod.This()))
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
 		bm := sc.MeshByName(mnm)
 		if bm == nil {
-			bm = gi3d.AddNewBox(sc, mnm, 1, 1, 1)
+			bm = gi3d.NewBox(sc, mnm, 1, 1, 1)
 		}
 		sld.SetMeshName(sc, mnm)
 	case "eve.Cylinder":
 		mnm := "eveCylinder"
 		cm := sc.MeshByName(mnm)
 		if cm == nil {
-			cm = gi3d.AddNewCylinder(sc, mnm, 1, 1, 32, 1, true, true)
+			cm = gi3d.NewCylinder(sc, mnm, 1, 1, 32, 1, true, true)
 		}
 		sld.SetMeshName(sc, mnm)
 	case "eve.Capsule":
 		mnm := "eveCapsule"
 		cm := sc.MeshByName(mnm)
 		if cm == nil {
-			cm = gi3d.AddNewCapsule(sc, mnm, 1, .2, 32, 1)
+			cm = gi3d.NewCapsule(sc, mnm, 1, .2, 32, 1)
 		}
 		sld.SetMeshName(sc, mnm)
 	case "eve.Sphere":
 		mnm := "eveSphere"
 		sm := sc.MeshByName(mnm)
 		if sm == nil {
-			sm = gi3d.AddNewSphere(sc, mnm, 1, 32)
+			sm = gi3d.NewSphere(sc, mnm, 1, 32)
 		}
 		sld.SetMeshName(sc, mnm)
 	}

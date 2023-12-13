@@ -5,9 +5,8 @@
 package eve
 
 import (
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/ki/v2"
+	"goki.dev/mat32/v2"
 )
 
 // Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.
@@ -25,27 +24,10 @@ type Cylinder struct {
 	BotRad float32 `desc:"radius of the bottom"`
 }
 
-var KiT_Cylinder = kit.Types.AddType(&Cylinder{}, CylinderProps)
-
-var CylinderProps = ki.Props{
-	"EnumType:Flag": KiT_NodeFlags,
-}
-
-// AddNewCylinder adds a new cylinder of given name, initial position
+// NewCone adds a new cone of given name, initial position
 // and height, radius to given parent.
-func AddNewCylinder(parent ki.Ki, name string, pos mat32.Vec3, height, radius float32) *Cylinder {
-	cy := parent.AddNewChild(KiT_Cylinder, name).(*Cylinder)
-	cy.Initial.Pos = pos
-	cy.Height = height
-	cy.TopRad = radius
-	cy.BotRad = radius
-	return cy
-}
-
-// AddNewCone adds a new cone of given name, initial position
-// and height, radius to given parent.
-func AddNewCone(parent ki.Ki, name string, pos mat32.Vec3, height, radius float32) *Cylinder {
-	cy := parent.AddNewChild(KiT_Cylinder, name).(*Cylinder)
+func NewCone(parent ki.Ki, name string, pos mat32.Vec3, height, radius float32) *Cylinder {
+	cy := parent.NewChild(BoxType, name).(*Cylinder)
 	cy.Initial.Pos = pos
 	cy.Height = height
 	cy.TopRad = 0

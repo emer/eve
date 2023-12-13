@@ -5,9 +5,7 @@
 package eve
 
 import (
-	"github.com/goki/ki/ki"
-	"github.com/goki/ki/kit"
-	"github.com/goki/mat32"
+	"goki.dev/mat32/v2"
 )
 
 // Rigid contains the full specification of a given object's basic physics
@@ -30,11 +28,6 @@ type Rigid struct {
 	RotInertia mat32.Mat3 `desc:"Last calculated rotational inertia matrix in local coords"`
 }
 
-var KiT_Rigid = kit.Types.AddType(&Rigid{}, RigidProps)
-
 // Defaults sets defaults only if current values are nil
 func (ps *Rigid) Defaults() {
 }
-
-// RigidProps define the ToolBar and MenuBar for StructView
-var RigidProps = ki.Props{}
