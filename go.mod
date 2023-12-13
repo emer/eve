@@ -6,6 +6,8 @@ require (
 	github.com/goki/gi v1.3.25
 	github.com/goki/ki v1.1.17
 	github.com/goki/mat32 v1.0.18
+	github.com/goki/vgpu v1.0.34
+	github.com/goki/vulkan v1.0.7
 )
 
 require (
@@ -33,8 +35,6 @@ require (
 	github.com/goki/pi v1.0.28 // indirect
 	github.com/goki/prof v1.0.1 // indirect
 	github.com/goki/vci v1.0.2 // indirect
-	github.com/goki/vgpu v1.0.34 // indirect
-	github.com/goki/vulkan v1.0.7 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
