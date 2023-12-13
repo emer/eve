@@ -15,19 +15,19 @@ import (
 type Contact struct {
 
 	// one body
-	A Body `desc:"one body"`
+	A Body
 
 	// the other body
-	B Body `desc:"the other body"`
+	B Body
 
 	// normal pointing from center of B to center of A
-	NormB mat32.Vec3 `desc:"normal pointing from center of B to center of A"`
+	NormB mat32.Vec3
 
 	// point on spherical shell of B where A is contacting
-	PtB mat32.Vec3 `desc:"point on spherical shell of B where A is contacting"`
+	PtB mat32.Vec3
 
 	// distance from PtB along NormB to contact point on spherical shell of A
-	Dist float32 `desc:"distance from PtB along NormB to contact point on spherical shell of A"`
+	Dist float32
 }
 
 // UpdtDist updates the distance information for the contact

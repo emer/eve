@@ -4,6 +4,8 @@
 
 package main
 
+//go:generate goki generate
+
 import (
 	"fmt"
 	"image"
@@ -14,81 +16,95 @@ import (
 	"github.com/emer/eve/v2/eve"
 	"github.com/emer/eve/v2/eve2d"
 	"github.com/emer/eve/v2/evev"
-	"goki.dev/gi/v2/colormap"
+	"goki.dev/colors"
+	"goki.dev/colors/colormap"
 	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/gi3d"
 	"goki.dev/gi/v2/gimain"
-	"goki.dev/gi/v2/gist"
 	"goki.dev/gi/v2/giv"
-	"goki.dev/gi/v2/svg"
-	"goki.dev/gi/v2/units"
-	"goki.dev/ki/v2"
+	"goki.dev/gi/v2/xyzv"
+	"goki.dev/girl/styles"
+	"goki.dev/goosi/events"
+	"goki.dev/grows/images"
+	"goki.dev/icons"
 	"goki.dev/mat32/v2"
+	"goki.dev/svg"
+	"goki.dev/xyz"
 )
 
 var NoGUI bool
 
-func main() { gimain.Main(app) }
+func main() { gimain.Run(app) }
+
+func app() {
+	if len(os.Args) > 1 && os.Args[1] == "-nogui" {
+		NoGUI = true
+	}
+	ev := &Env{}
+	ev.Defaults()
+	if NoGUI {
+		ev.NoGUIRun()
+		return
+	}
+	b := ev.ConfigGUI()
+	b.NewWindow().Run().Wait()
+}
 
 // Env encapsulates the virtual environment
-type Env struct {
+type Env struct { //gti:add
 
 	// height of emer
-	EmerHt float32 `desc:"height of emer"`
+	EmerHt float32
 
 	// how far to move every step
-	MoveStep float32 `desc:"how far to move every step"`
+	MoveStep float32
 
 	// how far to rotate every step
-	RotStep float32 `desc:"how far to rotate every step"`
+	RotStep float32
 
 	// width of room
-	Width float32 `desc:"width of room"`
+	Width float32
 
 	// depth of room
-	Depth float32 `desc:"depth of room"`
+	Depth float32
 
 	// height of room
-	Height float32 `desc:"height of room"`
+	Height float32
 
 	// thickness of walls of room
-	Thick float32 `desc:"thickness of walls of room"`
+	Thick float32
 
 	// current depth map
-	DepthVals []float32 `desc:"current depth map"`
+	DepthVals []float32
 
 	// offscreen render camera settings
-	Camera evev.Camera `desc:"offscreen render camera settings"`
+	Camera evev.Camera
 
 	// color map to use for rendering depth map
-	DepthMap giv.ColorMapName `desc:"color map to use for rendering depth map"`
+	DepthMap giv.ColorMapName
 
-	// [view: -] world
-	World *eve.Group `view:"-" desc:"world"`
+	// world
+	World *eve.Group `view:"-"`
 
 	// 3D view of world
-	View3D *evev.View `desc:"3D view of world"`
+	View3D *evev.View
 
 	// view of world
-	View2D *eve2d.View `desc:"view of world"`
+	View2D *eve2d.View
 
-	// [view: -] emer group
-	Emer *eve.Group `view:"-" desc:"emer group"`
+	// emer group
+	Emer *eve.Group `view:"-"`
 
-	// [view: -] Right eye of emer
-	EyeR eve.Body `view:"-" desc:"Right eye of emer"`
+	// Right eye of emer
+	EyeR eve.Body `view:"-"`
 
-	// [view: -] contacts from last step, for body
-	Contacts eve.Contacts `view:"-" desc:"contacts from last step, for body"`
+	// contacts from last step, for body
+	Contacts eve.Contacts `view:"-"`
 
-	// [view: -] gui window
-	Win *gi.Window `view:"-" desc:"gui window"`
+	// snapshot bitmap view
+	EyeRImg *gi.Image `view:"-"`
 
-	// [view: -] snapshot bitmap view
-	EyeRImg *gi.Bitmap `view:"-" desc:"snapshot bitmap view"`
-
-	// [view: -] depth map bitmap view
-	DepthImg *gi.Bitmap `view:"-" desc:"depth map bitmap view"`
+	// depth map bitmap view
+	DepthImg *gi.Image `view:"-"`
 }
 
 func (ev *Env) Defaults() {
@@ -104,6 +120,20 @@ func (ev *Env) Defaults() {
 	ev.Camera.FOV = 90
 }
 
+func (ev *Env) ConfigScene(se *xyz.Scene) {
+	se.BackgroundColor = colors.FromRGB(230, 230, 255) // sky blue-ish
+	xyz.NewAmbientLight(se, "ambient", 0.3, xyz.DirectSun)
+
+	dir := xyz.NewDirLight(se, "dir", 1, xyz.DirectSun)
+	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
+
+	// grtx := xyz.NewTextureFileFS(assets.Content, se, "ground", "ground.png")
+	// floorp := xyz.NewPlane(se, "floor-plane", 100, 100)
+	// floor := xyz.NewSolid(se, "floor").SetMesh(floorp).
+	// 	SetColor(colors.Tan).SetTexture(grtx).SetPos(0, -5, 0)
+	// floor.Mat.Tiling.Repeat.Set(40, 40)
+}
+
 // MakeWorld constructs a new virtual physics world
 func (ev *Env) MakeWorld() {
 	ev.World = &eve.Group{}
@@ -117,7 +147,7 @@ func (ev *Env) MakeWorld() {
 }
 
 // InitWorld does init on world and re-syncs
-func (ev *Env) WorldInit() {
+func (ev *Env) WorldInit() { //gti:add
 	ev.World.WorldInit()
 	if ev.View3D != nil {
 		ev.View3D.Sync()
@@ -129,7 +159,7 @@ func (ev *Env) WorldInit() {
 }
 
 // ReMakeWorld rebuilds the world and re-syncs with gui
-func (ev *Env) ReMakeWorld() {
+func (ev *Env) ReMakeWorld() { //gti:add
 	ev.MakeWorld()
 	ev.View3D.World = ev.World
 	if ev.View3D != nil {
@@ -142,9 +172,9 @@ func (ev *Env) ReMakeWorld() {
 }
 
 // MakeView3D makes the 3D view
-func (ev *Env) MakeView3D(sc *gi3d.Scene) {
+func (ev *Env) MakeView3D(sc *xyz.Scene) {
 	sc.MultiSample = 1 // we are using depth grab so we need this = 1
-	wgp := gi3d.NewGroup(sc, sc, "world")
+	wgp := xyz.NewGroup(sc, "world")
 	ev.View3D = evev.NewView(ev.World, sc, wgp)
 	ev.View3D.InitLibrary() // this makes a basic library based on body shapes, sizes
 	// at this point the library can be updated to configure custom visualizations
@@ -153,9 +183,9 @@ func (ev *Env) MakeView3D(sc *gi3d.Scene) {
 }
 
 // MakeView2D makes the 2D view
-func (ev *Env) MakeView2D(sc *svg.Editor) {
+func (ev *Env) MakeView2D(sc *gi.SVG) {
 	wgp := svg.NewGroup(sc, "world")
-	ev.View2D = eve2d.NewView(ev.World, &sc.SVG, wgp)
+	ev.View2D = eve2d.NewView(ev.World, sc.SVG, wgp)
 	ev.View2D.InitLibrary() // this makes a basic library based on body shapes, sizes
 	// at this point the library can be updated to configure custom visualizations
 	// for any of the named bodies.
@@ -173,10 +203,10 @@ func (ev *Env) RenderEyeImg() (*image.RGBA, error) {
 }
 
 // GrabEyeImg takes a snapshot from the perspective of Emer's right eye
-func (ev *Env) GrabEyeImg() {
+func (ev *Env) GrabEyeImg() { //gti:add
 	img, err := ev.RenderEyeImg()
 	if err == nil && img != nil {
-		ev.EyeRImg.SetImage(img, 0, 0)
+		ev.EyeRImg.SetImage(img)
 	} else {
 		log.Println(err)
 	}
@@ -187,17 +217,16 @@ func (ev *Env) GrabEyeImg() {
 		ev.ViewDepth(depth)
 	}
 	if !NoGUI {
-		ev.View3D.Scene.Render2D()
-		ev.View3D.Scene.DirectWinUpload()
+		ev.View3D.Scene.SetNeedsRender()
 	}
 }
 
 // ViewDepth updates depth bitmap with depth data
 func (ev *Env) ViewDepth(depth []float32) {
 	cmap := colormap.AvailMaps[string(ev.DepthMap)]
-	ev.DepthImg.SetSize(ev.Camera.Size)
+	// ev.DepthImg.SetSize(ev.Camera.Size)
 	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
-	ev.DepthImg.UpdateSig()
+	ev.DepthImg.SetNeedsRender(true)
 }
 
 // WorldStep does one step of the world
@@ -223,42 +252,42 @@ func (ev *Env) WorldStep() {
 	ev.View3D.UpdatePose()
 	ev.GrabEyeImg()
 	ev.View2D.UpdatePose()
-	ev.View2D.Scene.UpdateSig()
+	// ev.View2D.SetNeedsRender() // todo
 }
 
 // StepForward moves Emer forward in current facing direction one step, and takes GrabEyeImg
-func (ev *Env) StepForward() {
+func (ev *Env) StepForward() { //gti:add
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
 	ev.WorldStep()
 }
 
 // StepBackward moves Emer backward in current facing direction one step, and takes GrabEyeImg
-func (ev *Env) StepBackward() {
+func (ev *Env) StepBackward() { //gti:add
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
 	ev.WorldStep()
 }
 
 // RotBodyLeft rotates emer left and takes GrabEyeImg
-func (ev *Env) RotBodyLeft() {
+func (ev *Env) RotBodyLeft() { //gti:add
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.WorldStep()
 }
 
 // RotBodyRight rotates emer right and takes GrabEyeImg
-func (ev *Env) RotBodyRight() {
+func (ev *Env) RotBodyRight() { //gti:add
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.WorldStep()
 }
 
 // RotHeadLeft rotates emer left and takes GrabEyeImg
-func (ev *Env) RotHeadLeft() {
+func (ev *Env) RotHeadLeft() { //gti:add
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.WorldStep()
 }
 
 // RotHeadRight rotates emer right and takes GrabEyeImg
-func (ev *Env) RotHeadRight() {
+func (ev *Env) RotHeadRight() { //gti:add
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.WorldStep()
@@ -267,16 +296,17 @@ func (ev *Env) RotHeadRight() {
 // MakeRoom constructs a new room in given parent group with given params
 func MakeRoom(par *eve.Group, name string, width, depth, height, thick float32) *eve.Group {
 	rm := eve.NewGroup(par, name)
-	floor := eve.NewBox(rm, "floor", mat32.Vec3{0, -thick / 2, 0}, mat32.Vec3{width, thick, depth})
-	floor.Color = "grey"
-	bwall := eve.NewBox(rm, "back-wall", mat32.Vec3{0, height / 2, -depth / 2}, mat32.Vec3{width, height, thick})
-	bwall.Color = "blue"
-	lwall := eve.NewBox(rm, "left-wall", mat32.Vec3{-width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
-	lwall.Color = "red"
-	rwall := eve.NewBox(rm, "right-wall", mat32.Vec3{width / 2, height / 2, 0}, mat32.Vec3{thick, height, depth})
-	rwall.Color = "green"
-	fwall := eve.NewBox(rm, "front-wall", mat32.Vec3{0, height / 2, depth / 2}, mat32.Vec3{width, height, thick})
-	fwall.Color = "yellow"
+	eve.NewBox(rm, "floor").SetSize(mat32.Vec3{width, thick, depth}).
+		SetColor("grey").SetInitPos(mat32.Vec3{0, -thick / 2, 0})
+
+	eve.NewBox(rm, "back-wall").SetSize(mat32.Vec3{width, height, thick}).
+		SetColor("blue").SetInitPos(mat32.Vec3{0, height / 2, -depth / 2})
+	eve.NewBox(rm, "left-wall").SetSize(mat32.Vec3{thick, height, depth}).
+		SetColor("red").SetInitPos(mat32.Vec3{-width / 2, height / 2, 0})
+	eve.NewBox(rm, "right-wall").SetSize(mat32.Vec3{thick, height, depth}).
+		SetColor("green").SetInitPos(mat32.Vec3{width / 2, height / 2, 0})
+	eve.NewBox(rm, "front-wall").SetSize(mat32.Vec3{width, height, thick}).
+		SetColor("yellow").SetInitPos(mat32.Vec3{0, height / 2, depth / 2})
 	return rm
 }
 
@@ -285,233 +315,138 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 	emr := eve.NewGroup(par, "emer")
 	width := height * .4
 	depth := height * .15
-	body := eve.NewBox(emr, "body", mat32.Vec3{0, height / 2, 0}, mat32.Vec3{width, height, depth})
+
+	eve.NewBox(emr, "body").SetSize(mat32.Vec3{width, height, depth}).
+		SetColor("purple").SetDynamic().
+		SetInitPos(mat32.Vec3{0, height / 2, 0})
 	// body := eve.NewCapsule(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
 	// body := eve.NewCylinder(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
-	body.Color = "purple"
-	body.SetDynamic()
 
 	headsz := depth * 1.5
 	hhsz := .5 * headsz
-	hgp := eve.NewGroup(emr, "head")
-	hgp.Initial.Pos = mat32.Vec3{0, height + hhsz, 0}
+	hgp := eve.NewGroup(emr, "head").SetInitPos(mat32.Vec3{0, height + hhsz, 0})
 
-	head := eve.NewBox(hgp, "head", mat32.Vec3{0, 0, 0}, mat32.Vec3{headsz, headsz, headsz})
-	head.Color = "tan"
-	head.SetDynamic()
+	eve.NewBox(hgp, "head").SetSize(mat32.Vec3{headsz, headsz, headsz}).
+		SetColor("tan").SetDynamic().SetInitPos(mat32.Vec3{0, 0, 0})
+
 	eyesz := headsz * .2
-	eyel := eve.NewBox(hgp, "eye-l", mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
-	eyel.Color = "green"
-	eyel.SetDynamic()
-	eyer := eve.NewBox(hgp, "eye-r", mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)}, mat32.Vec3{eyesz, eyesz * .5, eyesz * .2})
-	eyer.Color = "green"
-	eyer.SetDynamic()
+	eve.NewBox(hgp, "eye-l").SetSize(mat32.Vec3{eyesz, eyesz * .5, eyesz * .2}).
+		SetColor("green").SetDynamic().
+		SetInitPos(mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)})
+
+	eve.NewBox(hgp, "eye-r").SetSize(mat32.Vec3{eyesz, eyesz * .5, eyesz * .2}).
+		SetColor("green").SetDynamic().
+		SetInitPos(mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)})
+
 	return emr
 }
 
-var TheEnv Env
-
-func (ev *Env) ConfigGui() {
-	width := 1024
-	height := 768
-
+func (ev *Env) ConfigGUI() *gi.Body {
 	// vgpu.Debug = true
 
-	gi.SetAppName("virtroom")
-	gi.SetAppAbout(`This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
-<p>The <a href="https://github.com/emer/eve/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`)
-
-	win := gi.NewMainWindow("virtroom", "Emergent Virtual Engine", width, height)
-	ev.Win = win
-
-	vp := win.WinViewport2D()
-	updt := vp.UpdateStart()
-
-	mfr := win.SetMainFrame()
-	mfr.SetProp("spacing", units.NewEx(1))
-
-	//////////////////////////////////////////
-	//    world
+	b := gi.NewAppBody("virtroom").SetTitle("Emergent Virtual Engine")
+	b.App().About = `This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
+<p>The <a href="https://github.com/emer/eve/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`
 
 	ev.MakeWorld()
 
-	tbar := gi.NewToolBar(mfr, "main-tbar")
-	tbar.SetStretchMaxWidth()
-	tbar.Viewport = vp
+	split := gi.NewSplits(b, "split")
 
-	//////////////////////////////////////////
-	//    Splitter
+	tvfr := gi.NewFrame(split)
+	svfr := gi.NewFrame(split)
+	imfr := gi.NewFrame(split)
+	tbvw := gi.NewTabs(split)
 
-	split := gi.NewSplitView(mfr, "split")
-	split.Dim = mat32.X
+	scfr := tbvw.NewTab("3D View")
+	twofr := tbvw.NewTab("2D View")
 
-	tvfr := gi.NewFrame(split, "tvfr", gi.LayoutHoriz)
-	svfr := gi.NewFrame(split, "svfr", gi.LayoutHoriz)
-	imfr := gi.NewFrame(split, "imfr", gi.LayoutHoriz)
-	tbvw := gi.NewTabView(split, "tbvw")
-	scfr := tbvw.NewTab(gi.KiT_Frame, "3D View").(*gi.Frame)
-	twofr := tbvw.NewTab(gi.KiT_Frame, "2D View").(*gi.Frame)
-
-	tbvw.SetStretchMax()
-	scfr.SetStretchMax()
-	scfr.SetStretchMax()
-	twofr.SetStretchMax()
-
-	split.SetSplits(.1, .2, .2, .5)
+	split.SetSplits(.1, 2, .2, .5)
 
 	tv := giv.NewTreeView(tvfr, "tv")
-	tv.SetRootNode(ev.World)
+	tv.SyncRootNode(ev.World)
 
-	sv := giv.NewStructView(svfr, "sv")
-	sv.SetStretchMax()
-	sv.SetStruct(ev)
-
-	tv.TreeViewSig.Connect(sv.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		if data == nil {
-			return
-		}
-		// tvr, _ := send.Embed(giv.KiT_TreeView).(*gi.TreeView) // root is sender
-		tvn, _ := data.(ki.Ki).Embed(giv.KiT_TreeView).(*giv.TreeView)
-		svr, _ := recv.Embed(giv.KiT_StructView).(*giv.StructView)
-		if sig == int64(giv.TreeViewSelected) {
-			svr.SetStruct(tvn.SrcNode)
+	sv := giv.NewStructView(svfr, "sv").SetStruct(ev)
+	tv.OnSelect(func(e events.Event) {
+		if len(tv.SelectedNodes) > 0 {
+			sv.SetStruct(tv.SelectedNodes[0].AsTreeView().SyncNode)
 		}
 	})
 
 	//////////////////////////////////////////
 	//    3D Scene
 
-	scvw := gi3d.NewSceneView(scfr, "sceneview")
-	scvw.SetStretchMax()
-	scvw.Config()
-	sc := scvw.Scene()
+	scvw := xyzv.NewScene3D(scfr, "sceneview")
+	se := scvw.Scene
+	ev.ConfigScene(se)
+	ev.MakeView3D(se)
 
-	// first, add lights, set camera
-	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
-	gi3d.NewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
+	se.Camera.Pose.Pos = mat32.Vec3{0, 40, 3.5}
+	se.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
+	se.SaveCamera("3")
 
-	dir := gi3d.NewDirLight(sc, "dir", 1, gi3d.DirectSun)
-	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
+	se.Camera.Pose.Pos = mat32.Vec3{0, 20, 30}
+	se.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
+	se.SaveCamera("2")
 
-	ev.MakeView3D(sc)
-
-	// grtx := gi3d.NewTextureFile(sc, "ground", "ground.png")
-	// wdtx := gi3d.NewTextureFile(sc, "wood", "wood.png")
-
-	// floorp := gi3d.NewPlane(sc, "floor-plane", 100, 100)
-	// floor := gi3d.NewSolid(sc, sc, "floor", floorp.Name())
-	// floor.Pose.Pos.Set(0, -5, 0)
-	// // floor.Mat.Color.SetName("tan")
-	// // floor.Mat.Emissive.SetName("brown")
-	// floor.Mat.Bright = 2 // .5 for wood / brown
-	// floor.Mat.SetTexture(sc, grtx)
-	// floor.Mat.Tiling.Reveat.Set(40, 40)
-
-	sc.Camera.Pose.Pos = mat32.Vec3{0, 40, 3.5}
-	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
-	sc.SaveCamera("3")
-
-	sc.Camera.Pose.Pos = mat32.Vec3{0, 20, 30}
-	sc.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
-	sc.SaveCamera("2")
-
-	sc.Camera.Pose.Pos = mat32.Vec3{-.86, .97, 2.7}
-	sc.Camera.LookAt(mat32.Vec3{0, .8, 0}, mat32.Vec3Y)
-	sc.SaveCamera("1")
-	sc.SaveCamera("default")
+	se.Camera.Pose.Pos = mat32.Vec3{-.86, .97, 2.7}
+	se.Camera.LookAt(mat32.Vec3{0, .8, 0}, mat32.Vec3Y)
+	se.SaveCamera("1")
+	se.SaveCamera("default")
 
 	//////////////////////////////////////////
-	//    Bitmap
+	//    Image
 
-	imfr.Lay = gi.LayoutVert
-	gi.NewLabel(imfr, "lab-img", "Right Eye Image:")
-	ev.EyeRImg = gi.NewBitmap(imfr, "eye-r-img")
-	ev.EyeRImg.SetSize(ev.Camera.Size)
-	ev.EyeRImg.LayoutToImgSize()
-	ev.EyeRImg.SetProp("vertical-align", gist.AlignTop)
+	imfr.Style(func(s *styles.Style) {
+		s.Direction = styles.Column
+	})
+	gi.NewLabel(imfr).SetText("Right Eye Image:")
+	ev.EyeRImg = gi.NewImage(imfr, "eye-r-img")
+	// ev.EyeRImg.SetSize(ev.Camera.Size)
 
-	gi.NewLabel(imfr, "lab-depth", "Right Eye Depth:")
-	ev.DepthImg = gi.NewBitmap(imfr, "depth-img")
-	ev.DepthImg.SetSize(ev.Camera.Size)
-	ev.DepthImg.LayoutToImgSize()
-	ev.DepthImg.SetProp("vertical-align", gist.AlignTop)
+	gi.NewLabel(imfr).SetText("Right Eye Depth:")
+	ev.DepthImg = gi.NewImage(imfr, "depth-img")
+	// ev.DepthImg.SetSize(ev.Camera.Size)
 
 	//////////////////////////////////////////
 	//    2D Scene
 
-	twov := svg.NewEditor(twofr, "sceneview")
-	twov.Fill = true
-	twov.SetProp("background-color", "white")
-	twov.SetStretchMax()
-	twov.InitScale()
-	twov.Trans.Set(440, 512)
-	twov.Scale = 60
-	twov.SetTransform()
+	twov := gi.NewSVG(twofr, "sceneview")
+	// twov.Fill = true
+	// twov.Trans.Set(440, 512)
+	// twov.Scale = 60
+	// twov.SetTransform()
 
 	ev.MakeView2D(twov)
 
 	//////////////////////////////////////////
 	//    Toolbar
 
-	tbar.AddAction(gi.ActOpts{Label: "Edit Env", Icon: "edit", Tooltip: "Edit the settings for the environment."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		sv.SetStruct(ev)
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Init", Icon: "update", Tooltip: "Initialize virtual world -- go back to starting positions etc."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.WorldInit()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Make", Icon: "update", Tooltip: "Re-make virtual world -- do this if you have changed any of the world parameters."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.ReMakeWorld()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Grab Img", Icon: "file-image", Tooltip: "Take a snapshot from perspective of the right eye of emer virtual robot."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.GrabEyeImg()
-	})
-	tbar.AddSeparator("mv-sep")
-	tbar.AddAction(gi.ActOpts{Label: "Fwd", Icon: "wedge-up", Tooltip: "Take a step Forward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.StepForward()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Bkw", Icon: "wedge-down", Tooltip: "Take a step Backward."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.StepBackward()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Body Left", Icon: "wedge-left", Tooltip: "Rotate body left."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.RotBodyLeft()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Body Right", Icon: "wedge-right", Tooltip: "Rotate body right."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.RotBodyRight()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Head Left", Icon: "wedge-left", Tooltip: "Rotate body left."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.RotHeadLeft()
-	})
-	tbar.AddAction(gi.ActOpts{Label: "Head Right", Icon: "wedge-right", Tooltip: "Rotate body right."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		ev.RotHeadRight()
-	})
-	tbar.AddSeparator("rm-sep")
-	tbar.AddAction(gi.ActOpts{Label: "README", Icon: "file-markdown", Tooltip: "Open browser on README."}, win.This(), func(recv, send ki.Ki, sig int64, data interface{}) {
-		gi.OpenURL("https://github.com/emer/eve/blob/master/examples/virtroom/README.md")
-	})
+	b.AddAppBar(func(tb *gi.Toolbar) {
+		gi.NewButton(tb).SetText("Edit Env").SetIcon(icons.Edit).
+			SetTooltip("Edit the settings for the environment").
+			OnClick(func(e events.Event) {
+				sv.SetStruct(ev)
+			})
+		giv.NewFuncButton(tb, ev.WorldInit).SetText("Init").SetIcon(icons.Update)
+		giv.NewFuncButton(tb, ev.ReMakeWorld).SetText("Make").SetIcon(icons.Update)
+		giv.NewFuncButton(tb, ev.GrabEyeImg).SetText("Grab Image").SetIcon(icons.Image)
+		gi.NewSeparator(tb)
 
-	appnm := gi.AppName()
-	mmen := win.MainMenu
-	mmen.ConfigMenus([]string{appnm, "File", "Edit", "Window"})
+		giv.NewFuncButton(tb, ev.StepForward).SetText("Fwd").SetIcon(icons.SkipNext)
+		giv.NewFuncButton(tb, ev.StepBackward).SetText("Bkw").SetIcon(icons.SkipPrevious)
+		giv.NewFuncButton(tb, ev.RotBodyLeft).SetText("Body Left").SetIcon(icons.KeyboardArrowLeft)
+		giv.NewFuncButton(tb, ev.RotBodyRight).SetText("Body Right").SetIcon(icons.KeyboardArrowRight)
+		giv.NewFuncButton(tb, ev.RotHeadLeft).SetText("Head Left").SetIcon(icons.KeyboardArrowLeft)
+		giv.NewFuncButton(tb, ev.RotHeadRight).SetText("Head Right").SetIcon(icons.KeyboardArrowRight)
+		gi.NewSeparator(tb)
 
-	amen := win.MainMenu.ChildByName(appnm, 0).(*gi.Action)
-	amen.Menu.AddAppMenu(win)
-
-	win.MainMenuUpdated()
-	vp.UpdateEndNoSig(updt)
-}
-
-func app() {
-	if len(os.Args) > 1 && os.Args[1] == "-nogui" {
-		NoGUI = true
-	}
-	ev := &TheEnv
-	ev.Defaults()
-	if NoGUI {
-		ev.NoGUIRun()
-		return
-	}
-	ev.ConfigGui()
-	ev.Win.StartEventLoop()
+		gi.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
+			SetTooltip("Open browser on README.").
+			OnClick(func(e events.Event) {
+				gi.OpenURL("https://github.com/emer/eve/blob/master/examples/virtroom/README.md")
+			})
+	})
+	return b
 }
 
 func (ev *Env) NoGUIRun() {
@@ -519,23 +454,16 @@ func (ev *Env) NoGUIRun() {
 	if err != nil {
 		panic(err)
 	}
-	sc := evev.NoDisplayScene("virtroom", gp, dev)
-
-	sc.BgColor.SetUInt8(230, 230, 255, 255) // sky blue-ish
-	gi3d.NewAmbientLight(sc, "ambient", 0.3, gi3d.DirectSun)
-
-	dir := gi3d.NewDirLight(sc, "dir", 1, gi3d.DirectSun)
-	dir.Pos.Set(0, 2, 1) // default: 0,1,1 = above and behind us (we are at 0,0,X)
-
+	se := evev.NoDisplayScene("virtroom", gp, dev)
+	ev.ConfigScene(se)
 	ev.MakeWorld()
-	ev.MakeView3D(sc)
+	ev.MakeView3D(se)
 
-	sc.Init3D()
-	sc.Style3D()
+	se.Config()
 
 	img, err := ev.RenderEyeImg()
 	if err == nil {
-		gi.SaveImage("eyer_0.png", img)
+		images.Save(img, "eyer_0.png")
 	} else {
 		panic(err)
 	}

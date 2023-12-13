@@ -16,16 +16,16 @@ import (
 type Phys struct {
 
 	// position of center of mass of object
-	Pos mat32.Vec3 `desc:"position of center of mass of object"`
+	Pos mat32.Vec3
 
 	// rotation specified as a Quat
-	Quat mat32.Quat `desc:"rotation specified as a Quat"`
+	Quat mat32.Quat
 
 	// linear velocity
-	LinVel mat32.Vec3 `desc:"linear velocity"`
+	LinVel mat32.Vec3
 
 	// angular velocity
-	AngVel mat32.Vec3 `desc:"angular velocity"`
+	AngVel mat32.Vec3
 }
 
 // Defaults sets defaults only if current values are nil

@@ -8,8 +8,8 @@ import (
 	"image"
 	"log"
 
-	"github.com/goki/vgpu/vgpu"
-	"goki.dev/gi/v2/gi3d"
+	"goki.dev/vgpu/v2/vgpu"
+	"goki.dev/xyz"
 
 	vk "github.com/goki/vulkan"
 )
@@ -36,16 +36,15 @@ func NoDisplayGPU(nm string) (*vgpu.GPU, *vgpu.Device, error) {
 	return gp, dev, nil
 }
 
-// NoDisplayScene returns a gi3d Scene initialized and ready to use
+// NoDisplayScene returns a xyz Scene initialized and ready to use
 // in NoGUI offscreen rendering mode, using given GPU and device.
 // Must manually call Init3D and Style3D on the Scene prior to
 // a RenderOffNode call to grab the image from a specific camera.
-func NoDisplayScene(nm string, gp *vgpu.GPU, dev *vgpu.Device) *gi3d.Scene {
-	sc := &gi3d.Scene{}
-	sc.InitName(sc, "scene")
+func NoDisplayScene(nm string, gp *vgpu.GPU, dev *vgpu.Device) *xyz.Scene {
+	sc := xyz.NewScene("scene")
 	sc.Defaults()
 	sc.MultiSample = 4
 	sc.Geom.Size = image.Point{1024, 768}
-	sc.ConfigFrameImpl(gp, dev)
+	sc.ConfigFrame(gp, dev)
 	return sc
 }

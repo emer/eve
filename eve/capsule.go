@@ -14,13 +14,13 @@ type Capsule struct {
 	BodyBase
 
 	// height of the cylinder portion of the capsule
-	Height float32 `desc:"height of the cylinder portion of the capsule"`
+	Height float32
 
 	// radius of the top hemisphere
-	TopRad float32 `desc:"radius of the top hemisphere"`
+	TopRad float32
 
 	// radius of the bottom hemisphere
-	BotRad float32 `desc:"radius of the bottom hemisphere"`
+	BotRad float32
 }
 
 func (cp *Capsule) SetBBox() {

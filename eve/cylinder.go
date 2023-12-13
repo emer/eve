@@ -15,13 +15,13 @@ type Cylinder struct {
 	BodyBase
 
 	// height of the cylinder
-	Height float32 `desc:"height of the cylinder"`
+	Height float32
 
 	// radius of the top -- set to 0 for a cone
-	TopRad float32 `desc:"radius of the top -- set to 0 for a cone"`
+	TopRad float32
 
 	// radius of the bottom
-	BotRad float32 `desc:"radius of the bottom"`
+	BotRad float32
 }
 
 // NewCone adds a new cone of given name, initial position

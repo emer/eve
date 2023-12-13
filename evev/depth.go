@@ -7,7 +7,7 @@ package evev
 import (
 	"image"
 
-	"goki.dev/gi/v2/colormap"
+	"goki.dev/colors/colormap"
 	"goki.dev/mat32/v2"
 )
 
@@ -91,7 +91,7 @@ func DepthImage(img *image.RGBA, depth []float32, cmap *colormap.Map, cam *Camer
 					effd = norm * lind
 				}
 			}
-			clr := cmap.Map(float64(effd))
+			clr := cmap.Map(effd)
 			img.Set(x, y, clr)
 		}
 	}

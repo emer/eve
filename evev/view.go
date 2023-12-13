@@ -4,34 +4,35 @@
 
 package evev
 
+//go:generate goki generate
+
 import (
 	"fmt"
 	"image"
 
 	"github.com/emer/eve/v2/eve"
-	"goki.dev/gi/v2/gi3d"
-	""goki.dev/ki/v2""
-	""goki.dev/ki/v2"/kit"
+	"goki.dev/colors"
+	"goki.dev/grr"
+	"goki.dev/ki/v2"
+	"goki.dev/xyz"
 )
 
-// View connects a Virtual World with a Gi3D Scene to visualize the world,
+// View connects a Virtual World with a Xyz Scene to visualize the world,
 // including ability to render offscreen
-type View struct {
+type View struct { //gti:add
 
 	// the root Group node of the virtual world
-	World *eve.Group `desc:"the root Group node of the virtual world"`
+	World *eve.Group
 
 	// the scene object for visualizing
-	Scene *gi3d.Scene `desc:"the scene object for visualizing"`
+	Scene *xyz.Scene
 
 	// the root Group node in the Scene under which the world is rendered
-	Root *gi3d.Group `desc:"the root Group node in the Scene under which the world is rendered"`
+	Root *xyz.Group
 }
 
-var KiT_View = kit.Types.AddType(&View{}, nil)
-
 // NewView returns a new View that links given world with given scene and root group
-func NewView(world *eve.Group, sc *gi3d.Scene, root *gi3d.Group) *View {
+func NewView(world *eve.Group, sc *xyz.Scene, root *xyz.Group) *View {
 	vw := &View{World: world, Scene: sc, Root: root}
 	return vw
 }
@@ -79,7 +80,7 @@ func (vw *View) RenderOffNode(node eve.Node, cam *Camera) error {
 	sz := sc.Geom.Size
 	sc.Geom.Size = cam.Size
 	sc.Frame.SetSize(sc.Geom.Size) // nop if same
-	ok := sc.RenderOffscreen()
+	ok := sc.Render()
 	sc.Geom.Size = sz
 	if !ok {
 		return fmt.Errorf("could not render scene")
@@ -89,37 +90,12 @@ func (vw *View) RenderOffNode(node eve.Node, cam *Camera) error {
 
 // Image returns the current rendered image
 func (vw *View) Image() (*image.RGBA, error) {
-	fr := vw.Scene.Frame
-	if fr == nil {
-		return nil, fmt.Errorf("eve.View Image: Scene does not have a Frame")
-	}
-	sy := &vw.Scene.Phong.Sys
-	tcmd := sy.MemCmdStart()
-	fr.GrabImage(tcmd, 0)
-	sy.MemCmdEndSubmitWaitFree()
-	gimg, err := fr.Render.Grab.DevGoImage()
-	if err == nil {
-		return gimg, err
-	}
-	return nil, err
+	return vw.Scene.Image() // todo: use ImageCopy instead?
 }
 
 // DepthImage returns the current rendered depth image
 func (vw *View) DepthImage() ([]float32, error) {
-	fr := vw.Scene.Frame
-	if fr == nil {
-		return nil, fmt.Errorf("eve.View Image: Scene does not have a Frame")
-	}
-	sy := &vw.Scene.Phong.Sys
-	tcmd := sy.MemCmdStart()
-	fr.GrabDepthImage(tcmd)
-	sy.MemCmdEndSubmitWaitFree()
-
-	depth, err := fr.Render.DepthImageArray()
-	if err == nil {
-		return depth, err
-	}
-	return nil, err
+	return vw.Scene.DepthImage()
 }
 
 ///////////////////////////////////////////////////////////////
@@ -128,7 +104,7 @@ func (vw *View) DepthImage() ([]float32, error) {
 // InitLibraryBody initializes Scene library with basic Solid shapes
 // based on bodies in the virtual world.  More complex visualizations
 // can be configured after this.
-func (vw *View) InitLibraryBody(wn eve.Node, sc *gi3d.Scene) {
+func (vw *View) InitLibraryBody(wn eve.Node, sc *xyz.Scene) {
 	bod := wn.AsBody()
 	if bod != nil {
 		vw.InitLibSolid(bod, sc)
@@ -140,7 +116,7 @@ func (vw *View) InitLibraryBody(wn eve.Node, sc *gi3d.Scene) {
 }
 
 // InitLibSolid initializes Scene library with Solid for given body
-func (vw *View) InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
+func (vw *View) InitLibSolid(bod eve.Body, sc *xyz.Scene) {
 	nm := bod.Name()
 	bb := bod.AsBodyBase()
 	if bb.Vis == "" {
@@ -150,75 +126,75 @@ func (vw *View) InitLibSolid(bod eve.Body, sc *gi3d.Scene) {
 		return
 	}
 	lgp := sc.NewInLibrary(nm)
-	sld := gi3d.NewSolid(sc, lgp, nm, "")
-	wt := kit.ShortTypeName(ki.Type(bod.This()))
+	sld := xyz.NewSolid(lgp, nm)
+	wt := bod.KiType().ShortName
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
 		bm := sc.MeshByName(mnm)
 		if bm == nil {
-			bm = gi3d.NewBox(sc, mnm, 1, 1, 1)
+			bm = xyz.NewBox(sc, mnm, 1, 1, 1)
 		}
-		sld.SetMeshName(sc, mnm)
+		sld.SetMeshName(mnm)
 	case "eve.Cylinder":
 		mnm := "eveCylinder"
 		cm := sc.MeshByName(mnm)
 		if cm == nil {
-			cm = gi3d.NewCylinder(sc, mnm, 1, 1, 32, 1, true, true)
+			cm = xyz.NewCylinder(sc, mnm, 1, 1, 32, 1, true, true)
 		}
-		sld.SetMeshName(sc, mnm)
+		sld.SetMeshName(mnm)
 	case "eve.Capsule":
 		mnm := "eveCapsule"
 		cm := sc.MeshByName(mnm)
 		if cm == nil {
-			cm = gi3d.NewCapsule(sc, mnm, 1, .2, 32, 1)
+			cm = xyz.NewCapsule(sc, mnm, 1, .2, 32, 1)
 		}
-		sld.SetMeshName(sc, mnm)
+		sld.SetMeshName(mnm)
 	case "eve.Sphere":
 		mnm := "eveSphere"
 		sm := sc.MeshByName(mnm)
 		if sm == nil {
-			sm = gi3d.NewSphere(sc, mnm, 1, 32)
+			sm = xyz.NewSphere(sc, mnm, 1, 32)
 		}
-		sld.SetMeshName(sc, mnm)
+		sld.SetMeshName(mnm)
 	}
 }
 
 // ConfigBodySolid configures a solid for a body with current values
-func (vw *View) ConfigBodySolid(bod eve.Body, sld *gi3d.Solid) {
-	wt := kit.ShortTypeName(ki.Type(bod.This()))
+func (vw *View) ConfigBodySolid(bod eve.Body, sld *xyz.Solid) {
+	wt := bod.KiType().ShortName
 	switch wt {
 	case "eve.Box":
 		bx := bod.(*eve.Box)
 		sld.Pose.Scale = bx.Size
 		if bx.Color != "" {
-			sld.Mat.Color.SetName(bx.Color)
+			sld.Mat.Color = grr.Log1(colors.FromString(bx.Color))
 		}
 	case "eve.Cylinder":
 		cy := bod.(*eve.Cylinder)
 		sld.Pose.Scale.Set(cy.BotRad, cy.Height, cy.BotRad)
 		if cy.Color != "" {
-			sld.Mat.Color.SetName(cy.Color)
+			sld.Mat.Color = grr.Log1(colors.FromString(cy.Color))
 		}
 	case "eve.Capsule":
 		cp := bod.(*eve.Capsule)
 		sld.Pose.Scale.Set(cp.BotRad/.2, cp.Height/1.4, cp.BotRad/.2)
 		if cp.Color != "" {
-			sld.Mat.Color.SetName(cp.Color)
+			sld.Mat.Color = grr.Log1(colors.FromString(cp.Color))
 		}
 	case "eve.Sphere":
 		sp := bod.(*eve.Sphere)
 		sld.Pose.Scale.SetScalar(sp.Radius)
 		if sp.Color != "" {
-			sld.Mat.Color.SetName(sp.Color)
+			sld.Mat.Color = grr.Log1(colors.FromString(sp.Color))
 		}
 	}
 }
 
 // ConfigView configures the view node to properly display world node
-func (vw *View) ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
+func (vw *View) ConfigView(wn eve.Node, vn xyz.Node, sc *xyz.Scene) {
 	wb := wn.AsNodeBase()
-	vb := vn.(*gi3d.Group)
+	vb := vn.(*xyz.Group)
 	vb.Pose.Pos = wb.Rel.Pos
 	vb.Pose.Quat = wb.Rel.Quat
 	bod := wn.AsBody()
@@ -230,7 +206,7 @@ func (vw *View) ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 	}
 	bgp := vb.Child(0)
 	if bgp.HasChildren() {
-		sld, has := bgp.Child(0).(*gi3d.Solid)
+		sld, has := bgp.Child(0).(*xyz.Solid)
 		if has {
 			vw.ConfigBodySolid(bod, sld)
 		}
@@ -240,19 +216,19 @@ func (vw *View) ConfigView(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) {
 // SyncNode updates the view tree to match the world tree, using
 // ConfigChildren to maximally preserve existing tree elements
 // returns true if view tree was modified (elements added / removed etc)
-func (vw *View) SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
+func (vw *View) SyncNode(wn eve.Node, vn xyz.Node, sc *xyz.Scene) bool {
 	nm := wn.Name()
 	vn.SetName(nm) // guaranteed to be unique
 	skids := *wn.Children()
-	tnl := make(kit.TypeAndNameList, 0, len(skids))
+	tnl := make(ki.Config, 0, len(skids))
 	for _, skid := range skids {
-		tnl.Add(gi3d.KiT_Group, skid.Name())
+		tnl.Add(xyz.GroupType, skid.Name())
 	}
 	mod, updt := vn.ConfigChildren(tnl)
 	modall := mod
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(gi3d.Node3D)
+		vk := vn.Child(idx).(xyz.Node)
 		vw.ConfigView(wk, vk, sc)
 		if wk.HasChildren() {
 			kmod := vw.SyncNode(wk, vk, sc)
@@ -270,13 +246,13 @@ func (vw *View) SyncNode(wn eve.Node, vn gi3d.Node3D, sc *gi3d.Scene) bool {
 
 // UpdatePoseNode updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
-func (vw *View) UpdatePoseNode(wn eve.Node, vn gi3d.Node3D) {
+func (vw *View) UpdatePoseNode(wn eve.Node, vn xyz.Node) {
 	skids := *wn.Children()
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(gi3d.Node3D)
+		vk := vn.Child(idx).(xyz.Node)
 		wb := wk.AsNodeBase()
-		vb := vk.AsNode3D()
+		vb := vk.AsNode()
 		vb.Pose.Pos = wb.Rel.Pos
 		vb.Pose.Quat = wb.Rel.Quat
 		vw.UpdatePoseNode(wk, vk)
@@ -285,11 +261,11 @@ func (vw *View) UpdatePoseNode(wn eve.Node, vn gi3d.Node3D) {
 
 // UpdateBodyViewNode updates the body view info for given name(s)
 // Essential that both trees are already synchronized.
-func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn gi3d.Node3D) {
+func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn xyz.Node) {
 	skids := *wn.Children()
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
-		vk := vn.Child(idx).(gi3d.Node3D)
+		vk := vn.Child(idx).(xyz.Node)
 		match := false
 		if _, isBod := wk.(eve.Body); isBod {
 			for _, nm := range bodyNames {
@@ -303,7 +279,7 @@ func (vw *View) UpdateBodyViewNode(bodyNames []string, wn eve.Node, vn gi3d.Node
 			wb := wk.(eve.Body)
 			bgp := vk.Child(0)
 			if bgp.HasChildren() {
-				sld, has := bgp.Child(0).(*gi3d.Solid)
+				sld, has := bgp.Child(0).(*xyz.Solid)
 				if has {
 					vw.ConfigBodySolid(wb, sld)
 				}

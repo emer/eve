@@ -14,7 +14,7 @@ type Body interface {
 	// SetDynamic sets the Dynamic flag for this body, indicating that it moves.
 	// It is important to collect all dynamic objects into separate top-level group(s)
 	// for more efficiently organizing the collision detection process.
-	SetDynamic()
+	SetDynamic() *BodyBase
 }
 
 // BodyBase is the base type for all specific Body types
@@ -22,13 +22,13 @@ type BodyBase struct {
 	NodeBase
 
 	// rigid body properties, including mass, bounce, friction etc
-	Rigid Rigid `desc:"rigid body properties, including mass, bounce, friction etc"`
+	Rigid Rigid
 
 	// visualization name -- looks up an entry in the scene library that provides the visual representation of this body
-	Vis string `desc:"visualization name -- looks up an entry in the scene library that provides the visual representation of this body"`
+	Vis string
 
 	// default color of body for basic InitLibrary configuration
-	Color string `desc:"default color of body for basic InitLibrary configuration"`
+	Color string
 }
 
 func (bb *BodyBase) NodeType() NodeTypes {
@@ -47,6 +47,7 @@ func (bb *BodyBase) GroupBBox() {
 
 }
 
-func (bb *BodyBase) SetDynamic() {
+func (bb *BodyBase) SetDynamic() *BodyBase {
 	bb.SetFlag(true, Dynamic)
+	return bb
 }

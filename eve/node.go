@@ -8,6 +8,7 @@ package eve
 
 import (
 	"goki.dev/ki/v2"
+	"goki.dev/mat32/v2"
 )
 
 // Node is the common interface for all eve nodes
@@ -60,17 +61,17 @@ type Node interface {
 type NodeBase struct {
 	ki.Node
 
-	// [view: inline] initial position, orientation, velocity in *local* coordinates (relative to parent)
-	Initial Phys `view:"inline" desc:"initial position, orientation, velocity in *local* coordinates (relative to parent)"`
+	// initial position, orientation, velocity in *local* coordinates (relative to parent)
+	Initial Phys `view:"inline"`
 
-	// [view: inline] current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom
-	Rel Phys `view:"inline" desc:"current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom"`
+	// current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom
+	Rel Phys `view:"inline"`
 
-	// [view: inline] current absolute (world) position, orientation, velocity
-	Abs Phys `inactive:"+" view:"inline" desc:"current absolute (world) position, orientation, velocity"`
+	// current absolute (world) position, orientation, velocity
+	Abs Phys `inactive:"+" view:"inline"`
 
 	// bounding box in world coordinates (aggregated for groups)
-	BBox BBox `desc:"bounding box in world coordinates (aggregated for groups)"`
+	BBox BBox
 }
 
 func (nb *NodeBase) AsNodeBase() *NodeBase {
@@ -83,6 +84,30 @@ func (nb *NodeBase) AsBody() Body {
 
 func (nb *NodeBase) IsDynamic() bool {
 	return nb.Is(Dynamic)
+}
+
+// SetInitPos sets the initial position
+func (nb *NodeBase) SetInitPos(pos mat32.Vec3) *NodeBase {
+	nb.Initial.Pos = pos
+	return nb
+}
+
+// SetInitQuat sets the initial rotation as a Quaternion
+func (nb *NodeBase) SetInitQuat(quat mat32.Quat) *NodeBase {
+	nb.Initial.Quat = quat
+	return nb
+}
+
+// SetInitLinVel sets the initial linear velocity
+func (nb *NodeBase) SetInitLinVel(vel mat32.Vec3) *NodeBase {
+	nb.Initial.LinVel = vel
+	return nb
+}
+
+// SetInitAngVel sets the initial angular velocity
+func (nb *NodeBase) SetInitAngVel(vel mat32.Vec3) *NodeBase {
+	nb.Initial.AngVel = vel
+	return nb
 }
 
 // InitAbsBase is the base-level version of InitAbs -- most nodes call this.

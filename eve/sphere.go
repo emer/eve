@@ -13,7 +13,7 @@ type Sphere struct {
 	BodyBase
 
 	// radius
-	Radius float32 `desc:"radius"`
+	Radius float32
 }
 
 func (sp *Sphere) SetBBox() {
