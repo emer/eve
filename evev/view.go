@@ -53,13 +53,17 @@ func (vw *View) Sync() bool {
 // UpdatePose updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
 func (vw *View) UpdatePose() {
+	updt := vw.Scene.UpdateStart()
 	vw.UpdatePoseNode(vw.World, vw.Root)
+	vw.Scene.UpdateEndUpdate(updt)
 }
 
 // UpdateBodyView updates the display properties of given body name
 // recurses the tree until this body name is found.
 func (vw *View) UpdateBodyView(bodyNames []string) {
+	updt := vw.Scene.UpdateStart()
 	vw.UpdateBodyViewNode(bodyNames, vw.World, vw.Root)
+	vw.Scene.UpdateEndUpdate(updt)
 }
 
 // RenderOffNode does an offscreen render using given node
@@ -67,6 +71,7 @@ func (vw *View) UpdateBodyView(bodyNames []string) {
 // Current scene camera is saved and restored
 func (vw *View) RenderOffNode(node eve.Node, cam *Camera) error {
 	sc := vw.Scene
+	sc.UpdateNodesIfNeeded()
 	camnm := "eve-view-renderoff-save"
 	sc.SaveCamera(camnm)
 	defer sc.SetCamera(camnm)
@@ -90,7 +95,7 @@ func (vw *View) RenderOffNode(node eve.Node, cam *Camera) error {
 
 // Image returns the current rendered image
 func (vw *View) Image() (*image.RGBA, error) {
-	return vw.Scene.Image() // todo: use ImageCopy instead?
+	return vw.Scene.ImageCopy() // todo: use ImageCopy instead?
 }
 
 // DepthImage returns the current rendered depth image
@@ -238,6 +243,9 @@ func (vw *View) SyncNode(wn eve.Node, vn xyz.Node, sc *xyz.Scene) bool {
 		}
 	}
 	vn.UpdateEnd(updt)
+	if modall {
+		sc.SetNeedsUpdate()
+	}
 	return modall
 }
 

@@ -66,6 +66,9 @@ func DepthNorm(nd *[]float32, depth []float32, cam *Camera, flipY bool) {
 // range of distances -- also has Near / Far required to transform numbers into
 // linearized distance values.  Y axis is always flipped.
 func DepthImage(img *image.RGBA, depth []float32, cmap *colormap.Map, cam *Camera) {
+	if img == nil {
+		return
+	}
 	sz := img.Bounds().Size()
 	fpn := cam.Far + cam.Near
 	fmn := cam.Far - cam.Near

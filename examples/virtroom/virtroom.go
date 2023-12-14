@@ -45,6 +45,7 @@ func app() {
 		ev.NoGUIRun()
 		return
 	}
+	// gi.RenderTrace = true
 	b := ev.ConfigGUI()
 	b.NewWindow().Run().Wait()
 }
@@ -90,6 +91,9 @@ type Env struct { //gti:add
 
 	// view of world
 	View2D *eve2d.View
+
+	// 3D visualization of the Scene
+	Scene3D *xyzv.Scene3D
 
 	// emer group
 	Emer *eve.Group `view:"-"`
@@ -216,17 +220,21 @@ func (ev *Env) GrabEyeImg() { //gti:add
 		ev.DepthVals = depth
 		ev.ViewDepth(depth)
 	}
-	if !NoGUI {
-		ev.View3D.Scene.SetNeedsRender()
-	}
 }
 
 // ViewDepth updates depth bitmap with depth data
 func (ev *Env) ViewDepth(depth []float32) {
 	cmap := colormap.AvailMaps[string(ev.DepthMap)]
-	// ev.DepthImg.SetSize(ev.Camera.Size)
+	ev.DepthImg.SetSize(ev.Camera.Size)
 	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
 	ev.DepthImg.SetNeedsRender(true)
+}
+
+// UpdateViews updates the 2D and 3D views of the scene
+func (ev *Env) UpdateViews() {
+	if ev.Scene3D.IsVisible() {
+		ev.Scene3D.SetNeedsRender(true)
+	}
 }
 
 // WorldStep does one step of the world
@@ -250,9 +258,9 @@ func (ev *Env) WorldStep() {
 		ev.Emer.Rel.RotateOnAxis(0, 1, 0, rot)
 	}
 	ev.View3D.UpdatePose()
-	ev.GrabEyeImg()
 	ev.View2D.UpdatePose()
-	// ev.View2D.SetNeedsRender() // todo
+	ev.GrabEyeImg()
+	ev.UpdateViews()
 }
 
 // StepForward moves Emer forward in current facing direction one step, and takes GrabEyeImg
@@ -360,7 +368,7 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	scfr := tbvw.NewTab("3D View")
 	twofr := tbvw.NewTab("2D View")
 
-	split.SetSplits(.1, 2, .2, .5)
+	split.SetSplits(.1, .2, .2, .5)
 
 	tv := giv.NewTreeView(tvfr, "tv")
 	tv.SyncRootNode(ev.World)
@@ -375,8 +383,8 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	//////////////////////////////////////////
 	//    3D Scene
 
-	scvw := xyzv.NewScene3D(scfr, "sceneview")
-	se := scvw.Scene
+	ev.Scene3D = xyzv.NewScene3D(scfr, "sceneview")
+	se := ev.Scene3D.Scene
 	ev.ConfigScene(se)
 	ev.MakeView3D(se)
 
@@ -401,11 +409,11 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	})
 	gi.NewLabel(imfr).SetText("Right Eye Image:")
 	ev.EyeRImg = gi.NewImage(imfr, "eye-r-img")
-	// ev.EyeRImg.SetSize(ev.Camera.Size)
+	ev.EyeRImg.SetSize(ev.Camera.Size)
 
 	gi.NewLabel(imfr).SetText("Right Eye Depth:")
 	ev.DepthImg = gi.NewImage(imfr, "depth-img")
-	// ev.DepthImg.SetSize(ev.Camera.Size)
+	ev.DepthImg.SetSize(ev.Camera.Size)
 
 	//////////////////////////////////////////
 	//    2D Scene
