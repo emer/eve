@@ -186,6 +186,7 @@ func (vw *View) InitLibShape(bod eve.Body) {
 func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.Node) {
 	wt := bod.KiType().ShortName
 	sb := shp.AsNodeBase()
+	sb.Nm = bod.Name()
 	switch wt {
 	case "eve.Box":
 		bx := bod.(*eve.Box)
