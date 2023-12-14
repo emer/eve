@@ -95,6 +95,9 @@ type Env struct { //gti:add
 	// 3D visualization of the Scene
 	Scene3D *xyzv.Scene3D
 
+	// 2D visualization of the Scene
+	Scene2D *giv.SVGEditor
+
 	// emer group
 	Emer *eve.Group `view:"-"`
 
@@ -187,9 +190,9 @@ func (ev *Env) MakeView3D(sc *xyz.Scene) {
 }
 
 // MakeView2D makes the 2D view
-func (ev *Env) MakeView2D(sc *gi.SVG) {
-	wgp := svg.NewGroup(sc, "world")
-	ev.View2D = eve2d.NewView(ev.World, sc.SVG, wgp)
+func (ev *Env) MakeView2D(sc *svg.SVG) {
+	wgp := svg.NewGroup(&sc.Root, "world")
+	ev.View2D = eve2d.NewView(ev.World, sc, wgp)
 	ev.View2D.InitLibrary() // this makes a basic library based on body shapes, sizes
 	// at this point the library can be updated to configure custom visualizations
 	// for any of the named bodies.
@@ -234,6 +237,9 @@ func (ev *Env) ViewDepth(depth []float32) {
 func (ev *Env) UpdateViews() {
 	if ev.Scene3D.IsVisible() {
 		ev.Scene3D.SetNeedsRender(true)
+	}
+	if ev.Scene2D.IsVisible() {
+		ev.Scene2D.SetNeedsRender(true)
 	}
 }
 
@@ -418,13 +424,14 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	//////////////////////////////////////////
 	//    2D Scene
 
-	twov := gi.NewSVG(twofr, "sceneview")
-	// twov.Fill = true
-	// twov.Trans.Set(440, 512)
-	// twov.Scale = 60
-	// twov.SetTransform()
+	twov := giv.NewSVGEditor(twofr, "sceneview")
+	ev.Scene2D = twov
+	twov.SVG.SVG.Fill = true
+	twov.Trans.Set(440, 512)
+	twov.Scale = 60
+	twov.SetTransform()
 
-	ev.MakeView2D(twov)
+	ev.MakeView2D(twov.SVG.SVG)
 
 	//////////////////////////////////////////
 	//    Toolbar

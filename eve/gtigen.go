@@ -17,9 +17,9 @@ var BodyBaseType = gti.AddType(&gti.Type{
 	Doc:        "BodyBase is the base type for all specific Body types",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Rigid", &gti.Field{Name: "Rigid", Type: "github.com/emer/eve/v2/eve.Rigid", LocalType: "Rigid", Doc: "rigid body properties, including mass, bounce, friction etc", Directives: gti.Directives{}, Tag: "desc:\"rigid body properties, including mass, bounce, friction etc\""}},
-		{"Vis", &gti.Field{Name: "Vis", Type: "string", LocalType: "string", Doc: "visualization name -- looks up an entry in the scene library that provides the visual representation of this body", Directives: gti.Directives{}, Tag: "desc:\"visualization name -- looks up an entry in the scene library that provides the visual representation of this body\""}},
-		{"Color", &gti.Field{Name: "Color", Type: "string", LocalType: "string", Doc: "default color of body for basic InitLibrary configuration", Directives: gti.Directives{}, Tag: "desc:\"default color of body for basic InitLibrary configuration\""}},
+		{"Rigid", &gti.Field{Name: "Rigid", Type: "github.com/emer/eve/v2/eve.Rigid", LocalType: "Rigid", Doc: "rigid body properties, including mass, bounce, friction etc", Directives: gti.Directives{}, Tag: ""}},
+		{"Vis", &gti.Field{Name: "Vis", Type: "string", LocalType: "string", Doc: "visualization name -- looks up an entry in the scene library that provides the visual representation of this body", Directives: gti.Directives{}, Tag: ""}},
+		{"Color", &gti.Field{Name: "Color", Type: "string", LocalType: "string", Doc: "default color of body for basic InitLibrary configuration", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"NodeBase", &gti.Field{Name: "NodeBase", Type: "github.com/emer/eve/v2/eve.NodeBase", LocalType: "NodeBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -99,7 +99,7 @@ var BoxType = gti.AddType(&gti.Type{
 	Doc:        "Box is a box body shape",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Size", &gti.Field{Name: "Size", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)", Directives: gti.Directives{}, Tag: "desc:\"size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)\""}},
+		{"Size", &gti.Field{Name: "Size", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -183,9 +183,9 @@ var CapsuleType = gti.AddType(&gti.Type{
 	Doc:        "Capsule is a generalized cylinder body shape, with hemispheres at each end,\nwith separate radii for top and bottom.",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Height", &gti.Field{Name: "Height", Type: "float32", LocalType: "float32", Doc: "height of the cylinder portion of the capsule", Directives: gti.Directives{}, Tag: "desc:\"height of the cylinder portion of the capsule\""}},
-		{"TopRad", &gti.Field{Name: "TopRad", Type: "float32", LocalType: "float32", Doc: "radius of the top hemisphere", Directives: gti.Directives{}, Tag: "desc:\"radius of the top hemisphere\""}},
-		{"BotRad", &gti.Field{Name: "BotRad", Type: "float32", LocalType: "float32", Doc: "radius of the bottom hemisphere", Directives: gti.Directives{}, Tag: "desc:\"radius of the bottom hemisphere\""}},
+		{"Height", &gti.Field{Name: "Height", Type: "float32", LocalType: "float32", Doc: "height of the cylinder portion of the capsule", Directives: gti.Directives{}, Tag: ""}},
+		{"TopRad", &gti.Field{Name: "TopRad", Type: "float32", LocalType: "float32", Doc: "radius of the top hemisphere", Directives: gti.Directives{}, Tag: ""}},
+		{"BotRad", &gti.Field{Name: "BotRad", Type: "float32", LocalType: "float32", Doc: "radius of the bottom hemisphere", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -283,9 +283,9 @@ var CylinderType = gti.AddType(&gti.Type{
 	Doc:        "Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.\nA cone has a zero radius at one end.",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Height", &gti.Field{Name: "Height", Type: "float32", LocalType: "float32", Doc: "height of the cylinder", Directives: gti.Directives{}, Tag: "desc:\"height of the cylinder\""}},
-		{"TopRad", &gti.Field{Name: "TopRad", Type: "float32", LocalType: "float32", Doc: "radius of the top -- set to 0 for a cone", Directives: gti.Directives{}, Tag: "desc:\"radius of the top -- set to 0 for a cone\""}},
-		{"BotRad", &gti.Field{Name: "BotRad", Type: "float32", LocalType: "float32", Doc: "radius of the bottom", Directives: gti.Directives{}, Tag: "desc:\"radius of the bottom\""}},
+		{"Height", &gti.Field{Name: "Height", Type: "float32", LocalType: "float32", Doc: "height of the cylinder", Directives: gti.Directives{}, Tag: ""}},
+		{"TopRad", &gti.Field{Name: "TopRad", Type: "float32", LocalType: "float32", Doc: "radius of the top -- set to 0 for a cone", Directives: gti.Directives{}, Tag: ""}},
+		{"BotRad", &gti.Field{Name: "BotRad", Type: "float32", LocalType: "float32", Doc: "radius of the bottom", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -440,10 +440,10 @@ var NodeBaseType = gti.AddType(&gti.Type{
 	Doc:        "NodeBase is the basic eve node, which has position, rotation, velocity\nand computed bounding boxes, etc.\nThere are only three different kinds of Nodes: Group, Body, and Joint",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Initial", &gti.Field{Name: "Initial", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "[view: inline] initial position, orientation, velocity in *local* coordinates (relative to parent)", Directives: gti.Directives{}, Tag: "view:\"inline\" desc:\"initial position, orientation, velocity in *local* coordinates (relative to parent)\""}},
-		{"Rel", &gti.Field{Name: "Rel", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "[view: inline] current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom", Directives: gti.Directives{}, Tag: "view:\"inline\" desc:\"current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom\""}},
-		{"Abs", &gti.Field{Name: "Abs", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "[view: inline] current absolute (world) position, orientation, velocity", Directives: gti.Directives{}, Tag: "inactive:\"+\" view:\"inline\" desc:\"current absolute (world) position, orientation, velocity\""}},
-		{"BBox", &gti.Field{Name: "BBox", Type: "github.com/emer/eve/v2/eve.BBox", LocalType: "BBox", Doc: "bounding box in world coordinates (aggregated for groups)", Directives: gti.Directives{}, Tag: "desc:\"bounding box in world coordinates (aggregated for groups)\""}},
+		{"Initial", &gti.Field{Name: "Initial", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "initial position, orientation, velocity in *local* coordinates (relative to parent)", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
+		{"Rel", &gti.Field{Name: "Rel", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
+		{"Abs", &gti.Field{Name: "Abs", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "current absolute (world) position, orientation, velocity", Directives: gti.Directives{}, Tag: "inactive:\"+\" view:\"inline\""}},
+		{"BBox", &gti.Field{Name: "BBox", Type: "github.com/emer/eve/v2/eve.BBox", LocalType: "BBox", Doc: "bounding box in world coordinates (aggregated for groups)", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Node", &gti.Field{Name: "Node", Type: "goki.dev/ki/v2.Node", LocalType: "ki.Node", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -471,21 +471,21 @@ func (t *NodeBase) New() ki.Ki {
 }
 
 // SetInitial sets the [NodeBase.Initial]:
-// [view: inline] initial position, orientation, velocity in *local* coordinates (relative to parent)
+// initial position, orientation, velocity in *local* coordinates (relative to parent)
 func (t *NodeBase) SetInitial(v Phys) *NodeBase {
 	t.Initial = v
 	return t
 }
 
 // SetRel sets the [NodeBase.Rel]:
-// [view: inline] current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom
+// current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom
 func (t *NodeBase) SetRel(v Phys) *NodeBase {
 	t.Rel = v
 	return t
 }
 
 // SetAbs sets the [NodeBase.Abs]:
-// [view: inline] current absolute (world) position, orientation, velocity
+// current absolute (world) position, orientation, velocity
 func (t *NodeBase) SetAbs(v Phys) *NodeBase {
 	t.Abs = v
 	return t
@@ -506,7 +506,7 @@ var SphereType = gti.AddType(&gti.Type{
 	Doc:        "Sphere is a spherical body shape.",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Radius", &gti.Field{Name: "Radius", Type: "float32", LocalType: "float32", Doc: "radius", Directives: gti.Directives{}, Tag: "desc:\"radius\""}},
+		{"Radius", &gti.Field{Name: "Radius", Type: "float32", LocalType: "float32", Doc: "radius", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
