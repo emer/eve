@@ -96,7 +96,7 @@ type Env struct { //gti:add
 	Scene3D *xyzv.Scene3D
 
 	// 2D visualization of the Scene
-	Scene2D *giv.SVGEditor
+	Scene2D *gi.SVG
 
 	// emer group
 	Emer *eve.Group `view:"-"`
@@ -424,14 +424,19 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	//////////////////////////////////////////
 	//    2D Scene
 
-	twov := giv.NewSVGEditor(twofr, "sceneview")
+	twov := gi.NewSVG(twofr, "sceneview")
 	ev.Scene2D = twov
-	twov.SVG.SVG.Fill = true
-	twov.Trans.Set(440, 512)
-	twov.Scale = 60
-	twov.SetTransform()
+	twov.Style(func(s *styles.Style) {
+		twov.SVG.Fill = true
+		twov.SVG.Norm = true
+		twov.SVG.Root.ViewBox.Size.Set(ev.Width+4, ev.Depth+4)
+		twov.SVG.Root.ViewBox.Min.Set(-0.5*(ev.Width+4), -0.5*(ev.Depth+4))
+		twov.SetReadOnly(false)
+		// twov.SVG.Translate.Set(7, 7)
+		// twov.SVG.Scale = 112
+	})
 
-	ev.MakeView2D(twov.SVG.SVG)
+	ev.MakeView2D(twov.SVG)
 
 	//////////////////////////////////////////
 	//    Toolbar

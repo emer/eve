@@ -258,6 +258,8 @@ func (vw *View) ConfigView(wn eve.Node, vn svg.Node) {
 			vw.ConfigBodyShape(bod, shp)
 		}
 	}
+	sz := vw.Scene.Geom.Size
+	vw.Scene.Config(sz.X, sz.Y)
 }
 
 // SyncNode updates the view tree to match the world tree, using
