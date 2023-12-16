@@ -4,7 +4,7 @@
 
 package eve
 
-//go:generate goki generate
+//go:generate goki generate -add-types
 
 import (
 	"goki.dev/ki/v2"

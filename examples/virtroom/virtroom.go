@@ -51,7 +51,7 @@ func app() {
 }
 
 // Env encapsulates the virtual environment
-type Env struct { //gti:add
+type Env struct {
 
 	// height of emer
 	EmerHt float32
@@ -178,9 +178,9 @@ func (ev *Env) ReMakeWorld() { //gti:add
 	}
 }
 
-// MakeView3D makes the 3D view
-func (ev *Env) MakeView3D(sc *xyz.Scene) {
-	sc.MultiSample = 1 // we are using depth grab so we need this = 1
+// ConfigView3D makes the 3D view
+func (ev *Env) ConfigView3D(sc *xyz.Scene) {
+	// sc.MultiSample = 1 // we are using depth grab so we need this = 1
 	wgp := xyz.NewGroup(sc, "world")
 	ev.View3D = evev.NewView(ev.World, sc, wgp)
 	ev.View3D.InitLibrary() // this makes a basic library based on body shapes, sizes
@@ -189,8 +189,8 @@ func (ev *Env) MakeView3D(sc *xyz.Scene) {
 	ev.View3D.Sync()
 }
 
-// MakeView2D makes the 2D view
-func (ev *Env) MakeView2D(sc *svg.SVG) {
+// ConfigView2D makes the 2D view
+func (ev *Env) ConfigView2D(sc *svg.SVG) {
 	wgp := svg.NewGroup(&sc.Root, "world")
 	ev.View2D = eve2d.NewView(ev.World, sc, wgp)
 	ev.View2D.InitLibrary() // this makes a basic library based on body shapes, sizes
@@ -366,8 +366,8 @@ func (ev *Env) ConfigGUI() *gi.Body {
 
 	split := gi.NewSplits(b, "split")
 
-	tvfr := gi.NewFrame(split)
-	svfr := gi.NewFrame(split)
+	tv := giv.NewTreeView(gi.NewFrame(split), "tv").SyncRootNode(ev.World)
+	sv := giv.NewStructView(split, "sv").SetStruct(ev)
 	imfr := gi.NewFrame(split)
 	tbvw := gi.NewTabs(split)
 
@@ -376,10 +376,6 @@ func (ev *Env) ConfigGUI() *gi.Body {
 
 	split.SetSplits(.1, .2, .2, .5)
 
-	tv := giv.NewTreeView(tvfr, "tv")
-	tv.SyncRootNode(ev.World)
-
-	sv := giv.NewStructView(svfr, "sv").SetStruct(ev)
 	tv.OnSelect(func(e events.Event) {
 		if len(tv.SelectedNodes) > 0 {
 			sv.SetStruct(tv.SelectedNodes[0].AsTreeView().SyncNode)
@@ -392,7 +388,7 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	ev.Scene3D = xyzv.NewScene3D(scfr, "sceneview")
 	se := ev.Scene3D.Scene
 	ev.ConfigScene(se)
-	ev.MakeView3D(se)
+	ev.ConfigView3D(se)
 
 	se.Camera.Pose.Pos = mat32.Vec3{0, 40, 3.5}
 	se.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
@@ -432,11 +428,9 @@ func (ev *Env) ConfigGUI() *gi.Body {
 		twov.SVG.Root.ViewBox.Size.Set(ev.Width+4, ev.Depth+4)
 		twov.SVG.Root.ViewBox.Min.Set(-0.5*(ev.Width+4), -0.5*(ev.Depth+4))
 		twov.SetReadOnly(false)
-		// twov.SVG.Translate.Set(7, 7)
-		// twov.SVG.Scale = 112
 	})
 
-	ev.MakeView2D(twov.SVG)
+	ev.ConfigView2D(twov.SVG)
 
 	//////////////////////////////////////////
 	//    Toolbar
@@ -477,7 +471,7 @@ func (ev *Env) NoGUIRun() {
 	se := evev.NoDisplayScene("virtroom", gp, dev)
 	ev.ConfigScene(se)
 	ev.MakeWorld()
-	ev.MakeView3D(se)
+	ev.ConfigView3D(se)
 
 	se.Config()
 

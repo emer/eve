@@ -11,7 +11,7 @@ import (
 )
 
 // Camera defines the properties of a camera needed for offscreen rendering
-type Camera struct { //gti:add
+type Camera struct {
 
 	// size of image to record
 	Size image.Point

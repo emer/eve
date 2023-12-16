@@ -4,7 +4,7 @@
 
 package evev
 
-//go:generate goki generate
+//go:generate goki generate -add-types
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ import (
 
 // View connects a Virtual World with a Xyz Scene to visualize the world,
 // including ability to render offscreen
-type View struct { //gti:add
+type View struct {
 
 	// the root Group node of the virtual world
 	World *eve.Group

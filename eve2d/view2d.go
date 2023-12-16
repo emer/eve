@@ -4,6 +4,8 @@
 
 package eve2d
 
+//go:generate goki generate -add-types
+
 import (
 	"fmt"
 	"image"
