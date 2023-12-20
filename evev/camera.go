@@ -46,5 +46,5 @@ func (cm *Camera) Defaults() {
 	cm.MaxD = 20
 	cm.LogD = true
 	cm.MSample = 4
-	cm.UpDir = mat32.Vec3Y
+	cm.UpDir = mat32.V3(0, 1, 0)
 }

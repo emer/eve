@@ -91,7 +91,7 @@ func (ps *Phys) Move(delta mat32.Vec3) {
 // The axis is normalized prior to aplying the distance factor.
 // Sets the LinVel to motion vector.
 func (ps *Phys) MoveOnAxis(x, y, z, dist float32) {
-	ps.LinVel = mat32.NewVec3(x, y, z).Normal().MulQuat(ps.Quat).MulScalar(dist)
+	ps.LinVel = mat32.V3(x, y, z).Normal().MulQuat(ps.Quat).MulScalar(dist)
 	ps.Pos.SetAdd(ps.LinVel)
 }
 
@@ -100,7 +100,7 @@ func (ps *Phys) MoveOnAxis(x, y, z, dist float32) {
 // The axis is normalized prior to aplying the distance factor.
 // Sets the LinVel to motion vector.
 func (ps *Phys) MoveOnAxisAbs(x, y, z, dist float32) {
-	ps.LinVel = mat32.NewVec3(x, y, z).Normal().MulScalar(dist)
+	ps.LinVel = mat32.V3(x, y, z).Normal().MulScalar(dist)
 	ps.Pos.SetAdd(ps.LinVel)
 }
 
@@ -109,12 +109,12 @@ func (ps *Phys) MoveOnAxisAbs(x, y, z, dist float32) {
 
 // SetEulerRotation sets the rotation in Euler angles (degrees).
 func (ps *Phys) SetEulerRotation(x, y, z float32) {
-	ps.Quat.SetFromEuler(mat32.NewVec3(x, y, z).MulScalar(mat32.DegToRadFactor))
+	ps.Quat.SetFromEuler(mat32.V3(x, y, z).MulScalar(mat32.DegToRadFactor))
 }
 
 // SetEulerRotationRad sets the rotation in Euler angles (radians).
 func (ps *Phys) SetEulerRotationRad(x, y, z float32) {
-	ps.Quat.SetFromEuler(mat32.NewVec3(x, y, z))
+	ps.Quat.SetFromEuler(mat32.V3(x, y, z))
 }
 
 // EulerRotation returns the current rotation in Euler angles (degrees).
@@ -129,32 +129,32 @@ func (ps *Phys) EulerRotationRad() mat32.Vec3 {
 
 // SetAxisRotation sets rotation from local axis and angle in degrees.
 func (ps *Phys) SetAxisRotation(x, y, z, angle float32) {
-	ps.Quat.SetFromAxisAngle(mat32.NewVec3(x, y, z), mat32.DegToRad(angle))
+	ps.Quat.SetFromAxisAngle(mat32.V3(x, y, z), mat32.DegToRad(angle))
 }
 
 // SetAxisRotationRad sets rotation from local axis and angle in radians.
 func (ps *Phys) SetAxisRotationRad(x, y, z, angle float32) {
-	ps.Quat.SetFromAxisAngle(mat32.NewVec3(x, y, z), angle)
+	ps.Quat.SetFromAxisAngle(mat32.V3(x, y, z), angle)
 }
 
 // RotateOnAxis rotates around the specified local axis the specified angle in degrees.
 func (ps *Phys) RotateOnAxis(x, y, z, angle float32) {
-	ps.Quat.SetMul(mat32.NewQuatAxisAngle(mat32.NewVec3(x, y, z), mat32.DegToRad(angle)))
+	ps.Quat.SetMul(mat32.NewQuatAxisAngle(mat32.V3(x, y, z), mat32.DegToRad(angle)))
 }
 
 // RotateOnAxisRad rotates around the specified local axis the specified angle in radians.
 func (ps *Phys) RotateOnAxisRad(x, y, z, angle float32) {
-	ps.Quat.SetMul(mat32.NewQuatAxisAngle(mat32.NewVec3(x, y, z), angle))
+	ps.Quat.SetMul(mat32.NewQuatAxisAngle(mat32.V3(x, y, z), angle))
 }
 
 // RotateEuler rotates by given Euler angles (in degrees) relative to existing rotation.
 func (ps *Phys) RotateEuler(x, y, z float32) {
-	ps.Quat.SetMul(mat32.NewQuatEuler(mat32.NewVec3(x, y, z).MulScalar(mat32.DegToRadFactor)))
+	ps.Quat.SetMul(mat32.NewQuatEuler(mat32.V3(x, y, z).MulScalar(mat32.DegToRadFactor)))
 }
 
 // RotateEulerRad rotates by given Euler angles (in radians) relative to existing rotation.
 func (ps *Phys) RotateEulerRad(x, y, z, angle float32) {
-	ps.Quat.SetMul(mat32.NewQuatEuler(mat32.NewVec3(x, y, z)))
+	ps.Quat.SetMul(mat32.NewQuatEuler(mat32.V3(x, y, z)))
 }
 
 /*

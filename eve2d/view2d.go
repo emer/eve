@@ -98,7 +98,7 @@ func (vw *View) ProjectXZ() {
 // Prjn2D projects position from 3D to 2D
 func (vw *View) Prjn2D(pos mat32.Vec3) mat32.Vec2 {
 	v2 := pos.MulMat4(&vw.Prjn)
-	return mat32.NewVec2(v2.X, v2.Y)
+	return mat32.V2(v2.X, v2.Y)
 }
 
 // Transform2D returns the full 2D transform matrix for a given position and quat rotation in 3D
@@ -203,7 +203,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.Node) {
 		}
 	case "eve.Cylinder":
 		cy := bod.(*eve.Cylinder)
-		sz3 := mat32.NewVec3(cy.BotRad*2, cy.Height, cy.TopRad*2)
+		sz3 := mat32.V3(cy.BotRad*2, cy.Height, cy.TopRad*2)
 		sz := vw.Prjn2D(sz3)
 		shp.(*svg.Ellipse).SetRadii(sz)
 		sb.Paint.Transform = mat32.Translate2D(-sz.X/2, -sz.Y/2)
@@ -215,7 +215,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.Node) {
 		}
 	case "eve.Capsule":
 		cp := bod.(*eve.Capsule)
-		sz3 := mat32.NewVec3(cp.BotRad*2, cp.Height, cp.TopRad*2)
+		sz3 := mat32.V3(cp.BotRad*2, cp.Height, cp.TopRad*2)
 		sz := vw.Prjn2D(sz3)
 		shp.(*svg.Ellipse).SetRadii(sz)
 		sb.Paint.Transform = mat32.Translate2D(-sz.X/2, -sz.Y/2)
@@ -227,7 +227,7 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.Node) {
 		}
 	case "eve.Sphere":
 		sp := bod.(*eve.Sphere)
-		sz3 := mat32.NewVec3(sp.Radius*2, sp.Radius*2, sp.Radius*2)
+		sz3 := mat32.V3(sp.Radius*2, sp.Radius*2, sp.Radius*2)
 		sz := vw.Prjn2D(sz3)
 		shp.(*svg.Circle).SetRadius(sz.X) // should be same as Y
 		sb.Paint.Transform = mat32.Translate2D(-sz.X/2, -sz.Y/2)
