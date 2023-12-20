@@ -93,7 +93,7 @@ type Env struct {
 	View2D *eve2d.View
 
 	// 3D visualization of the Scene
-	Scene3D *xyzv.Scene3D
+	SceneView *xyzv.SceneView
 
 	// 2D visualization of the Scene
 	Scene2D *gi.SVG
@@ -235,8 +235,8 @@ func (ev *Env) ViewDepth(depth []float32) {
 
 // UpdateViews updates the 2D and 3D views of the scene
 func (ev *Env) UpdateViews() {
-	if ev.Scene3D.IsVisible() {
-		ev.Scene3D.SetNeedsRender(true)
+	if ev.SceneView.IsVisible() {
+		ev.SceneView.SetNeedsRender(true)
 	}
 	if ev.Scene2D.IsVisible() {
 		ev.Scene2D.SetNeedsRender(true)
@@ -310,17 +310,17 @@ func (ev *Env) RotHeadRight() { //gti:add
 // MakeRoom constructs a new room in given parent group with given params
 func MakeRoom(par *eve.Group, name string, width, depth, height, thick float32) *eve.Group {
 	rm := eve.NewGroup(par, name)
-	eve.NewBox(rm, "floor").SetSize(mat32.Vec3{width, thick, depth}).
-		SetColor("grey").SetInitPos(mat32.Vec3{0, -thick / 2, 0})
+	eve.NewBox(rm, "floor").SetSize(mat32.V3(width, thick, depth)).
+		SetColor("grey").SetInitPos(mat32.V3(0, -thick/2, 0))
 
-	eve.NewBox(rm, "back-wall").SetSize(mat32.Vec3{width, height, thick}).
-		SetColor("blue").SetInitPos(mat32.Vec3{0, height / 2, -depth / 2})
-	eve.NewBox(rm, "left-wall").SetSize(mat32.Vec3{thick, height, depth}).
-		SetColor("red").SetInitPos(mat32.Vec3{-width / 2, height / 2, 0})
-	eve.NewBox(rm, "right-wall").SetSize(mat32.Vec3{thick, height, depth}).
-		SetColor("green").SetInitPos(mat32.Vec3{width / 2, height / 2, 0})
-	eve.NewBox(rm, "front-wall").SetSize(mat32.Vec3{width, height, thick}).
-		SetColor("yellow").SetInitPos(mat32.Vec3{0, height / 2, depth / 2})
+	eve.NewBox(rm, "back-wall").SetSize(mat32.V3(width, height, thick)).
+		SetColor("blue").SetInitPos(mat32.V3(0, height/2, -depth/2))
+	eve.NewBox(rm, "left-wall").SetSize(mat32.V3(thick, height, depth)).
+		SetColor("red").SetInitPos(mat32.V3(-width/2, height/2, 0))
+	eve.NewBox(rm, "right-wall").SetSize(mat32.V3(thick, height, depth)).
+		SetColor("green").SetInitPos(mat32.V3(width/2, height/2, 0))
+	eve.NewBox(rm, "front-wall").SetSize(mat32.V3(width, height, thick)).
+		SetColor("yellow").SetInitPos(mat32.V3(0, height/2, depth/2))
 	return rm
 }
 
@@ -330,27 +330,27 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 	width := height * .4
 	depth := height * .15
 
-	eve.NewBox(emr, "body").SetSize(mat32.Vec3{width, height, depth}).
+	eve.NewBox(emr, "body").SetSize(mat32.V3(width, height, depth)).
 		SetColor("purple").SetDynamic().
-		SetInitPos(mat32.Vec3{0, height / 2, 0})
-	// body := eve.NewCapsule(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
-	// body := eve.NewCylinder(emr, "body", mat32.Vec3{0, height / 2, 0}, height, width/2)
+		SetInitPos(mat32.V3(0, height/2, 0))
+	// body := eve.NewCapsule(emr, "body", mat32.V3(0, height / 2, 0), height, width/2)
+	// body := eve.NewCylinder(emr, "body", mat32.V3(0, height / 2, 0), height, width/2)
 
 	headsz := depth * 1.5
 	hhsz := .5 * headsz
-	hgp := eve.NewGroup(emr, "head").SetInitPos(mat32.Vec3{0, height + hhsz, 0})
+	hgp := eve.NewGroup(emr, "head").SetInitPos(mat32.V3(0, height+hhsz, 0))
 
-	eve.NewBox(hgp, "head").SetSize(mat32.Vec3{headsz, headsz, headsz}).
-		SetColor("tan").SetDynamic().SetInitPos(mat32.Vec3{0, 0, 0})
+	eve.NewBox(hgp, "head").SetSize(mat32.V3(headsz, headsz, headsz)).
+		SetColor("tan").SetDynamic().SetInitPos(mat32.V3(0, 0, 0))
 
 	eyesz := headsz * .2
-	eve.NewBox(hgp, "eye-l").SetSize(mat32.Vec3{eyesz, eyesz * .5, eyesz * .2}).
+	eve.NewBox(hgp, "eye-l").SetSize(mat32.V3(eyesz, eyesz*.5, eyesz*.2)).
 		SetColor("green").SetDynamic().
-		SetInitPos(mat32.Vec3{-hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)})
+		SetInitPos(mat32.V3(-hhsz*.6, headsz*.1, -(hhsz + eyesz*.3)))
 
-	eve.NewBox(hgp, "eye-r").SetSize(mat32.Vec3{eyesz, eyesz * .5, eyesz * .2}).
+	eve.NewBox(hgp, "eye-r").SetSize(mat32.V3(eyesz, eyesz*.5, eyesz*.2)).
 		SetColor("green").SetDynamic().
-		SetInitPos(mat32.Vec3{hhsz * .6, headsz * .1, -(hhsz + eyesz*.3)})
+		SetInitPos(mat32.V3(hhsz*.6, headsz*.1, -(hhsz + eyesz*.3)))
 
 	return emr
 }
@@ -385,21 +385,22 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	//////////////////////////////////////////
 	//    3D Scene
 
-	ev.Scene3D = xyzv.NewScene3D(scfr, "sceneview")
-	se := ev.Scene3D.Scene
+	ev.SceneView = xyzv.NewSceneView(scfr, "sceneview")
+	ev.SceneView.Config()
+	se := ev.SceneView.SceneXYZ()
 	ev.ConfigScene(se)
 	ev.ConfigView3D(se)
 
-	se.Camera.Pose.Pos = mat32.Vec3{0, 40, 3.5}
-	se.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
+	se.Camera.Pose.Pos = mat32.V3(0, 40, 3.5)
+	se.Camera.LookAt(mat32.V3(0, 5, 0), mat32.V3(0, 1, 0))
 	se.SaveCamera("3")
 
-	se.Camera.Pose.Pos = mat32.Vec3{0, 20, 30}
-	se.Camera.LookAt(mat32.Vec3{0, 5, 0}, mat32.Vec3Y)
+	se.Camera.Pose.Pos = mat32.V3(0, 20, 30)
+	se.Camera.LookAt(mat32.V3(0, 5, 0), mat32.V3(0, 1, 0))
 	se.SaveCamera("2")
 
-	se.Camera.Pose.Pos = mat32.Vec3{-.86, .97, 2.7}
-	se.Camera.LookAt(mat32.Vec3{0, .8, 0}, mat32.Vec3Y)
+	se.Camera.Pose.Pos = mat32.V3(-.86, .97, 2.7)
+	se.Camera.LookAt(mat32.V3(0, .8, 0), mat32.V3(0, 1, 0))
 	se.SaveCamera("1")
 	se.SaveCamera("default")
 

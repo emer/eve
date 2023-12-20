@@ -104,7 +104,7 @@ func (vw *View) Prjn2D(pos mat32.Vec3) mat32.Vec2 {
 // Transform2D returns the full 2D transform matrix for a given position and quat rotation in 3D
 func (vw *View) Transform2D(phys *eve.Phys) mat32.Mat2 {
 	pos2 := phys.Pos.MulMat4(&vw.Prjn)
-	xyaxis := mat32.Vec3{1, 1, 0}
+	xyaxis := mat32.V3(1, 1, 0)
 	xyaxis.SetNormal()
 	inv := vw.Prjn.Transpose()
 	axis := xyaxis.MulMat4(inv)
@@ -171,16 +171,16 @@ func (vw *View) InitLibShape(bod eve.Body) {
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
-		svg.NewRect(lgp, mnm).SetPos(mat32.Vec2{0, 0}).SetSize(mat32.Vec2{1, 1})
+		svg.NewRect(lgp, mnm).SetPos(mat32.V2(0, 0)).SetSize(mat32.V2(1, 1))
 	case "eve.Cylinder":
 		mnm := "eveCylinder"
-		svg.NewEllipse(lgp, mnm).SetPos(mat32.Vec2{0, 0}).SetRadii(mat32.Vec2{.1, .1})
+		svg.NewEllipse(lgp, mnm).SetPos(mat32.V2(0, 0)).SetRadii(mat32.V2(.1, .1))
 	case "eve.Capsule":
 		mnm := "eveCapsule"
-		svg.NewEllipse(lgp, mnm).SetPos(mat32.Vec2{0, 0}).SetRadii(mat32.Vec2{.1, .1})
+		svg.NewEllipse(lgp, mnm).SetPos(mat32.V2(0, 0)).SetRadii(mat32.V2(.1, .1))
 	case "eve.Sphere":
 		mnm := "eveSphere"
-		svg.NewCircle(lgp, mnm).SetPos(mat32.Vec2{0, 0}).SetRadius(.1)
+		svg.NewCircle(lgp, mnm).SetPos(mat32.V2(0, 0)).SetRadius(.1)
 	}
 }
 

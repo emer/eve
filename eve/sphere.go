@@ -17,7 +17,7 @@ type Sphere struct {
 }
 
 func (sp *Sphere) SetBBox() {
-	sp.BBox.SetBounds(mat32.Vec3{-sp.Radius, -sp.Radius, -sp.Radius}, mat32.Vec3{sp.Radius, sp.Radius, sp.Radius})
+	sp.BBox.SetBounds(mat32.V3(-sp.Radius, -sp.Radius, -sp.Radius), mat32.V3(sp.Radius, sp.Radius, sp.Radius))
 	sp.BBox.XForm(sp.Abs.Quat, sp.Abs.Pos)
 }
 

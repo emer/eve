@@ -26,7 +26,7 @@ type Capsule struct {
 func (cp *Capsule) SetBBox() {
 	th := cp.Height + cp.TopRad + cp.BotRad
 	h2 := th / 2
-	cp.BBox.SetBounds(mat32.Vec3{-cp.BotRad, -h2, -cp.BotRad}, mat32.Vec3{cp.TopRad, h2, cp.TopRad})
+	cp.BBox.SetBounds(mat32.V3(-cp.BotRad, -h2, -cp.BotRad), mat32.V3(cp.TopRad, h2, cp.TopRad))
 	cp.BBox.XForm(cp.Abs.Quat, cp.Abs.Pos)
 }
 

@@ -37,7 +37,7 @@ func NewCone(parent ki.Ki, name string, pos mat32.Vec3, height, radius float32) 
 
 func (cy *Cylinder) SetBBox() {
 	h2 := cy.Height / 2
-	cy.BBox.SetBounds(mat32.Vec3{-cy.BotRad, -h2, -cy.BotRad}, mat32.Vec3{cy.TopRad, h2, cy.TopRad})
+	cy.BBox.SetBounds(mat32.V3(-cy.BotRad, -h2, -cy.BotRad), mat32.V3(cy.TopRad, h2, cy.TopRad))
 	cy.BBox.XForm(cy.Abs.Quat, cy.Abs.Pos)
 }
 
