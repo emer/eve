@@ -7,7 +7,7 @@ package evev
 import (
 	"image"
 
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // Camera defines the properties of a camera needed for offscreen rendering

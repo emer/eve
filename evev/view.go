@@ -13,7 +13,7 @@ import (
 	"github.com/emer/eve/v2/eve"
 	"goki.dev/colors"
 	"goki.dev/grr"
-	"goki.dev/ki/v2"
+	"goki.dev/ki"
 	"goki.dev/xyz"
 )
 

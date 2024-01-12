@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 
 	"goki.dev/enums"
-	"goki.dev/ki/v2"
+	"goki.dev/ki"
 )
 
 var _NodeTypesValues = []NodeTypes{0, 1, 2}

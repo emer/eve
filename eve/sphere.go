@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // Sphere is a spherical body shape.

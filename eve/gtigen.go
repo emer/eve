@@ -4,8 +4,8 @@ package eve
 
 import (
 	"goki.dev/gti"
-	"goki.dev/ki/v2"
-	"goki.dev/mat32/v2"
+	"goki.dev/ki"
+	"goki.dev/mat32"
 	"goki.dev/ordmap"
 )
 
@@ -16,9 +16,9 @@ var _ = gti.AddType(&gti.Type{
 	Doc:        "BBox contains bounding box and other gross object properties",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"BBox", &gti.Field{Name: "BBox", Type: "goki.dev/mat32/v2.Box3", LocalType: "mat32.Box3", Doc: "bounding box in world coords (Axis-Aligned Bounding Box = AABB)", Directives: gti.Directives{}, Tag: ""}},
-		{"VelBBox", &gti.Field{Name: "VelBBox", Type: "goki.dev/mat32/v2.Box3", LocalType: "mat32.Box3", Doc: "velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis", Directives: gti.Directives{}, Tag: ""}},
-		{"BSphere", &gti.Field{Name: "BSphere", Type: "goki.dev/mat32/v2.Sphere", LocalType: "mat32.Sphere", Doc: "bounding sphere in local coords", Directives: gti.Directives{}, Tag: ""}},
+		{"BBox", &gti.Field{Name: "BBox", Type: "goki.dev/mat32.Box3", LocalType: "mat32.Box3", Doc: "bounding box in world coords (Axis-Aligned Bounding Box = AABB)", Directives: gti.Directives{}, Tag: ""}},
+		{"VelBBox", &gti.Field{Name: "VelBBox", Type: "goki.dev/mat32.Box3", LocalType: "mat32.Box3", Doc: "velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis", Directives: gti.Directives{}, Tag: ""}},
+		{"BSphere", &gti.Field{Name: "BSphere", Type: "goki.dev/mat32.Sphere", LocalType: "mat32.Sphere", Doc: "bounding sphere in local coords", Directives: gti.Directives{}, Tag: ""}},
 		{"Area", &gti.Field{Name: "Area", Type: "float32", LocalType: "float32", Doc: "area", Directives: gti.Directives{}, Tag: ""}},
 		{"Volume", &gti.Field{Name: "Volume", Type: "float32", LocalType: "float32", Doc: "volume", Directives: gti.Directives{}, Tag: ""}},
 	}),
@@ -126,7 +126,7 @@ var BoxType = gti.AddType(&gti.Type{
 	Doc:        "Box is a box body shape",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Size", &gti.Field{Name: "Size", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)", Directives: gti.Directives{}, Tag: ""}},
+		{"Size", &gti.Field{Name: "Size", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
@@ -311,8 +311,8 @@ var _ = gti.AddType(&gti.Type{
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"A", &gti.Field{Name: "A", Type: "github.com/emer/eve/v2/eve.Body", LocalType: "Body", Doc: "one body", Directives: gti.Directives{}, Tag: ""}},
 		{"B", &gti.Field{Name: "B", Type: "github.com/emer/eve/v2/eve.Body", LocalType: "Body", Doc: "the other body", Directives: gti.Directives{}, Tag: ""}},
-		{"NormB", &gti.Field{Name: "NormB", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "normal pointing from center of B to center of A", Directives: gti.Directives{}, Tag: ""}},
-		{"PtB", &gti.Field{Name: "PtB", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "point on spherical shell of B where A is contacting", Directives: gti.Directives{}, Tag: ""}},
+		{"NormB", &gti.Field{Name: "NormB", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "normal pointing from center of B to center of A", Directives: gti.Directives{}, Tag: ""}},
+		{"PtB", &gti.Field{Name: "PtB", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "point on spherical shell of B where A is contacting", Directives: gti.Directives{}, Tag: ""}},
 		{"Dist", &gti.Field{Name: "Dist", Type: "float32", LocalType: "float32", Doc: "distance from PtB along NormB to contact point on spherical shell of A", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
@@ -494,7 +494,7 @@ var _ = gti.AddType(&gti.Type{
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
 		{"Body", &gti.Field{Name: "Body", Type: "github.com/emer/eve/v2/eve.Body", LocalType: "Body", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-		{"Point", &gti.Field{Name: "Point", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+		{"Point", &gti.Field{Name: "Point", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
@@ -524,7 +524,7 @@ var NodeBaseType = gti.AddType(&gti.Type{
 		{"BBox", &gti.Field{Name: "BBox", Type: "github.com/emer/eve/v2/eve.BBox", LocalType: "BBox", Doc: "bounding box in world coordinates (aggregated for groups)", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Node", &gti.Field{Name: "Node", Type: "goki.dev/ki/v2.Node", LocalType: "ki.Node", Doc: "", Directives: gti.Directives{}, Tag: ""}},
+		{"Node", &gti.Field{Name: "Node", Type: "goki.dev/ki.Node", LocalType: "ki.Node", Doc: "", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
 	Instance: &NodeBase{},
@@ -607,10 +607,10 @@ var _ = gti.AddType(&gti.Type{
 	Doc:        "Phys contains the basic physical properties including position, orientation, velocity.\nThese are only the values that can be either relative or absolute -- other physical\nstate values such as Mass should go in Rigid.",
 	Directives: gti.Directives{},
 	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Pos", &gti.Field{Name: "Pos", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "position of center of mass of object", Directives: gti.Directives{}, Tag: ""}},
-		{"Quat", &gti.Field{Name: "Quat", Type: "goki.dev/mat32/v2.Quat", LocalType: "mat32.Quat", Doc: "rotation specified as a Quat", Directives: gti.Directives{}, Tag: ""}},
-		{"LinVel", &gti.Field{Name: "LinVel", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "linear velocity", Directives: gti.Directives{}, Tag: ""}},
-		{"AngVel", &gti.Field{Name: "AngVel", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "angular velocity", Directives: gti.Directives{}, Tag: ""}},
+		{"Pos", &gti.Field{Name: "Pos", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "position of center of mass of object", Directives: gti.Directives{}, Tag: ""}},
+		{"Quat", &gti.Field{Name: "Quat", Type: "goki.dev/mat32.Quat", LocalType: "mat32.Quat", Doc: "rotation specified as a Quat", Directives: gti.Directives{}, Tag: ""}},
+		{"LinVel", &gti.Field{Name: "LinVel", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "linear velocity", Directives: gti.Directives{}, Tag: ""}},
+		{"AngVel", &gti.Field{Name: "AngVel", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "angular velocity", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
@@ -626,8 +626,8 @@ var _ = gti.AddType(&gti.Type{
 		{"InvMass", &gti.Field{Name: "InvMass", Type: "float32", LocalType: "float32", Doc: "1/mass -- 0 for no mass", Directives: gti.Directives{}, Tag: ""}},
 		{"Bounce", &gti.Field{Name: "Bounce", Type: "float32", LocalType: "float32", Doc: "COR or coefficient of restitution -- how elastic is the collision i.e., final velocity / initial velocity", Directives: gti.Directives{}, Tag: "min:\"0\" max:\"1\""}},
 		{"Friction", &gti.Field{Name: "Friction", Type: "float32", LocalType: "float32", Doc: "friction coefficient -- how much friction is generated by transverse motion", Directives: gti.Directives{}, Tag: ""}},
-		{"Force", &gti.Field{Name: "Force", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "record of computed force vector from last iteration", Directives: gti.Directives{}, Tag: ""}},
-		{"RotInertia", &gti.Field{Name: "RotInertia", Type: "goki.dev/mat32/v2.Mat3", LocalType: "mat32.Mat3", Doc: "Last calculated rotational inertia matrix in local coords", Directives: gti.Directives{}, Tag: ""}},
+		{"Force", &gti.Field{Name: "Force", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "record of computed force vector from last iteration", Directives: gti.Directives{}, Tag: ""}},
+		{"RotInertia", &gti.Field{Name: "RotInertia", Type: "goki.dev/mat32.Mat3", LocalType: "mat32.Mat3", Doc: "Last calculated rotational inertia matrix in local coords", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),

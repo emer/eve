@@ -8,7 +8,7 @@ import (
 	"image"
 	"log"
 
-	"goki.dev/vgpu/v2/vgpu"
+	"goki.dev/vgpu"
 	"goki.dev/xyz"
 
 	vk "github.com/goki/vulkan"

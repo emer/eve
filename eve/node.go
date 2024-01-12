@@ -7,8 +7,8 @@ package eve
 //go:generate goki generate -add-types
 
 import (
-	"goki.dev/ki/v2"
-	"goki.dev/mat32/v2"
+	"goki.dev/ki"
+	"goki.dev/mat32"
 )
 
 // Node is the common interface for all eve nodes

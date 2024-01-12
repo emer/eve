@@ -11,8 +11,8 @@ import (
 	"image"
 
 	"github.com/emer/eve/v2/eve"
-	"goki.dev/ki/v2"
-	"goki.dev/mat32/v2"
+	"goki.dev/ki"
+	"goki.dev/mat32"
 	"goki.dev/svg"
 )
 

@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // Capsule is a generalized cylinder body shape, with hemispheres at each end,

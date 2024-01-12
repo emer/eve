@@ -18,24 +18,21 @@ import (
 	"github.com/emer/eve/v2/evev"
 	"goki.dev/colors"
 	"goki.dev/colors/colormap"
-	"goki.dev/gi/v2/gi"
-	"goki.dev/gi/v2/gimain"
-	"goki.dev/gi/v2/giv"
-	"goki.dev/gi/v2/xyzv"
-	"goki.dev/girl/styles"
-	"goki.dev/goosi/events"
+	"goki.dev/events"
+	"goki.dev/gi"
+	"goki.dev/giv"
 	"goki.dev/grows/images"
 	"goki.dev/icons"
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
+	"goki.dev/styles"
 	"goki.dev/svg"
 	"goki.dev/xyz"
+	"goki.dev/xyzv"
 )
 
 var NoGUI bool
 
-func main() { gimain.Run(app) }
-
-func app() {
+func main() {
 	if len(os.Args) > 1 && os.Args[1] == "-nogui" {
 		NoGUI = true
 	}

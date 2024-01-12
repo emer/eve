@@ -21,7 +21,7 @@ var _ = gti.AddType(&gti.Type{
 		{"MaxD", &gti.Field{Name: "MaxD", Type: "float32", LocalType: "float32", Doc: "maximum distance for depth maps -- anything above is 1 -- this is independent of Near / Far rendering (though must be < Far) and is for normalized depth maps", Directives: gti.Directives{}, Tag: "def:\"20\""}},
 		{"LogD", &gti.Field{Name: "LogD", Type: "bool", LocalType: "bool", Doc: "use the natural log of 1 + depth for normalized depth values in display etc", Directives: gti.Directives{}, Tag: "def:\"true\""}},
 		{"MSample", &gti.Field{Name: "MSample", Type: "int", LocalType: "int", Doc: "number of multi-samples to use for antialising -- 4 is best and default", Directives: gti.Directives{}, Tag: "def:\"4\""}},
-		{"UpDir", &gti.Field{Name: "UpDir", Type: "goki.dev/mat32/v2.Vec3", LocalType: "mat32.Vec3", Doc: "up direction for camera -- which way is up -- defaults to positive Y axis, and is reset by call to LookAt method", Directives: gti.Directives{}, Tag: ""}},
+		{"UpDir", &gti.Field{Name: "UpDir", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "up direction for camera -- which way is up -- defaults to positive Y axis, and is reset by call to LookAt method", Directives: gti.Directives{}, Tag: ""}},
 	}),
 	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
 	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),

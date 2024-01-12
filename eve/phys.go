@@ -7,7 +7,7 @@ package eve
 import (
 	"math"
 
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // Phys contains the basic physical properties including position, orientation, velocity.

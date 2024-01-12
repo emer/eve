@@ -8,7 +8,7 @@ import (
 	"image"
 
 	"goki.dev/colors/colormap"
-	"goki.dev/mat32/v2"
+	"goki.dev/mat32"
 )
 
 // DepthNorm renders a normalized linear depth map from GPU (0-1 normalized floats) to
