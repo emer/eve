@@ -5,7 +5,6 @@
 package eve
 
 import (
-	"goki.dev/ki"
 	"goki.dev/mat32"
 )
 
@@ -22,17 +21,6 @@ type Cylinder struct {
 
 	// radius of the bottom
 	BotRad float32
-}
-
-// NewCone adds a new cone of given name, initial position
-// and height, radius to given parent.
-func NewCone(parent ki.Ki, name string, pos mat32.Vec3, height, radius float32) *Cylinder {
-	cy := parent.NewChild(BoxType, name).(*Cylinder)
-	cy.Initial.Pos = pos
-	cy.Height = height
-	cy.TopRad = 0
-	cy.BotRad = radius
-	return cy
 }
 
 func (cy *Cylinder) SetBBox() {
