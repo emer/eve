@@ -95,7 +95,7 @@ func (vw *View) RenderOffNode(node eve.Node, cam *Camera) error {
 
 // Image returns the current rendered image
 func (vw *View) Image() (*image.RGBA, error) {
-	return vw.Scene.ImageCopy() // todo: use ImageCopy instead?
+	return vw.Scene.ImageCopy()
 }
 
 // DepthImage returns the current rendered depth image
@@ -132,7 +132,7 @@ func (vw *View) InitLibSolid(bod eve.Body, sc *xyz.Scene) {
 	}
 	lgp := sc.NewInLibrary(nm)
 	sld := xyz.NewSolid(lgp, nm)
-	wt := bod.KiType().ShortName
+	wt := bod.KiType().ShortName()
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
@@ -167,7 +167,7 @@ func (vw *View) InitLibSolid(bod eve.Body, sc *xyz.Scene) {
 
 // ConfigBodySolid configures a solid for a body with current values
 func (vw *View) ConfigBodySolid(bod eve.Body, sld *xyz.Solid) {
-	wt := bod.KiType().ShortName
+	wt := bod.KiType().ShortName()
 	switch wt {
 	case "eve.Box":
 		bx := bod.(*eve.Box)

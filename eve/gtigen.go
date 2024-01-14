@@ -6,59 +6,17 @@ import (
 	"goki.dev/gti"
 	"goki.dev/ki"
 	"goki.dev/mat32"
-	"goki.dev/ordmap"
 )
 
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.BBox",
-	ShortName:  "eve.BBox",
-	IDName:     "b-box",
-	Doc:        "BBox contains bounding box and other gross object properties",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"BBox", &gti.Field{Name: "BBox", Type: "goki.dev/mat32.Box3", LocalType: "mat32.Box3", Doc: "bounding box in world coords (Axis-Aligned Bounding Box = AABB)", Directives: gti.Directives{}, Tag: ""}},
-		{"VelBBox", &gti.Field{Name: "VelBBox", Type: "goki.dev/mat32.Box3", LocalType: "mat32.Box3", Doc: "velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis", Directives: gti.Directives{}, Tag: ""}},
-		{"BSphere", &gti.Field{Name: "BSphere", Type: "goki.dev/mat32.Sphere", LocalType: "mat32.Sphere", Doc: "bounding sphere in local coords", Directives: gti.Directives{}, Tag: ""}},
-		{"Area", &gti.Field{Name: "Area", Type: "float32", LocalType: "float32", Doc: "area", Directives: gti.Directives{}, Tag: ""}},
-		{"Volume", &gti.Field{Name: "Volume", Type: "float32", LocalType: "float32", Doc: "volume", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.BBox", IDName: "b-box", Doc: "BBox contains bounding box and other gross object properties", Fields: []gti.Field{{Name: "BBox", Doc: "bounding box in world coords (Axis-Aligned Bounding Box = AABB)"}, {Name: "VelBBox", Doc: "velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis"}, {Name: "BSphere", Doc: "bounding sphere in local coords"}, {Name: "Area", Doc: "area"}, {Name: "Volume", Doc: "volume"}}})
 
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Body",
-	ShortName:  "eve.Body",
-	IDName:     "body",
-	Doc:        "Body is the common interface for all body types",
-	Directives: gti.Directives{},
-
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Body", IDName: "body", Doc: "Body is the common interface for all body types"})
 
 // BodyBaseType is the [gti.Type] for [BodyBase]
-var BodyBaseType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.BodyBase",
-	ShortName:  "eve.BodyBase",
-	IDName:     "body-base",
-	Doc:        "BodyBase is the base type for all specific Body types",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Rigid", &gti.Field{Name: "Rigid", Type: "github.com/emer/eve/v2/eve.Rigid", LocalType: "Rigid", Doc: "rigid body properties, including mass, bounce, friction etc", Directives: gti.Directives{}, Tag: ""}},
-		{"Vis", &gti.Field{Name: "Vis", Type: "string", LocalType: "string", Doc: "visualization name -- looks up an entry in the scene library that provides the visual representation of this body", Directives: gti.Directives{}, Tag: ""}},
-		{"Color", &gti.Field{Name: "Color", Type: "string", LocalType: "string", Doc: "default color of body for basic InitLibrary configuration", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"NodeBase", &gti.Field{Name: "NodeBase", Type: "github.com/emer/eve/v2/eve.NodeBase", LocalType: "NodeBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &BodyBase{},
-})
+var BodyBaseType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.BodyBase", IDName: "body-base", Doc: "BodyBase is the base type for all specific Body types", Embeds: []gti.Field{{Name: "NodeBase"}}, Fields: []gti.Field{{Name: "Rigid", Doc: "rigid body properties, including mass, bounce, friction etc"}, {Name: "Vis", Doc: "visualization name -- looks up an entry in the scene library that provides the visual representation of this body"}, {Name: "Color", Doc: "default color of body for basic InitLibrary configuration"}}, Instance: &BodyBase{}})
 
-// NewBodyBase adds a new [BodyBase] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
+// NewBodyBase adds a new [BodyBase] with the given name to the given parent:
+// BodyBase is the base type for all specific Body types
 func NewBodyBase(par ki.Ki, name ...string) *BodyBase {
 	return par.NewChild(BodyBaseType, name...).(*BodyBase)
 }
@@ -75,70 +33,33 @@ func (t *BodyBase) New() ki.Ki {
 
 // SetRigid sets the [BodyBase.Rigid]:
 // rigid body properties, including mass, bounce, friction etc
-func (t *BodyBase) SetRigid(v Rigid) *BodyBase {
-	t.Rigid = v
-	return t
-}
+func (t *BodyBase) SetRigid(v Rigid) *BodyBase { t.Rigid = v; return t }
 
 // SetVis sets the [BodyBase.Vis]:
 // visualization name -- looks up an entry in the scene library that provides the visual representation of this body
-func (t *BodyBase) SetVis(v string) *BodyBase {
-	t.Vis = v
-	return t
-}
+func (t *BodyBase) SetVis(v string) *BodyBase { t.Vis = v; return t }
 
 // SetColor sets the [BodyBase.Color]:
 // default color of body for basic InitLibrary configuration
-func (t *BodyBase) SetColor(v string) *BodyBase {
-	t.Color = v
-	return t
-}
+func (t *BodyBase) SetColor(v string) *BodyBase { t.Color = v; return t }
 
 // SetInitial sets the [BodyBase.Initial]
-func (t *BodyBase) SetInitial(v Phys) *BodyBase {
-	t.Initial = v
-	return t
-}
+func (t *BodyBase) SetInitial(v Phys) *BodyBase { t.Initial = v; return t }
 
 // SetRel sets the [BodyBase.Rel]
-func (t *BodyBase) SetRel(v Phys) *BodyBase {
-	t.Rel = v
-	return t
-}
+func (t *BodyBase) SetRel(v Phys) *BodyBase { t.Rel = v; return t }
 
 // SetAbs sets the [BodyBase.Abs]
-func (t *BodyBase) SetAbs(v Phys) *BodyBase {
-	t.Abs = v
-	return t
-}
+func (t *BodyBase) SetAbs(v Phys) *BodyBase { t.Abs = v; return t }
 
 // SetBbox sets the [BodyBase.BBox]
-func (t *BodyBase) SetBbox(v BBox) *BodyBase {
-	t.BBox = v
-	return t
-}
+func (t *BodyBase) SetBbox(v BBox) *BodyBase { t.BBox = v; return t }
 
 // BoxType is the [gti.Type] for [Box]
-var BoxType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Box",
-	ShortName:  "eve.Box",
-	IDName:     "box",
-	Doc:        "Box is a box body shape",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Size", &gti.Field{Name: "Size", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &Box{},
-})
+var BoxType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Box", IDName: "box", Doc: "Box is a box body shape", Embeds: []gti.Field{{Name: "BodyBase"}}, Fields: []gti.Field{{Name: "Size", Doc: "size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)"}}, Instance: &Box{}})
 
-// NewBox adds a new [Box] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
+// NewBox adds a new [Box] with the given name to the given parent:
+// Box is a box body shape
 func NewBox(par ki.Ki, name ...string) *Box {
 	return par.NewChild(BoxType, name...).(*Box)
 }
@@ -155,76 +76,35 @@ func (t *Box) New() ki.Ki {
 
 // SetSize sets the [Box.Size]:
 // size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
-func (t *Box) SetSize(v mat32.Vec3) *Box {
-	t.Size = v
-	return t
-}
+func (t *Box) SetSize(v mat32.Vec3) *Box { t.Size = v; return t }
 
 // SetInitial sets the [Box.Initial]
-func (t *Box) SetInitial(v Phys) *Box {
-	t.Initial = v
-	return t
-}
+func (t *Box) SetInitial(v Phys) *Box { t.Initial = v; return t }
 
 // SetRel sets the [Box.Rel]
-func (t *Box) SetRel(v Phys) *Box {
-	t.Rel = v
-	return t
-}
+func (t *Box) SetRel(v Phys) *Box { t.Rel = v; return t }
 
 // SetAbs sets the [Box.Abs]
-func (t *Box) SetAbs(v Phys) *Box {
-	t.Abs = v
-	return t
-}
+func (t *Box) SetAbs(v Phys) *Box { t.Abs = v; return t }
 
 // SetBbox sets the [Box.BBox]
-func (t *Box) SetBbox(v BBox) *Box {
-	t.BBox = v
-	return t
-}
+func (t *Box) SetBbox(v BBox) *Box { t.BBox = v; return t }
 
 // SetRigid sets the [Box.Rigid]
-func (t *Box) SetRigid(v Rigid) *Box {
-	t.Rigid = v
-	return t
-}
+func (t *Box) SetRigid(v Rigid) *Box { t.Rigid = v; return t }
 
 // SetVis sets the [Box.Vis]
-func (t *Box) SetVis(v string) *Box {
-	t.Vis = v
-	return t
-}
+func (t *Box) SetVis(v string) *Box { t.Vis = v; return t }
 
 // SetColor sets the [Box.Color]
-func (t *Box) SetColor(v string) *Box {
-	t.Color = v
-	return t
-}
+func (t *Box) SetColor(v string) *Box { t.Color = v; return t }
 
 // CapsuleType is the [gti.Type] for [Capsule]
-var CapsuleType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Capsule",
-	ShortName:  "eve.Capsule",
-	IDName:     "capsule",
-	Doc:        "Capsule is a generalized cylinder body shape, with hemispheres at each end,\nwith separate radii for top and bottom.",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Height", &gti.Field{Name: "Height", Type: "float32", LocalType: "float32", Doc: "height of the cylinder portion of the capsule", Directives: gti.Directives{}, Tag: ""}},
-		{"TopRad", &gti.Field{Name: "TopRad", Type: "float32", LocalType: "float32", Doc: "radius of the top hemisphere", Directives: gti.Directives{}, Tag: ""}},
-		{"BotRad", &gti.Field{Name: "BotRad", Type: "float32", LocalType: "float32", Doc: "radius of the bottom hemisphere", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &Capsule{},
-})
+var CapsuleType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Capsule", IDName: "capsule", Doc: "Capsule is a generalized cylinder body shape, with hemispheres at each end,\nwith separate radii for top and bottom.", Embeds: []gti.Field{{Name: "BodyBase"}}, Fields: []gti.Field{{Name: "Height", Doc: "height of the cylinder portion of the capsule"}, {Name: "TopRad", Doc: "radius of the top hemisphere"}, {Name: "BotRad", Doc: "radius of the bottom hemisphere"}}, Instance: &Capsule{}})
 
-// NewCapsule adds a new [Capsule] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
+// NewCapsule adds a new [Capsule] with the given name to the given parent:
+// Capsule is a generalized cylinder body shape, with hemispheres at each end,
+// with separate radii for top and bottom.
 func NewCapsule(par ki.Ki, name ...string) *Capsule {
 	return par.NewChild(CapsuleType, name...).(*Capsule)
 }
@@ -241,117 +121,47 @@ func (t *Capsule) New() ki.Ki {
 
 // SetHeight sets the [Capsule.Height]:
 // height of the cylinder portion of the capsule
-func (t *Capsule) SetHeight(v float32) *Capsule {
-	t.Height = v
-	return t
-}
+func (t *Capsule) SetHeight(v float32) *Capsule { t.Height = v; return t }
 
 // SetTopRad sets the [Capsule.TopRad]:
 // radius of the top hemisphere
-func (t *Capsule) SetTopRad(v float32) *Capsule {
-	t.TopRad = v
-	return t
-}
+func (t *Capsule) SetTopRad(v float32) *Capsule { t.TopRad = v; return t }
 
 // SetBotRad sets the [Capsule.BotRad]:
 // radius of the bottom hemisphere
-func (t *Capsule) SetBotRad(v float32) *Capsule {
-	t.BotRad = v
-	return t
-}
+func (t *Capsule) SetBotRad(v float32) *Capsule { t.BotRad = v; return t }
 
 // SetInitial sets the [Capsule.Initial]
-func (t *Capsule) SetInitial(v Phys) *Capsule {
-	t.Initial = v
-	return t
-}
+func (t *Capsule) SetInitial(v Phys) *Capsule { t.Initial = v; return t }
 
 // SetRel sets the [Capsule.Rel]
-func (t *Capsule) SetRel(v Phys) *Capsule {
-	t.Rel = v
-	return t
-}
+func (t *Capsule) SetRel(v Phys) *Capsule { t.Rel = v; return t }
 
 // SetAbs sets the [Capsule.Abs]
-func (t *Capsule) SetAbs(v Phys) *Capsule {
-	t.Abs = v
-	return t
-}
+func (t *Capsule) SetAbs(v Phys) *Capsule { t.Abs = v; return t }
 
 // SetBbox sets the [Capsule.BBox]
-func (t *Capsule) SetBbox(v BBox) *Capsule {
-	t.BBox = v
-	return t
-}
+func (t *Capsule) SetBbox(v BBox) *Capsule { t.BBox = v; return t }
 
 // SetRigid sets the [Capsule.Rigid]
-func (t *Capsule) SetRigid(v Rigid) *Capsule {
-	t.Rigid = v
-	return t
-}
+func (t *Capsule) SetRigid(v Rigid) *Capsule { t.Rigid = v; return t }
 
 // SetVis sets the [Capsule.Vis]
-func (t *Capsule) SetVis(v string) *Capsule {
-	t.Vis = v
-	return t
-}
+func (t *Capsule) SetVis(v string) *Capsule { t.Vis = v; return t }
 
 // SetColor sets the [Capsule.Color]
-func (t *Capsule) SetColor(v string) *Capsule {
-	t.Color = v
-	return t
-}
+func (t *Capsule) SetColor(v string) *Capsule { t.Color = v; return t }
 
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Contact",
-	ShortName:  "eve.Contact",
-	IDName:     "contact",
-	Doc:        "Contact is one pairwise point of contact between two bodies.\nContacts are represented in spherical terms relative to the\nspherical BBox of A and B.",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"A", &gti.Field{Name: "A", Type: "github.com/emer/eve/v2/eve.Body", LocalType: "Body", Doc: "one body", Directives: gti.Directives{}, Tag: ""}},
-		{"B", &gti.Field{Name: "B", Type: "github.com/emer/eve/v2/eve.Body", LocalType: "Body", Doc: "the other body", Directives: gti.Directives{}, Tag: ""}},
-		{"NormB", &gti.Field{Name: "NormB", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "normal pointing from center of B to center of A", Directives: gti.Directives{}, Tag: ""}},
-		{"PtB", &gti.Field{Name: "PtB", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "point on spherical shell of B where A is contacting", Directives: gti.Directives{}, Tag: ""}},
-		{"Dist", &gti.Field{Name: "Dist", Type: "float32", LocalType: "float32", Doc: "distance from PtB along NormB to contact point on spherical shell of A", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Contact", IDName: "contact", Doc: "Contact is one pairwise point of contact between two bodies.\nContacts are represented in spherical terms relative to the\nspherical BBox of A and B.", Fields: []gti.Field{{Name: "A", Doc: "one body"}, {Name: "B", Doc: "the other body"}, {Name: "NormB", Doc: "normal pointing from center of B to center of A"}, {Name: "PtB", Doc: "point on spherical shell of B where A is contacting"}, {Name: "Dist", Doc: "distance from PtB along NormB to contact point on spherical shell of A"}}})
 
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Contacts",
-	ShortName:  "eve.Contacts",
-	IDName:     "contacts",
-	Doc:        "Contacts is a slice list of contacts",
-	Directives: gti.Directives{},
-
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Contacts", IDName: "contacts", Doc: "Contacts is a slice list of contacts"})
 
 // CylinderType is the [gti.Type] for [Cylinder]
-var CylinderType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Cylinder",
-	ShortName:  "eve.Cylinder",
-	IDName:     "cylinder",
-	Doc:        "Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.\nA cone has a zero radius at one end.",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Height", &gti.Field{Name: "Height", Type: "float32", LocalType: "float32", Doc: "height of the cylinder", Directives: gti.Directives{}, Tag: ""}},
-		{"TopRad", &gti.Field{Name: "TopRad", Type: "float32", LocalType: "float32", Doc: "radius of the top -- set to 0 for a cone", Directives: gti.Directives{}, Tag: ""}},
-		{"BotRad", &gti.Field{Name: "BotRad", Type: "float32", LocalType: "float32", Doc: "radius of the bottom", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &Cylinder{},
-})
+var CylinderType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Cylinder", IDName: "cylinder", Doc: "Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.\nA cone has a zero radius at one end.", Embeds: []gti.Field{{Name: "BodyBase"}}, Fields: []gti.Field{{Name: "Height", Doc: "height of the cylinder"}, {Name: "TopRad", Doc: "radius of the top -- set to 0 for a cone"}, {Name: "BotRad", Doc: "radius of the bottom"}}, Instance: &Cylinder{}})
 
-// NewCylinder adds a new [Cylinder] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
+// NewCylinder adds a new [Cylinder] with the given name to the given parent:
+// Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.
+// A cone has a zero radius at one end.
 func NewCylinder(par ki.Ki, name ...string) *Cylinder {
 	return par.NewChild(CylinderType, name...).(*Cylinder)
 }
@@ -368,86 +178,45 @@ func (t *Cylinder) New() ki.Ki {
 
 // SetHeight sets the [Cylinder.Height]:
 // height of the cylinder
-func (t *Cylinder) SetHeight(v float32) *Cylinder {
-	t.Height = v
-	return t
-}
+func (t *Cylinder) SetHeight(v float32) *Cylinder { t.Height = v; return t }
 
 // SetTopRad sets the [Cylinder.TopRad]:
 // radius of the top -- set to 0 for a cone
-func (t *Cylinder) SetTopRad(v float32) *Cylinder {
-	t.TopRad = v
-	return t
-}
+func (t *Cylinder) SetTopRad(v float32) *Cylinder { t.TopRad = v; return t }
 
 // SetBotRad sets the [Cylinder.BotRad]:
 // radius of the bottom
-func (t *Cylinder) SetBotRad(v float32) *Cylinder {
-	t.BotRad = v
-	return t
-}
+func (t *Cylinder) SetBotRad(v float32) *Cylinder { t.BotRad = v; return t }
 
 // SetInitial sets the [Cylinder.Initial]
-func (t *Cylinder) SetInitial(v Phys) *Cylinder {
-	t.Initial = v
-	return t
-}
+func (t *Cylinder) SetInitial(v Phys) *Cylinder { t.Initial = v; return t }
 
 // SetRel sets the [Cylinder.Rel]
-func (t *Cylinder) SetRel(v Phys) *Cylinder {
-	t.Rel = v
-	return t
-}
+func (t *Cylinder) SetRel(v Phys) *Cylinder { t.Rel = v; return t }
 
 // SetAbs sets the [Cylinder.Abs]
-func (t *Cylinder) SetAbs(v Phys) *Cylinder {
-	t.Abs = v
-	return t
-}
+func (t *Cylinder) SetAbs(v Phys) *Cylinder { t.Abs = v; return t }
 
 // SetBbox sets the [Cylinder.BBox]
-func (t *Cylinder) SetBbox(v BBox) *Cylinder {
-	t.BBox = v
-	return t
-}
+func (t *Cylinder) SetBbox(v BBox) *Cylinder { t.BBox = v; return t }
 
 // SetRigid sets the [Cylinder.Rigid]
-func (t *Cylinder) SetRigid(v Rigid) *Cylinder {
-	t.Rigid = v
-	return t
-}
+func (t *Cylinder) SetRigid(v Rigid) *Cylinder { t.Rigid = v; return t }
 
 // SetVis sets the [Cylinder.Vis]
-func (t *Cylinder) SetVis(v string) *Cylinder {
-	t.Vis = v
-	return t
-}
+func (t *Cylinder) SetVis(v string) *Cylinder { t.Vis = v; return t }
 
 // SetColor sets the [Cylinder.Color]
-func (t *Cylinder) SetColor(v string) *Cylinder {
-	t.Color = v
-	return t
-}
+func (t *Cylinder) SetColor(v string) *Cylinder { t.Color = v; return t }
 
 // GroupType is the [gti.Type] for [Group]
-var GroupType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Group",
-	ShortName:  "eve.Group",
-	IDName:     "group",
-	Doc:        "Group is a container of bodies, joints, or other groups\nit should be used strategically to partition the space\nand its BBox is used to optimize tree-based collision detection.\nUse a group for the top-level World node as well.",
-	Directives: gti.Directives{},
-	Fields:     ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"NodeBase", &gti.Field{Name: "NodeBase", Type: "github.com/emer/eve/v2/eve.NodeBase", LocalType: "NodeBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &Group{},
-})
+var GroupType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Group", IDName: "group", Doc: "Group is a container of bodies, joints, or other groups\nit should be used strategically to partition the space\nand its BBox is used to optimize tree-based collision detection.\nUse a group for the top-level World node as well.", Embeds: []gti.Field{{Name: "NodeBase"}}, Instance: &Group{}})
 
-// NewGroup adds a new [Group] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
+// NewGroup adds a new [Group] with the given name to the given parent:
+// Group is a container of bodies, joints, or other groups
+// it should be used strategically to partition the space
+// and its BBox is used to optimize tree-based collision detection.
+// Use a group for the top-level World node as well.
 func NewGroup(par ki.Ki, name ...string) *Group {
 	return par.NewChild(GroupType, name...).(*Group)
 }
@@ -463,77 +232,28 @@ func (t *Group) New() ki.Ki {
 }
 
 // SetInitial sets the [Group.Initial]
-func (t *Group) SetInitial(v Phys) *Group {
-	t.Initial = v
-	return t
-}
+func (t *Group) SetInitial(v Phys) *Group { t.Initial = v; return t }
 
 // SetRel sets the [Group.Rel]
-func (t *Group) SetRel(v Phys) *Group {
-	t.Rel = v
-	return t
-}
+func (t *Group) SetRel(v Phys) *Group { t.Rel = v; return t }
 
 // SetAbs sets the [Group.Abs]
-func (t *Group) SetAbs(v Phys) *Group {
-	t.Abs = v
-	return t
-}
+func (t *Group) SetAbs(v Phys) *Group { t.Abs = v; return t }
 
 // SetBbox sets the [Group.BBox]
-func (t *Group) SetBbox(v BBox) *Group {
-	t.BBox = v
-	return t
-}
+func (t *Group) SetBbox(v BBox) *Group { t.BBox = v; return t }
 
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.BodyPoint",
-	ShortName:  "eve.BodyPoint",
-	IDName:     "body-point",
-	Doc:        "BodyPoint contains a Body and a Point on that body",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Body", &gti.Field{Name: "Body", Type: "github.com/emer/eve/v2/eve.Body", LocalType: "Body", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-		{"Point", &gti.Field{Name: "Point", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.BodyPoint", IDName: "body-point", Doc: "BodyPoint contains a Body and a Point on that body", Fields: []gti.Field{{Name: "Body"}, {Name: "Point"}}})
 
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Node",
-	ShortName:  "eve.Node",
-	IDName:     "node",
-	Doc:        "Node is the common interface for all eve nodes",
-	Directives: gti.Directives{},
-
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Node", IDName: "node", Doc: "Node is the common interface for all eve nodes"})
 
 // NodeBaseType is the [gti.Type] for [NodeBase]
-var NodeBaseType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.NodeBase",
-	ShortName:  "eve.NodeBase",
-	IDName:     "node-base",
-	Doc:        "NodeBase is the basic eve node, which has position, rotation, velocity\nand computed bounding boxes, etc.\nThere are only three different kinds of Nodes: Group, Body, and Joint",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Initial", &gti.Field{Name: "Initial", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "initial position, orientation, velocity in *local* coordinates (relative to parent)", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
-		{"Rel", &gti.Field{Name: "Rel", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom", Directives: gti.Directives{}, Tag: "view:\"inline\""}},
-		{"Abs", &gti.Field{Name: "Abs", Type: "github.com/emer/eve/v2/eve.Phys", LocalType: "Phys", Doc: "current absolute (world) position, orientation, velocity", Directives: gti.Directives{}, Tag: "inactive:\"+\" view:\"inline\""}},
-		{"BBox", &gti.Field{Name: "BBox", Type: "github.com/emer/eve/v2/eve.BBox", LocalType: "BBox", Doc: "bounding box in world coordinates (aggregated for groups)", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Node", &gti.Field{Name: "Node", Type: "goki.dev/ki.Node", LocalType: "ki.Node", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &NodeBase{},
-})
+var NodeBaseType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeBase", IDName: "node-base", Doc: "NodeBase is the basic eve node, which has position, rotation, velocity\nand computed bounding boxes, etc.\nThere are only three different kinds of Nodes: Group, Body, and Joint", Embeds: []gti.Field{{Name: "Node"}}, Fields: []gti.Field{{Name: "Initial", Doc: "initial position, orientation, velocity in *local* coordinates (relative to parent)"}, {Name: "Rel", Doc: "current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom"}, {Name: "Abs", Doc: "current absolute (world) position, orientation, velocity"}, {Name: "BBox", Doc: "bounding box in world coordinates (aggregated for groups)"}}, Instance: &NodeBase{}})
 
-// NewNodeBase adds a new [NodeBase] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
+// NewNodeBase adds a new [NodeBase] with the given name to the given parent:
+// NodeBase is the basic eve node, which has position, rotation, velocity
+// and computed bounding boxes, etc.
+// There are only three different kinds of Nodes: Group, Body, and Joint
 func NewNodeBase(par ki.Ki, name ...string) *NodeBase {
 	return par.NewChild(NodeBaseType, name...).(*NodeBase)
 }
@@ -550,110 +270,33 @@ func (t *NodeBase) New() ki.Ki {
 
 // SetInitial sets the [NodeBase.Initial]:
 // initial position, orientation, velocity in *local* coordinates (relative to parent)
-func (t *NodeBase) SetInitial(v Phys) *NodeBase {
-	t.Initial = v
-	return t
-}
+func (t *NodeBase) SetInitial(v Phys) *NodeBase { t.Initial = v; return t }
 
 // SetRel sets the [NodeBase.Rel]:
 // current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom
-func (t *NodeBase) SetRel(v Phys) *NodeBase {
-	t.Rel = v
-	return t
-}
+func (t *NodeBase) SetRel(v Phys) *NodeBase { t.Rel = v; return t }
 
 // SetAbs sets the [NodeBase.Abs]:
 // current absolute (world) position, orientation, velocity
-func (t *NodeBase) SetAbs(v Phys) *NodeBase {
-	t.Abs = v
-	return t
-}
+func (t *NodeBase) SetAbs(v Phys) *NodeBase { t.Abs = v; return t }
 
 // SetBbox sets the [NodeBase.BBox]:
 // bounding box in world coordinates (aggregated for groups)
-func (t *NodeBase) SetBbox(v BBox) *NodeBase {
-	t.BBox = v
-	return t
-}
+func (t *NodeBase) SetBbox(v BBox) *NodeBase { t.BBox = v; return t }
 
-var _ = gti.AddType(&gti.Type{
-	Name:      "github.com/emer/eve/v2/eve.NodeTypes",
-	ShortName: "eve.NodeTypes",
-	IDName:    "node-types",
-	Doc:       "NodeTypes is a list of node types",
-	Directives: gti.Directives{
-		&gti.Directive{Tool: "enums", Directive: "enum", Args: []string{}},
-	},
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeTypes", IDName: "node-types", Doc: "NodeTypes is a list of node types", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
 
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeFlags", IDName: "node-flags", Doc: "NodeFlags define eve node bitflags -- uses ki Flags field (64 bit capacity)", Directives: []gti.Directive{{Tool: "enums", Directive: "bitflag"}}})
 
-var _ = gti.AddType(&gti.Type{
-	Name:      "github.com/emer/eve/v2/eve.NodeFlags",
-	ShortName: "eve.NodeFlags",
-	IDName:    "node-flags",
-	Doc:       "NodeFlags define eve node bitflags -- uses ki Flags field (64 bit capacity)",
-	Directives: gti.Directives{
-		&gti.Directive{Tool: "enums", Directive: "bitflag", Args: []string{}},
-	},
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Phys", IDName: "phys", Doc: "Phys contains the basic physical properties including position, orientation, velocity.\nThese are only the values that can be either relative or absolute -- other physical\nstate values such as Mass should go in Rigid.", Fields: []gti.Field{{Name: "Pos", Doc: "position of center of mass of object"}, {Name: "Quat", Doc: "rotation specified as a Quat"}, {Name: "LinVel", Doc: "linear velocity"}, {Name: "AngVel", Doc: "angular velocity"}}})
 
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
-
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Phys",
-	ShortName:  "eve.Phys",
-	IDName:     "phys",
-	Doc:        "Phys contains the basic physical properties including position, orientation, velocity.\nThese are only the values that can be either relative or absolute -- other physical\nstate values such as Mass should go in Rigid.",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Pos", &gti.Field{Name: "Pos", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "position of center of mass of object", Directives: gti.Directives{}, Tag: ""}},
-		{"Quat", &gti.Field{Name: "Quat", Type: "goki.dev/mat32.Quat", LocalType: "mat32.Quat", Doc: "rotation specified as a Quat", Directives: gti.Directives{}, Tag: ""}},
-		{"LinVel", &gti.Field{Name: "LinVel", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "linear velocity", Directives: gti.Directives{}, Tag: ""}},
-		{"AngVel", &gti.Field{Name: "AngVel", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "angular velocity", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
-
-var _ = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Rigid",
-	ShortName:  "eve.Rigid",
-	IDName:     "rigid",
-	Doc:        "Rigid contains the full specification of a given object's basic physics\nproperties including position, orientation, velocity.  These",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"InvMass", &gti.Field{Name: "InvMass", Type: "float32", LocalType: "float32", Doc: "1/mass -- 0 for no mass", Directives: gti.Directives{}, Tag: ""}},
-		{"Bounce", &gti.Field{Name: "Bounce", Type: "float32", LocalType: "float32", Doc: "COR or coefficient of restitution -- how elastic is the collision i.e., final velocity / initial velocity", Directives: gti.Directives{}, Tag: "min:\"0\" max:\"1\""}},
-		{"Friction", &gti.Field{Name: "Friction", Type: "float32", LocalType: "float32", Doc: "friction coefficient -- how much friction is generated by transverse motion", Directives: gti.Directives{}, Tag: ""}},
-		{"Force", &gti.Field{Name: "Force", Type: "goki.dev/mat32.Vec3", LocalType: "mat32.Vec3", Doc: "record of computed force vector from last iteration", Directives: gti.Directives{}, Tag: ""}},
-		{"RotInertia", &gti.Field{Name: "RotInertia", Type: "goki.dev/mat32.Mat3", LocalType: "mat32.Mat3", Doc: "Last calculated rotational inertia matrix in local coords", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds:  ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Rigid", IDName: "rigid", Doc: "Rigid contains the full specification of a given object's basic physics\nproperties including position, orientation, velocity.  These", Fields: []gti.Field{{Name: "InvMass", Doc: "1/mass -- 0 for no mass"}, {Name: "Bounce", Doc: "COR or coefficient of restitution -- how elastic is the collision i.e., final velocity / initial velocity"}, {Name: "Friction", Doc: "friction coefficient -- how much friction is generated by transverse motion"}, {Name: "Force", Doc: "record of computed force vector from last iteration"}, {Name: "RotInertia", Doc: "Last calculated rotational inertia matrix in local coords"}}})
 
 // SphereType is the [gti.Type] for [Sphere]
-var SphereType = gti.AddType(&gti.Type{
-	Name:       "github.com/emer/eve/v2/eve.Sphere",
-	ShortName:  "eve.Sphere",
-	IDName:     "sphere",
-	Doc:        "Sphere is a spherical body shape.",
-	Directives: gti.Directives{},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"Radius", &gti.Field{Name: "Radius", Type: "float32", LocalType: "float32", Doc: "radius", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"BodyBase", &gti.Field{Name: "BodyBase", Type: "github.com/emer/eve/v2/eve.BodyBase", LocalType: "BodyBase", Doc: "", Directives: gti.Directives{}, Tag: ""}},
-	}),
-	Methods:  ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{}),
-	Instance: &Sphere{},
-})
+var SphereType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Sphere", IDName: "sphere", Doc: "Sphere is a spherical body shape.", Embeds: []gti.Field{{Name: "BodyBase"}}, Fields: []gti.Field{{Name: "Radius", Doc: "radius"}}, Instance: &Sphere{}})
 
-// NewSphere adds a new [Sphere] with the given name
-// to the given parent. If the name is unspecified, it defaults
-// to the ID (kebab-case) name of the type, plus the
-// [ki.Ki.NumLifetimeChildren] of the given parent.
+// NewSphere adds a new [Sphere] with the given name to the given parent:
+// Sphere is a spherical body shape.
 func NewSphere(par ki.Ki, name ...string) *Sphere {
 	return par.NewChild(SphereType, name...).(*Sphere)
 }
@@ -670,49 +313,25 @@ func (t *Sphere) New() ki.Ki {
 
 // SetRadius sets the [Sphere.Radius]:
 // radius
-func (t *Sphere) SetRadius(v float32) *Sphere {
-	t.Radius = v
-	return t
-}
+func (t *Sphere) SetRadius(v float32) *Sphere { t.Radius = v; return t }
 
 // SetInitial sets the [Sphere.Initial]
-func (t *Sphere) SetInitial(v Phys) *Sphere {
-	t.Initial = v
-	return t
-}
+func (t *Sphere) SetInitial(v Phys) *Sphere { t.Initial = v; return t }
 
 // SetRel sets the [Sphere.Rel]
-func (t *Sphere) SetRel(v Phys) *Sphere {
-	t.Rel = v
-	return t
-}
+func (t *Sphere) SetRel(v Phys) *Sphere { t.Rel = v; return t }
 
 // SetAbs sets the [Sphere.Abs]
-func (t *Sphere) SetAbs(v Phys) *Sphere {
-	t.Abs = v
-	return t
-}
+func (t *Sphere) SetAbs(v Phys) *Sphere { t.Abs = v; return t }
 
 // SetBbox sets the [Sphere.BBox]
-func (t *Sphere) SetBbox(v BBox) *Sphere {
-	t.BBox = v
-	return t
-}
+func (t *Sphere) SetBbox(v BBox) *Sphere { t.BBox = v; return t }
 
 // SetRigid sets the [Sphere.Rigid]
-func (t *Sphere) SetRigid(v Rigid) *Sphere {
-	t.Rigid = v
-	return t
-}
+func (t *Sphere) SetRigid(v Rigid) *Sphere { t.Rigid = v; return t }
 
 // SetVis sets the [Sphere.Vis]
-func (t *Sphere) SetVis(v string) *Sphere {
-	t.Vis = v
-	return t
-}
+func (t *Sphere) SetVis(v string) *Sphere { t.Vis = v; return t }
 
 // SetColor sets the [Sphere.Color]
-func (t *Sphere) SetColor(v string) *Sphere {
-	t.Color = v
-	return t
-}
+func (t *Sphere) SetColor(v string) *Sphere { t.Color = v; return t }

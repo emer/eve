@@ -4,65 +4,6 @@ package main
 
 import (
 	"goki.dev/gti"
-	"goki.dev/ordmap"
 )
 
-var _ = gti.AddType(&gti.Type{
-	Name:      "main.Env",
-	ShortName: "main.Env",
-	IDName:    "env",
-	Doc:       "Env encapsulates the virtual environment",
-	Directives: gti.Directives{
-		&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-	},
-	Fields: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{
-		{"EmerHt", &gti.Field{Name: "EmerHt", Type: "float32", LocalType: "float32", Doc: "height of emer", Directives: gti.Directives{}, Tag: ""}},
-		{"MoveStep", &gti.Field{Name: "MoveStep", Type: "float32", LocalType: "float32", Doc: "how far to move every step", Directives: gti.Directives{}, Tag: ""}},
-		{"RotStep", &gti.Field{Name: "RotStep", Type: "float32", LocalType: "float32", Doc: "how far to rotate every step", Directives: gti.Directives{}, Tag: ""}},
-		{"Width", &gti.Field{Name: "Width", Type: "float32", LocalType: "float32", Doc: "width of room", Directives: gti.Directives{}, Tag: ""}},
-		{"Depth", &gti.Field{Name: "Depth", Type: "float32", LocalType: "float32", Doc: "depth of room", Directives: gti.Directives{}, Tag: ""}},
-		{"Height", &gti.Field{Name: "Height", Type: "float32", LocalType: "float32", Doc: "height of room", Directives: gti.Directives{}, Tag: ""}},
-		{"Thick", &gti.Field{Name: "Thick", Type: "float32", LocalType: "float32", Doc: "thickness of walls of room", Directives: gti.Directives{}, Tag: ""}},
-		{"DepthVals", &gti.Field{Name: "DepthVals", Type: "[]float32", LocalType: "[]float32", Doc: "current depth map", Directives: gti.Directives{}, Tag: ""}},
-		{"Camera", &gti.Field{Name: "Camera", Type: "github.com/emer/eve/v2/evev.Camera", LocalType: "evev.Camera", Doc: "offscreen render camera settings", Directives: gti.Directives{}, Tag: ""}},
-		{"DepthMap", &gti.Field{Name: "DepthMap", Type: "goki.dev/gi/v2/giv.ColorMapName", LocalType: "giv.ColorMapName", Doc: "color map to use for rendering depth map", Directives: gti.Directives{}, Tag: ""}},
-		{"World", &gti.Field{Name: "World", Type: "*github.com/emer/eve/v2/eve.Group", LocalType: "*eve.Group", Doc: "world", Directives: gti.Directives{}, Tag: "view:\"-\""}},
-		{"View3D", &gti.Field{Name: "View3D", Type: "*github.com/emer/eve/v2/evev.View", LocalType: "*evev.View", Doc: "3D view of world", Directives: gti.Directives{}, Tag: ""}},
-		{"View2D", &gti.Field{Name: "View2D", Type: "*github.com/emer/eve/v2/eve2d.View", LocalType: "*eve2d.View", Doc: "view of world", Directives: gti.Directives{}, Tag: ""}},
-		{"Emer", &gti.Field{Name: "Emer", Type: "*github.com/emer/eve/v2/eve.Group", LocalType: "*eve.Group", Doc: "emer group", Directives: gti.Directives{}, Tag: "view:\"-\""}},
-		{"EyeR", &gti.Field{Name: "EyeR", Type: "github.com/emer/eve/v2/eve.Body", LocalType: "eve.Body", Doc: "Right eye of emer", Directives: gti.Directives{}, Tag: "view:\"-\""}},
-		{"Contacts", &gti.Field{Name: "Contacts", Type: "github.com/emer/eve/v2/eve.Contacts", LocalType: "eve.Contacts", Doc: "contacts from last step, for body", Directives: gti.Directives{}, Tag: "view:\"-\""}},
-		{"EyeRImg", &gti.Field{Name: "EyeRImg", Type: "*goki.dev/gi/v2/gi.Image", LocalType: "*gi.Image", Doc: "snapshot bitmap view", Directives: gti.Directives{}, Tag: "view:\"-\""}},
-		{"DepthImg", &gti.Field{Name: "DepthImg", Type: "*goki.dev/gi/v2/gi.Image", LocalType: "*gi.Image", Doc: "depth map bitmap view", Directives: gti.Directives{}, Tag: "view:\"-\""}},
-	}),
-	Embeds: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}),
-	Methods: ordmap.Make([]ordmap.KeyVal[string, *gti.Method]{
-		{"WorldInit", &gti.Method{Name: "WorldInit", Doc: "InitWorld does init on world and re-syncs", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"ReMakeWorld", &gti.Method{Name: "ReMakeWorld", Doc: "ReMakeWorld rebuilds the world and re-syncs with gui", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"GrabEyeImg", &gti.Method{Name: "GrabEyeImg", Doc: "GrabEyeImg takes a snapshot from the perspective of Emer's right eye", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"StepForward", &gti.Method{Name: "StepForward", Doc: "StepForward moves Emer forward in current facing direction one step, and takes GrabEyeImg", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"StepBackward", &gti.Method{Name: "StepBackward", Doc: "StepBackward moves Emer backward in current facing direction one step, and takes GrabEyeImg", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"RotBodyLeft", &gti.Method{Name: "RotBodyLeft", Doc: "RotBodyLeft rotates emer left and takes GrabEyeImg", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"RotBodyRight", &gti.Method{Name: "RotBodyRight", Doc: "RotBodyRight rotates emer right and takes GrabEyeImg", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"RotHeadLeft", &gti.Method{Name: "RotHeadLeft", Doc: "RotHeadLeft rotates emer left and takes GrabEyeImg", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-		{"RotHeadRight", &gti.Method{Name: "RotHeadRight", Doc: "RotHeadRight rotates emer right and takes GrabEyeImg", Directives: gti.Directives{
-			&gti.Directive{Tool: "gti", Directive: "add", Args: []string{}},
-		}, Args: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{}), Returns: ordmap.Make([]ordmap.KeyVal[string, *gti.Field]{})}},
-	}),
-})
+var _ = gti.AddType(&gti.Type{Name: "main.Env", IDName: "env", Doc: "Env encapsulates the virtual environment", Methods: []gti.Method{{Name: "WorldInit", Doc: "InitWorld does init on world and re-syncs", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "ReMakeWorld", Doc: "ReMakeWorld rebuilds the world and re-syncs with gui", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "GrabEyeImg", Doc: "GrabEyeImg takes a snapshot from the perspective of Emer's right eye", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "StepForward", Doc: "StepForward moves Emer forward in current facing direction one step, and takes GrabEyeImg", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "StepBackward", Doc: "StepBackward moves Emer backward in current facing direction one step, and takes GrabEyeImg", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "RotBodyLeft", Doc: "RotBodyLeft rotates emer left and takes GrabEyeImg", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "RotBodyRight", Doc: "RotBodyRight rotates emer right and takes GrabEyeImg", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "RotHeadLeft", Doc: "RotHeadLeft rotates emer left and takes GrabEyeImg", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}, {Name: "RotHeadRight", Doc: "RotHeadRight rotates emer right and takes GrabEyeImg", Directives: []gti.Directive{{Tool: "gti", Directive: "add"}}}}, Fields: []gti.Field{{Name: "EmerHt", Doc: "height of emer"}, {Name: "MoveStep", Doc: "how far to move every step"}, {Name: "RotStep", Doc: "how far to rotate every step"}, {Name: "Width", Doc: "width of room"}, {Name: "Depth", Doc: "depth of room"}, {Name: "Height", Doc: "height of room"}, {Name: "Thick", Doc: "thickness of walls of room"}, {Name: "DepthVals", Doc: "current depth map"}, {Name: "Camera", Doc: "offscreen render camera settings"}, {Name: "DepthMap", Doc: "color map to use for rendering depth map"}, {Name: "World", Doc: "world"}, {Name: "View3D", Doc: "3D view of world"}, {Name: "View2D", Doc: "view of world"}, {Name: "SceneView", Doc: "3D visualization of the Scene"}, {Name: "Scene2D", Doc: "2D visualization of the Scene"}, {Name: "Emer", Doc: "emer group"}, {Name: "EyeR", Doc: "Right eye of emer"}, {Name: "Contacts", Doc: "contacts from last step, for body"}, {Name: "EyeRImg", Doc: "snapshot bitmap view"}, {Name: "DepthImg", Doc: "depth map bitmap view"}}})

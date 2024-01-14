@@ -167,7 +167,7 @@ func (vw *View) InitLibShape(bod eve.Body) {
 		return
 	}
 	lgp := vw.NewInLibrary(nm)
-	wt := bod.KiType().ShortName
+	wt := bod.KiType().ShortName()
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
@@ -186,7 +186,7 @@ func (vw *View) InitLibShape(bod eve.Body) {
 
 // ConfigBodyShape configures a shape for a body with current values
 func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.Node) {
-	wt := bod.KiType().ShortName
+	wt := bod.KiType().ShortName()
 	sb := shp.AsNodeBase()
 	sb.Nm = bod.Name()
 	switch wt {
