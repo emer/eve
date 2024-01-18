@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"goki.dev/mat32"
+	"cogentcore.org/core/mat32"
 )
 
 // Rigid contains the full specification of a given object's basic physics

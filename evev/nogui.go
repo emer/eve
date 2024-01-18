@@ -8,8 +8,8 @@ import (
 	"image"
 	"log"
 
-	"goki.dev/vgpu"
-	"goki.dev/xyz"
+	"cogentcore.org/core/vgpu"
+	"cogentcore.org/core/xyz"
 
 	vk "github.com/goki/vulkan"
 )

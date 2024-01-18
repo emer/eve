@@ -5,8 +5,8 @@
 package eve
 
 import (
-	"goki.dev/ki"
-	"goki.dev/mat32"
+	"cogentcore.org/core/ki"
+	"cogentcore.org/core/mat32"
 )
 
 // Contact is one pairwise point of contact between two bodies.

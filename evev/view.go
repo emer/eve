@@ -4,17 +4,17 @@
 
 package evev
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"fmt"
 	"image"
 
+	"cogentcore.org/core/colors"
+	"cogentcore.org/core/grr"
+	"cogentcore.org/core/ki"
+	"cogentcore.org/core/xyz"
 	"github.com/emer/eve/v2/eve"
-	"goki.dev/colors"
-	"goki.dev/grr"
-	"goki.dev/ki"
-	"goki.dev/xyz"
 )
 
 // View connects a Virtual World with a Xyz Scene to visualize the world,

@@ -4,7 +4,7 @@
 
 package eve
 
-import "goki.dev/mat32"
+import "cogentcore.org/core/mat32"
 
 // BBox contains bounding box and other gross object properties
 type BBox struct {

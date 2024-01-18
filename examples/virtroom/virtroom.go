@@ -4,7 +4,7 @@
 
 package main
 
-//go:generate goki generate
+//go:generate core generate
 
 import (
 	"fmt"
@@ -13,21 +13,21 @@ import (
 	"math/rand"
 	"os"
 
+	"cogentcore.org/core/colors"
+	"cogentcore.org/core/colors/colormap"
+	"cogentcore.org/core/events"
+	"cogentcore.org/core/gi"
+	"cogentcore.org/core/giv"
+	"cogentcore.org/core/grows/images"
+	"cogentcore.org/core/icons"
+	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/styles"
+	"cogentcore.org/core/svg"
+	"cogentcore.org/core/xyz"
+	"cogentcore.org/core/xyzv"
 	"github.com/emer/eve/v2/eve"
 	"github.com/emer/eve/v2/eve2d"
 	"github.com/emer/eve/v2/evev"
-	"goki.dev/colors"
-	"goki.dev/colors/colormap"
-	"goki.dev/events"
-	"goki.dev/gi"
-	"goki.dev/giv"
-	"goki.dev/grows/images"
-	"goki.dev/icons"
-	"goki.dev/mat32"
-	"goki.dev/styles"
-	"goki.dev/svg"
-	"goki.dev/xyz"
-	"goki.dev/xyzv"
 )
 
 var NoGUI bool

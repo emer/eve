@@ -4,11 +4,11 @@
 
 package eve
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
-	"goki.dev/ki"
-	"goki.dev/mat32"
+	"cogentcore.org/core/ki"
+	"cogentcore.org/core/mat32"
 )
 
 // Node is the common interface for all eve nodes

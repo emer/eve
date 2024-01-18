@@ -7,8 +7,8 @@ package eve
 import (
 	"sort"
 
-	"goki.dev/ki"
-	"goki.dev/mat32"
+	"cogentcore.org/core/ki"
+	"cogentcore.org/core/mat32"
 )
 
 // Group is a container of bodies, joints, or other groups

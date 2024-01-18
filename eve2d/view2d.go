@@ -4,16 +4,16 @@
 
 package eve2d
 
-//go:generate goki generate -add-types
+//go:generate core generate -add-types
 
 import (
 	"fmt"
 	"image"
 
+	"cogentcore.org/core/ki"
+	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/svg"
 	"github.com/emer/eve/v2/eve"
-	"goki.dev/ki"
-	"goki.dev/mat32"
-	"goki.dev/svg"
 )
 
 // View connects a Virtual World with a 2D SVG Scene to visualize the world

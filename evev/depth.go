@@ -7,8 +7,8 @@ package evev
 import (
 	"image"
 
-	"goki.dev/colors/colormap"
-	"goki.dev/mat32"
+	"cogentcore.org/core/colors/colormap"
+	"cogentcore.org/core/mat32"
 )
 
 // DepthNorm renders a normalized linear depth map from GPU (0-1 normalized floats) to
