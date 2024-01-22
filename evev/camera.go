@@ -20,19 +20,19 @@ type Camera struct {
 	FOV float32
 
 	// near plane z coordinate
-	Near float32 `def:"0.01"`
+	Near float32 `default:"0.01"`
 
 	// far plane z coordinate
-	Far float32 `def:"1000"`
+	Far float32 `default:"1000"`
 
 	// maximum distance for depth maps -- anything above is 1 -- this is independent of Near / Far rendering (though must be < Far) and is for normalized depth maps
-	MaxD float32 `def:"20"`
+	MaxD float32 `default:"20"`
 
 	// use the natural log of 1 + depth for normalized depth values in display etc
-	LogD bool `def:"true"`
+	LogD bool `default:"true"`
 
 	// number of multi-samples to use for antialising -- 4 is best and default
-	MSample int `def:"4"`
+	MSample int `default:"4"`
 
 	// up direction for camera -- which way is up -- defaults to positive Y axis, and is reset by call to LookAt method
 	UpDir mat32.Vec3

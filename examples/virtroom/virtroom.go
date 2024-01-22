@@ -422,7 +422,6 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	ev.Scene2D = twov
 	twov.Style(func(s *styles.Style) {
 		twov.SVG.Fill = true
-		twov.SVG.Norm = true
 		twov.SVG.Root.ViewBox.Size.Set(ev.Width+4, ev.Depth+4)
 		twov.SVG.Root.ViewBox.Min.Set(-0.5*(ev.Width+4), -0.5*(ev.Depth+4))
 		twov.SetReadOnly(false)
