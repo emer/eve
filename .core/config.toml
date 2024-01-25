@@ -1,7 +1,7 @@
 ID = 'com.emer.eve.v2'
 Name = 'eve'
 Type = 'Library'
-Version = 'v2.0.0-dev0.0.4'
+Version = 'v2.0.0-dev0.0.5'
 
 [Generate]
   [Generate.Gtigen]
@@ -10,4 +10,3 @@ Version = 'v2.0.0-dev0.0.4'
 [Release]
   Package = 'eve'
   VersionFile = 'eve/version.go'
-
