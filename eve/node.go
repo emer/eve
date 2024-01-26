@@ -68,7 +68,7 @@ type NodeBase struct {
 	Rel Phys `view:"inline"`
 
 	// current absolute (world) position, orientation, velocity
-	Abs Phys `inactive:"+" view:"inline"`
+	Abs Phys `edit:"-" view:"inline"`
 
 	// bounding box in world coordinates (aggregated for groups)
 	BBox BBox
