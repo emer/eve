@@ -355,9 +355,7 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 func (ev *Env) ConfigGUI() *gi.Body {
 	// vgpu.Debug = true
 
-	b := gi.NewAppBody("virtroom").SetTitle("Emergent Virtual Engine")
-	b.App().About = `This is a demo of the Emergent Virtual Engine.  See <a href="https://github.com/emer/eve">eve on GitHub</a>.
-<p>The <a href="https://github.com/emer/eve/blob/master/examples/virtroom/README.md">README</a> page for this example app has further info.</p>`
+	b := gi.NewBody("virtroom").SetTitle("Emergent Virtual Engine")
 
 	ev.MakeWorld()
 
@@ -454,7 +452,7 @@ func (ev *Env) ConfigGUI() *gi.Body {
 		gi.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
 			SetTooltip("Open browser on README.").
 			OnClick(func(e events.Event) {
-				gi.OpenURL("https://github.com/emer/eve/blob/master/examples/virtroom/README.md")
+				gi.TheApp.OpenURL("https://github.com/emer/eve/blob/master/examples/virtroom/README.md")
 			})
 	})
 	return b
