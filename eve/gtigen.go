@@ -22,14 +22,10 @@ func NewBodyBase(par ki.Ki, name ...string) *BodyBase {
 }
 
 // KiType returns the [*gti.Type] of [BodyBase]
-func (t *BodyBase) KiType() *gti.Type {
-	return BodyBaseType
-}
+func (t *BodyBase) KiType() *gti.Type { return BodyBaseType }
 
 // New returns a new [*BodyBase] value
-func (t *BodyBase) New() ki.Ki {
-	return &BodyBase{}
-}
+func (t *BodyBase) New() ki.Ki { return &BodyBase{} }
 
 // SetRigid sets the [BodyBase.Rigid]:
 // rigid body properties, including mass, bounce, friction etc
@@ -49,12 +45,6 @@ func (t *BodyBase) SetInitial(v Phys) *BodyBase { t.Initial = v; return t }
 // SetRel sets the [BodyBase.Rel]
 func (t *BodyBase) SetRel(v Phys) *BodyBase { t.Rel = v; return t }
 
-// SetAbs sets the [BodyBase.Abs]
-func (t *BodyBase) SetAbs(v Phys) *BodyBase { t.Abs = v; return t }
-
-// SetBbox sets the [BodyBase.BBox]
-func (t *BodyBase) SetBbox(v BBox) *BodyBase { t.BBox = v; return t }
-
 // BoxType is the [gti.Type] for [Box]
 var BoxType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Box", IDName: "box", Doc: "Box is a box body shape", Embeds: []gti.Field{{Name: "BodyBase"}}, Fields: []gti.Field{{Name: "Size", Doc: "size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)"}}, Instance: &Box{}})
 
@@ -65,14 +55,10 @@ func NewBox(par ki.Ki, name ...string) *Box {
 }
 
 // KiType returns the [*gti.Type] of [Box]
-func (t *Box) KiType() *gti.Type {
-	return BoxType
-}
+func (t *Box) KiType() *gti.Type { return BoxType }
 
 // New returns a new [*Box] value
-func (t *Box) New() ki.Ki {
-	return &Box{}
-}
+func (t *Box) New() ki.Ki { return &Box{} }
 
 // SetSize sets the [Box.Size]:
 // size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
@@ -83,12 +69,6 @@ func (t *Box) SetInitial(v Phys) *Box { t.Initial = v; return t }
 
 // SetRel sets the [Box.Rel]
 func (t *Box) SetRel(v Phys) *Box { t.Rel = v; return t }
-
-// SetAbs sets the [Box.Abs]
-func (t *Box) SetAbs(v Phys) *Box { t.Abs = v; return t }
-
-// SetBbox sets the [Box.BBox]
-func (t *Box) SetBbox(v BBox) *Box { t.BBox = v; return t }
 
 // SetRigid sets the [Box.Rigid]
 func (t *Box) SetRigid(v Rigid) *Box { t.Rigid = v; return t }
@@ -110,14 +90,10 @@ func NewCapsule(par ki.Ki, name ...string) *Capsule {
 }
 
 // KiType returns the [*gti.Type] of [Capsule]
-func (t *Capsule) KiType() *gti.Type {
-	return CapsuleType
-}
+func (t *Capsule) KiType() *gti.Type { return CapsuleType }
 
 // New returns a new [*Capsule] value
-func (t *Capsule) New() ki.Ki {
-	return &Capsule{}
-}
+func (t *Capsule) New() ki.Ki { return &Capsule{} }
 
 // SetHeight sets the [Capsule.Height]:
 // height of the cylinder portion of the capsule
@@ -136,12 +112,6 @@ func (t *Capsule) SetInitial(v Phys) *Capsule { t.Initial = v; return t }
 
 // SetRel sets the [Capsule.Rel]
 func (t *Capsule) SetRel(v Phys) *Capsule { t.Rel = v; return t }
-
-// SetAbs sets the [Capsule.Abs]
-func (t *Capsule) SetAbs(v Phys) *Capsule { t.Abs = v; return t }
-
-// SetBbox sets the [Capsule.BBox]
-func (t *Capsule) SetBbox(v BBox) *Capsule { t.BBox = v; return t }
 
 // SetRigid sets the [Capsule.Rigid]
 func (t *Capsule) SetRigid(v Rigid) *Capsule { t.Rigid = v; return t }
@@ -167,14 +137,10 @@ func NewCylinder(par ki.Ki, name ...string) *Cylinder {
 }
 
 // KiType returns the [*gti.Type] of [Cylinder]
-func (t *Cylinder) KiType() *gti.Type {
-	return CylinderType
-}
+func (t *Cylinder) KiType() *gti.Type { return CylinderType }
 
 // New returns a new [*Cylinder] value
-func (t *Cylinder) New() ki.Ki {
-	return &Cylinder{}
-}
+func (t *Cylinder) New() ki.Ki { return &Cylinder{} }
 
 // SetHeight sets the [Cylinder.Height]:
 // height of the cylinder
@@ -193,12 +159,6 @@ func (t *Cylinder) SetInitial(v Phys) *Cylinder { t.Initial = v; return t }
 
 // SetRel sets the [Cylinder.Rel]
 func (t *Cylinder) SetRel(v Phys) *Cylinder { t.Rel = v; return t }
-
-// SetAbs sets the [Cylinder.Abs]
-func (t *Cylinder) SetAbs(v Phys) *Cylinder { t.Abs = v; return t }
-
-// SetBbox sets the [Cylinder.BBox]
-func (t *Cylinder) SetBbox(v BBox) *Cylinder { t.BBox = v; return t }
 
 // SetRigid sets the [Cylinder.Rigid]
 func (t *Cylinder) SetRigid(v Rigid) *Cylinder { t.Rigid = v; return t }
@@ -222,26 +182,16 @@ func NewGroup(par ki.Ki, name ...string) *Group {
 }
 
 // KiType returns the [*gti.Type] of [Group]
-func (t *Group) KiType() *gti.Type {
-	return GroupType
-}
+func (t *Group) KiType() *gti.Type { return GroupType }
 
 // New returns a new [*Group] value
-func (t *Group) New() ki.Ki {
-	return &Group{}
-}
+func (t *Group) New() ki.Ki { return &Group{} }
 
 // SetInitial sets the [Group.Initial]
 func (t *Group) SetInitial(v Phys) *Group { t.Initial = v; return t }
 
 // SetRel sets the [Group.Rel]
 func (t *Group) SetRel(v Phys) *Group { t.Rel = v; return t }
-
-// SetAbs sets the [Group.Abs]
-func (t *Group) SetAbs(v Phys) *Group { t.Abs = v; return t }
-
-// SetBbox sets the [Group.BBox]
-func (t *Group) SetBbox(v BBox) *Group { t.BBox = v; return t }
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.BodyPoint", IDName: "body-point", Doc: "BodyPoint contains a Body and a Point on that body", Fields: []gti.Field{{Name: "Body"}, {Name: "Point"}}})
 
@@ -259,14 +209,10 @@ func NewNodeBase(par ki.Ki, name ...string) *NodeBase {
 }
 
 // KiType returns the [*gti.Type] of [NodeBase]
-func (t *NodeBase) KiType() *gti.Type {
-	return NodeBaseType
-}
+func (t *NodeBase) KiType() *gti.Type { return NodeBaseType }
 
 // New returns a new [*NodeBase] value
-func (t *NodeBase) New() ki.Ki {
-	return &NodeBase{}
-}
+func (t *NodeBase) New() ki.Ki { return &NodeBase{} }
 
 // SetInitial sets the [NodeBase.Initial]:
 // initial position, orientation, velocity in *local* coordinates (relative to parent)
@@ -276,17 +222,9 @@ func (t *NodeBase) SetInitial(v Phys) *NodeBase { t.Initial = v; return t }
 // current relative (local) position, orientation, velocity -- only change these values, as abs values are computed therefrom
 func (t *NodeBase) SetRel(v Phys) *NodeBase { t.Rel = v; return t }
 
-// SetAbs sets the [NodeBase.Abs]:
-// current absolute (world) position, orientation, velocity
-func (t *NodeBase) SetAbs(v Phys) *NodeBase { t.Abs = v; return t }
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeTypes", IDName: "node-types", Doc: "NodeTypes is a list of node types"})
 
-// SetBbox sets the [NodeBase.BBox]:
-// bounding box in world coordinates (aggregated for groups)
-func (t *NodeBase) SetBbox(v BBox) *NodeBase { t.BBox = v; return t }
-
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeTypes", IDName: "node-types", Doc: "NodeTypes is a list of node types", Directives: []gti.Directive{{Tool: "enums", Directive: "enum"}}})
-
-var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeFlags", IDName: "node-flags", Doc: "NodeFlags define eve node bitflags -- uses ki Flags field (64 bit capacity)", Directives: []gti.Directive{{Tool: "enums", Directive: "bitflag"}}})
+var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeFlags", IDName: "node-flags", Doc: "NodeFlags define eve node bitflags -- uses ki Flags field (64 bit capacity)"})
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Phys", IDName: "phys", Doc: "Phys contains the basic physical properties including position, orientation, velocity.\nThese are only the values that can be either relative or absolute -- other physical\nstate values such as Mass should go in Rigid.", Fields: []gti.Field{{Name: "Pos", Doc: "position of center of mass of object"}, {Name: "Quat", Doc: "rotation specified as a Quat"}, {Name: "LinVel", Doc: "linear velocity"}, {Name: "AngVel", Doc: "angular velocity"}}})
 
@@ -302,14 +240,10 @@ func NewSphere(par ki.Ki, name ...string) *Sphere {
 }
 
 // KiType returns the [*gti.Type] of [Sphere]
-func (t *Sphere) KiType() *gti.Type {
-	return SphereType
-}
+func (t *Sphere) KiType() *gti.Type { return SphereType }
 
 // New returns a new [*Sphere] value
-func (t *Sphere) New() ki.Ki {
-	return &Sphere{}
-}
+func (t *Sphere) New() ki.Ki { return &Sphere{} }
 
 // SetRadius sets the [Sphere.Radius]:
 // radius
@@ -320,12 +254,6 @@ func (t *Sphere) SetInitial(v Phys) *Sphere { t.Initial = v; return t }
 
 // SetRel sets the [Sphere.Rel]
 func (t *Sphere) SetRel(v Phys) *Sphere { t.Rel = v; return t }
-
-// SetAbs sets the [Sphere.Abs]
-func (t *Sphere) SetAbs(v Phys) *Sphere { t.Abs = v; return t }
-
-// SetBbox sets the [Sphere.BBox]
-func (t *Sphere) SetBbox(v BBox) *Sphere { t.BBox = v; return t }
 
 // SetRigid sets the [Sphere.Rigid]
 func (t *Sphere) SetRigid(v Rigid) *Sphere { t.Rigid = v; return t }

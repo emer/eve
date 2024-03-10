@@ -68,10 +68,10 @@ type NodeBase struct {
 	Rel Phys `view:"inline"`
 
 	// current absolute (world) position, orientation, velocity
-	Abs Phys `edit:"-" view:"inline"`
+	Abs Phys `set:"-" edit:"-" view:"inline"`
 
 	// bounding box in world coordinates (aggregated for groups)
-	BBox BBox
+	BBox BBox `set:"-"`
 }
 
 func (nb *NodeBase) AsNodeBase() *NodeBase {
