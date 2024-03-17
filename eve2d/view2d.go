@@ -275,7 +275,7 @@ func (vw *View) SyncNode(wn eve.Node, vn svg.Node) bool {
 	for _, skid := range skids {
 		tnl.Add(svg.GroupType, skid.Name())
 	}
-	mod, updt := vn.ConfigChildren(tnl)
+	mod := vn.ConfigChildren(tnl)
 	modall := mod
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
@@ -288,7 +288,6 @@ func (vw *View) SyncNode(wn eve.Node, vn svg.Node) bool {
 			}
 		}
 	}
-	vn.UpdateEnd(updt)
 	return modall
 }
 

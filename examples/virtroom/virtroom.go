@@ -227,16 +227,16 @@ func (ev *Env) ViewDepth(depth []float32) {
 	cmap := colormap.AvailMaps[string(ev.DepthMap)]
 	ev.DepthImg.SetSize(ev.Camera.Size)
 	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
-	ev.DepthImg.SetNeedsRender(true)
+	ev.DepthImg.NeedsRender()
 }
 
 // UpdateViews updates the 2D and 3D views of the scene
 func (ev *Env) UpdateViews() {
 	if ev.SceneView.IsVisible() {
-		ev.SceneView.SetNeedsRender(true)
+		ev.SceneView.NeedsRender()
 	}
 	if ev.Scene2D.IsVisible() {
-		ev.Scene2D.SetNeedsRender(true)
+		ev.Scene2D.NeedsRender()
 	}
 }
 
@@ -419,7 +419,6 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	twov := gi.NewSVG(twofr, "sceneview")
 	ev.Scene2D = twov
 	twov.Style(func(s *styles.Style) {
-		twov.SVG.Fill = true
 		twov.SVG.Root.ViewBox.Size.Set(ev.Width+4, ev.Depth+4)
 		twov.SVG.Root.ViewBox.Min.Set(-0.5*(ev.Width+4), -0.5*(ev.Depth+4))
 		twov.SetReadOnly(false)

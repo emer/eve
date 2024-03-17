@@ -53,17 +53,15 @@ func (vw *View) Sync() bool {
 // UpdatePose updates the view pose values only from world tree.
 // Essential that both trees are already synchronized.
 func (vw *View) UpdatePose() {
-	updt := vw.Scene.UpdateStart()
 	vw.UpdatePoseNode(vw.World, vw.Root)
-	vw.Scene.UpdateEndUpdate(updt)
+	vw.Scene.NeedsUpdate()
 }
 
 // UpdateBodyView updates the display properties of given body name
 // recurses the tree until this body name is found.
 func (vw *View) UpdateBodyView(bodyNames []string) {
-	updt := vw.Scene.UpdateStart()
 	vw.UpdateBodyViewNode(bodyNames, vw.World, vw.Root)
-	vw.Scene.UpdateEndUpdate(updt)
+	vw.Scene.NeedsUpdate()
 }
 
 // RenderOffNode does an offscreen render using given node
@@ -229,7 +227,7 @@ func (vw *View) SyncNode(wn eve.Node, vn xyz.Node, sc *xyz.Scene) bool {
 	for _, skid := range skids {
 		tnl.Add(xyz.GroupType, skid.Name())
 	}
-	mod, updt := vn.ConfigChildren(tnl)
+	mod := vn.ConfigChildren(tnl)
 	modall := mod
 	for idx := range skids {
 		wk := wn.Child(idx).(eve.Node)
@@ -242,9 +240,8 @@ func (vw *View) SyncNode(wn eve.Node, vn xyz.Node, sc *xyz.Scene) bool {
 			}
 		}
 	}
-	vn.UpdateEnd(updt)
 	if modall {
-		sc.SetNeedsUpdate()
+		sc.NeedsUpdate()
 	}
 	return modall
 }
