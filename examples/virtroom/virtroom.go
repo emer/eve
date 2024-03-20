@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"os"
 
+	"cogentcore.org/core/abilities"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
 	"cogentcore.org/core/events"
@@ -211,6 +212,7 @@ func (ev *Env) GrabEyeImg() { //gti:add
 	img, err := ev.RenderEyeImg()
 	if err == nil && img != nil {
 		ev.EyeRImg.SetImage(img)
+		ev.EyeRImg.NeedsRender()
 	} else {
 		log.Println(err)
 	}
@@ -441,12 +443,30 @@ func (ev *Env) ConfigGUI() *gi.Body {
 		giv.NewFuncButton(tb, ev.GrabEyeImg).SetText("Grab Image").SetIcon(icons.Image)
 		gi.NewSeparator(tb)
 
-		giv.NewFuncButton(tb, ev.StepForward).SetText("Fwd").SetIcon(icons.SkipNext)
-		giv.NewFuncButton(tb, ev.StepBackward).SetText("Bkw").SetIcon(icons.SkipPrevious)
-		giv.NewFuncButton(tb, ev.RotBodyLeft).SetText("Body Left").SetIcon(icons.KeyboardArrowLeft)
-		giv.NewFuncButton(tb, ev.RotBodyRight).SetText("Body Right").SetIcon(icons.KeyboardArrowRight)
-		giv.NewFuncButton(tb, ev.RotHeadLeft).SetText("Head Left").SetIcon(icons.KeyboardArrowLeft)
-		giv.NewFuncButton(tb, ev.RotHeadRight).SetText("Head Right").SetIcon(icons.KeyboardArrowRight)
+		giv.NewFuncButton(tb, ev.StepForward).SetText("Fwd").SetIcon(icons.SkipNext).
+			Style(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			})
+		giv.NewFuncButton(tb, ev.StepBackward).SetText("Bkw").SetIcon(icons.SkipPrevious).
+			Style(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			})
+		giv.NewFuncButton(tb, ev.RotBodyLeft).SetText("Body Left").SetIcon(icons.KeyboardArrowLeft).
+			Style(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			})
+		giv.NewFuncButton(tb, ev.RotBodyRight).SetText("Body Right").SetIcon(icons.KeyboardArrowRight).
+			Style(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			})
+		giv.NewFuncButton(tb, ev.RotHeadLeft).SetText("Head Left").SetIcon(icons.KeyboardArrowLeft).
+			Style(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			})
+		giv.NewFuncButton(tb, ev.RotHeadRight).SetText("Head Right").SetIcon(icons.KeyboardArrowRight).
+			Style(func(s *styles.Style) {
+				s.SetAbilities(true, abilities.RepeatClickable)
+			})
 		gi.NewSeparator(tb)
 
 		gi.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
