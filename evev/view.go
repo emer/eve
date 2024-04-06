@@ -205,7 +205,7 @@ func (vw *View) ConfigView(wn eve.Node, vn xyz.Node, sc *xyz.Scene) {
 		return
 	}
 	if !vb.HasChildren() {
-		sc.AddFmLibrary(bod.AsBodyBase().Vis, vb)
+		sc.AddFromLibrary(bod.AsBodyBase().Vis, vb)
 	}
 	bgp := vb.Child(0)
 	if bgp.HasChildren() {

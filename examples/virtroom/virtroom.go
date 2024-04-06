@@ -108,7 +108,7 @@ type Env struct {
 	EyeRImg *gi.Image `view:"-"`
 
 	// depth map bitmap view
-	DepthImg *gi.Image `view:"-"`
+	DepthImage *gi.Image `view:"-"`
 }
 
 func (ev *Env) Defaults() {
@@ -224,10 +224,10 @@ func (ev *Env) GrabEyeImg() { //gti:add
 
 // ViewDepth updates depth bitmap with depth data
 func (ev *Env) ViewDepth(depth []float32) {
-	cmap := colormap.AvailMaps[string(ev.DepthMap)]
-	ev.DepthImg.SetSize(ev.Camera.Size)
-	evev.DepthImage(ev.DepthImg.Pixels, depth, cmap, &ev.Camera)
-	ev.DepthImg.NeedsRender()
+	cmap := colormap.AvailableMaps[string(ev.DepthMap)]
+	ev.DepthImage.Image = image.NewRGBA(image.Rectangle{Max: ev.Camera.Size})
+	evev.DepthImage(ev.DepthImage.Image, depth, cmap, &ev.Camera)
+	ev.DepthImage.NeedsRender()
 }
 
 // UpdateViews updates the 2D and 3D views of the scene
@@ -361,7 +361,7 @@ func (ev *Env) ConfigGUI() *gi.Body {
 
 	split := gi.NewSplits(b, "split")
 
-	tv := giv.NewTreeView(gi.NewFrame(split), "tv").SyncRootNode(ev.World)
+	tv := giv.NewTreeView(gi.NewFrame(split), "tv").SyncTree(ev.World)
 	sv := giv.NewStructView(split, "sv").SetStruct(ev)
 	imfr := gi.NewFrame(split)
 	tbvw := gi.NewTabs(split)
@@ -407,11 +407,11 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	})
 	gi.NewLabel(imfr).SetText("Right Eye Image:")
 	ev.EyeRImg = gi.NewImage(imfr, "eye-r-img")
-	ev.EyeRImg.SetSize(ev.Camera.Size)
+	ev.EyeRImg.Image = image.NewRGBA(image.Rectangle{Max: ev.Camera.Size})
 
 	gi.NewLabel(imfr).SetText("Right Eye Depth:")
-	ev.DepthImg = gi.NewImage(imfr, "depth-img")
-	ev.DepthImg.SetSize(ev.Camera.Size)
+	ev.DepthImage = gi.NewImage(imfr, "depth-img")
+	ev.DepthImage.Image = image.NewRGBA(image.Rectangle{Max: ev.Camera.Size})
 
 	//////////////////////////////////////////
 	//    2D Scene
