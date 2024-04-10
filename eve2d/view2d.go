@@ -133,8 +133,8 @@ func (vw *View) NewInLibrary(nm string) *svg.Group {
 	return gp
 }
 
-// AddFmLibrary adds shape from library to given group
-func (vw *View) AddFmLibrary(nm string, gp *svg.Group) {
+// AddFromLibrary adds shape from library to given group
+func (vw *View) AddFromLibrary(nm string, gp *svg.Group) {
 	lgp, has := vw.Library[nm]
 	if !has {
 		return
@@ -251,7 +251,7 @@ func (vw *View) ConfigView(wn eve.Node, vn svg.Node) {
 		return
 	}
 	if !vb.HasChildren() {
-		vw.AddFmLibrary(bod.AsBodyBase().Vis, vb)
+		vw.AddFromLibrary(bod.AsBodyBase().Vis, vb)
 	}
 	bgp := vb.Child(0)
 	if bgp.HasChildren() {
