@@ -35,7 +35,7 @@ type Camera struct {
 	MSample int `default:"4"`
 
 	// up direction for camera -- which way is up -- defaults to positive Y axis, and is reset by call to LookAt method
-	UpDir math32.Vec3
+	UpDir math32.Vector3
 }
 
 func (cm *Camera) Defaults() {
@@ -46,5 +46,5 @@ func (cm *Camera) Defaults() {
 	cm.MaxD = 20
 	cm.LogD = true
 	cm.MSample = 4
-	cm.UpDir = math32.V3(0, 1, 0)
+	cm.UpDir = math32.Vec3(0, 1, 0)
 }

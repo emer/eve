@@ -22,10 +22,10 @@ type Rigid struct {
 	Friction float32
 
 	// record of computed force vector from last iteration
-	Force math32.Vec3
+	Force math32.Vector3
 
 	// Last calculated rotational inertia matrix in local coords
-	RotInertia math32.Mat3
+	RotInertia math32.Matrix3
 }
 
 // Defaults sets defaults only if current values are nil

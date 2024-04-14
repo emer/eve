@@ -208,7 +208,7 @@ func (gp *Group) WorldCollide(dynTop bool) []Contacts {
 // BodyPoint contains a Body and a Point on that body
 type BodyPoint struct {
 	Body  Body
-	Point math32.Vec3
+	Point math32.Vector3
 }
 
 // RayBodyIntersections returns a list of bodies whose bounding box intersects

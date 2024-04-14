@@ -86,7 +86,7 @@ func (nb *NodeBase) IsDynamic() bool {
 }
 
 // SetInitPos sets the initial position
-func (nb *NodeBase) SetInitPos(pos math32.Vec3) *NodeBase {
+func (nb *NodeBase) SetInitPos(pos math32.Vector3) *NodeBase {
 	nb.Initial.Pos = pos
 	return nb
 }
@@ -98,13 +98,13 @@ func (nb *NodeBase) SetInitQuat(quat math32.Quat) *NodeBase {
 }
 
 // SetInitLinVel sets the initial linear velocity
-func (nb *NodeBase) SetInitLinVel(vel math32.Vec3) *NodeBase {
+func (nb *NodeBase) SetInitLinVel(vel math32.Vector3) *NodeBase {
 	nb.Initial.LinVel = vel
 	return nb
 }
 
 // SetInitAngVel sets the initial angular velocity
-func (nb *NodeBase) SetInitAngVel(vel math32.Vec3) *NodeBase {
+func (nb *NodeBase) SetInitAngVel(vel math32.Vector3) *NodeBase {
 	nb.Initial.AngVel = vel
 	return nb
 }

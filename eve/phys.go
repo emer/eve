@@ -16,16 +16,16 @@ import (
 type Phys struct {
 
 	// position of center of mass of object
-	Pos math32.Vec3
+	Pos math32.Vector3
 
 	// rotation specified as a Quat
 	Quat math32.Quat
 
 	// linear velocity
-	LinVel math32.Vec3
+	LinVel math32.Vector3
 
 	// angular velocity
-	AngVel math32.Vec3
+	AngVel math32.Vector3
 }
 
 // Defaults sets defaults only if current values are nil
@@ -57,7 +57,7 @@ func (ps *Phys) StepByAngVel(step float32) {
 	if ang*step > AngMotionMax {
 		ang = AngMotionMax / step
 	}
-	var axis math32.Vec3
+	var axis math32.Vector3
 	if ang < 0.001 {
 		// use Taylor's expansions of sync function
 		axis = ps.AngVel.MulScalar(0.5*step - (step*step*step)*0.020833333333*ang*ang)
@@ -81,7 +81,7 @@ func (ps *Phys) StepByLinVel(step float32) {
 
 // Move moves (translates) Pos by given amount, and sets the LinVel to the given
 // delta -- this can be useful for Scripted motion to track movement.
-func (ps *Phys) Move(delta math32.Vec3) {
+func (ps *Phys) Move(delta math32.Vector3) {
 	ps.LinVel = delta
 	ps.Pos.SetAdd(delta)
 }
@@ -91,7 +91,7 @@ func (ps *Phys) Move(delta math32.Vec3) {
 // The axis is normalized prior to aplying the distance factor.
 // Sets the LinVel to motion vector.
 func (ps *Phys) MoveOnAxis(x, y, z, dist float32) {
-	ps.LinVel = math32.V3(x, y, z).Normal().MulQuat(ps.Quat).MulScalar(dist)
+	ps.LinVel = math32.Vec3(x, y, z).Normal().MulQuat(ps.Quat).MulScalar(dist)
 	ps.Pos.SetAdd(ps.LinVel)
 }
 
@@ -100,7 +100,7 @@ func (ps *Phys) MoveOnAxis(x, y, z, dist float32) {
 // The axis is normalized prior to aplying the distance factor.
 // Sets the LinVel to motion vector.
 func (ps *Phys) MoveOnAxisAbs(x, y, z, dist float32) {
-	ps.LinVel = math32.V3(x, y, z).Normal().MulScalar(dist)
+	ps.LinVel = math32.Vec3(x, y, z).Normal().MulScalar(dist)
 	ps.Pos.SetAdd(ps.LinVel)
 }
 
@@ -109,52 +109,52 @@ func (ps *Phys) MoveOnAxisAbs(x, y, z, dist float32) {
 
 // SetEulerRotation sets the rotation in Euler angles (degrees).
 func (ps *Phys) SetEulerRotation(x, y, z float32) {
-	ps.Quat.SetFromEuler(math32.V3(x, y, z).MulScalar(math32.DegToRadFactor))
+	ps.Quat.SetFromEuler(math32.Vec3(x, y, z).MulScalar(math32.DegToRadFactor))
 }
 
 // SetEulerRotationRad sets the rotation in Euler angles (radians).
 func (ps *Phys) SetEulerRotationRad(x, y, z float32) {
-	ps.Quat.SetFromEuler(math32.V3(x, y, z))
+	ps.Quat.SetFromEuler(math32.Vec3(x, y, z))
 }
 
 // EulerRotation returns the current rotation in Euler angles (degrees).
-func (ps *Phys) EulerRotation() math32.Vec3 {
+func (ps *Phys) EulerRotation() math32.Vector3 {
 	return ps.Quat.ToEuler().MulScalar(math32.RadToDegFactor)
 }
 
 // EulerRotationRad returns the current rotation in Euler angles (radians).
-func (ps *Phys) EulerRotationRad() math32.Vec3 {
+func (ps *Phys) EulerRotationRad() math32.Vector3 {
 	return ps.Quat.ToEuler()
 }
 
 // SetAxisRotation sets rotation from local axis and angle in degrees.
 func (ps *Phys) SetAxisRotation(x, y, z, angle float32) {
-	ps.Quat.SetFromAxisAngle(math32.V3(x, y, z), math32.DegToRad(angle))
+	ps.Quat.SetFromAxisAngle(math32.Vec3(x, y, z), math32.DegToRad(angle))
 }
 
 // SetAxisRotationRad sets rotation from local axis and angle in radians.
 func (ps *Phys) SetAxisRotationRad(x, y, z, angle float32) {
-	ps.Quat.SetFromAxisAngle(math32.V3(x, y, z), angle)
+	ps.Quat.SetFromAxisAngle(math32.Vec3(x, y, z), angle)
 }
 
 // RotateOnAxis rotates around the specified local axis the specified angle in degrees.
 func (ps *Phys) RotateOnAxis(x, y, z, angle float32) {
-	ps.Quat.SetMul(math32.NewQuatAxisAngle(math32.V3(x, y, z), math32.DegToRad(angle)))
+	ps.Quat.SetMul(math32.NewQuatAxisAngle(math32.Vec3(x, y, z), math32.DegToRad(angle)))
 }
 
 // RotateOnAxisRad rotates around the specified local axis the specified angle in radians.
 func (ps *Phys) RotateOnAxisRad(x, y, z, angle float32) {
-	ps.Quat.SetMul(math32.NewQuatAxisAngle(math32.V3(x, y, z), angle))
+	ps.Quat.SetMul(math32.NewQuatAxisAngle(math32.Vec3(x, y, z), angle))
 }
 
 // RotateEuler rotates by given Euler angles (in degrees) relative to existing rotation.
 func (ps *Phys) RotateEuler(x, y, z float32) {
-	ps.Quat.SetMul(math32.NewQuatEuler(math32.V3(x, y, z).MulScalar(math32.DegToRadFactor)))
+	ps.Quat.SetMul(math32.NewQuatEuler(math32.Vec3(x, y, z).MulScalar(math32.DegToRadFactor)))
 }
 
 // RotateEulerRad rotates by given Euler angles (in radians) relative to existing rotation.
 func (ps *Phys) RotateEulerRad(x, y, z, angle float32) {
-	ps.Quat.SetMul(math32.NewQuatEuler(math32.V3(x, y, z)))
+	ps.Quat.SetMul(math32.NewQuatEuler(math32.Vec3(x, y, z)))
 }
 
 /*

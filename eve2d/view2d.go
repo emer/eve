@@ -22,8 +22,8 @@ type View struct {
 	// width of lines for shape rendering, in normalized units
 	LineWidth float32
 
-	// projection matrix for converting 3D to 2D -- resulting X, Y coordinates are used from Vec3
-	Prjn math32.Mat4
+	// projection matrix for converting 3D to 2D -- resulting X, Y coordinates are used from Vector3
+	Prjn math32.Matrix4
 
 	// the root Group node of the virtual world
 	World *eve.Group
@@ -96,22 +96,22 @@ func (vw *View) ProjectXZ() {
 // todo: more projections
 
 // Prjn2D projects position from 3D to 2D
-func (vw *View) Prjn2D(pos math32.Vec3) math32.Vec2 {
-	v2 := pos.MulMat4(&vw.Prjn)
-	return math32.V2(v2.X, v2.Y)
+func (vw *View) Prjn2D(pos math32.Vector3) math32.Vector2 {
+	v2 := pos.MulMatrix4(&vw.Prjn)
+	return math32.Vec2(v2.X, v2.Y)
 }
 
 // Transform2D returns the full 2D transform matrix for a given position and quat rotation in 3D
-func (vw *View) Transform2D(phys *eve.Phys) math32.Mat2 {
-	pos2 := phys.Pos.MulMat4(&vw.Prjn)
-	xyaxis := math32.V3(1, 1, 0)
+func (vw *View) Transform2D(phys *eve.Phys) math32.Matrix2 {
+	pos2 := phys.Pos.MulMatrix4(&vw.Prjn)
+	xyaxis := math32.Vec3(1, 1, 0)
 	xyaxis.SetNormal()
 	inv := vw.Prjn.Transpose()
-	axis := xyaxis.MulMat4(inv)
+	axis := xyaxis.MulMatrix4(inv)
 	axis.SetNormal()
 	rot := axis.MulQuat(phys.Quat)
 	rot.SetNormal()
-	xyrot := rot.MulMat4(&vw.Prjn)
+	xyrot := rot.MulMatrix4(&vw.Prjn)
 	xyrot.Z = 0
 	xyrot.SetNormal()
 	ang := xyrot.AngleTo(xyaxis)
@@ -171,16 +171,16 @@ func (vw *View) InitLibShape(bod eve.Body) {
 	switch wt {
 	case "eve.Box":
 		mnm := "eveBox"
-		svg.NewRect(lgp, mnm).SetPos(math32.V2(0, 0)).SetSize(math32.V2(1, 1))
+		svg.NewRect(lgp, mnm).SetPos(math32.Vec2(0, 0)).SetSize(math32.Vec2(1, 1))
 	case "eve.Cylinder":
 		mnm := "eveCylinder"
-		svg.NewEllipse(lgp, mnm).SetPos(math32.V2(0, 0)).SetRadii(math32.V2(.1, .1))
+		svg.NewEllipse(lgp, mnm).SetPos(math32.Vec2(0, 0)).SetRadii(math32.Vec2(.1, .1))
 	case "eve.Capsule":
 		mnm := "eveCapsule"
-		svg.NewEllipse(lgp, mnm).SetPos(math32.V2(0, 0)).SetRadii(math32.V2(.1, .1))
+		svg.NewEllipse(lgp, mnm).SetPos(math32.Vec2(0, 0)).SetRadii(math32.Vec2(.1, .1))
 	case "eve.Sphere":
 		mnm := "eveSphere"
-		svg.NewCircle(lgp, mnm).SetPos(math32.V2(0, 0)).SetRadius(.1)
+		svg.NewCircle(lgp, mnm).SetPos(math32.Vec2(0, 0)).SetRadius(.1)
 	}
 }
 
@@ -195,47 +195,47 @@ func (vw *View) ConfigBodyShape(bod eve.Body, shp svg.Node) {
 		sz := vw.Prjn2D(bx.Size)
 		shp.(*svg.Rect).SetSize(sz)
 		sb.Paint.Transform = math32.Translate2D(-sz.X/2, -sz.Y/2)
-		shp.SetProp("transform", sb.Paint.Transform.String())
-		shp.SetProp("stroke-width", vw.LineWidth)
-		shp.SetProp("fill", "none")
+		shp.SetProperty("transform", sb.Paint.Transform.String())
+		shp.SetProperty("stroke-width", vw.LineWidth)
+		shp.SetProperty("fill", "none")
 		if bx.Color != "" {
-			shp.SetProp("stroke", bx.Color)
+			shp.SetProperty("stroke", bx.Color)
 		}
 	case "eve.Cylinder":
 		cy := bod.(*eve.Cylinder)
-		sz3 := math32.V3(cy.BotRad*2, cy.Height, cy.TopRad*2)
+		sz3 := math32.Vec3(cy.BotRad*2, cy.Height, cy.TopRad*2)
 		sz := vw.Prjn2D(sz3)
 		shp.(*svg.Ellipse).SetRadii(sz)
 		sb.Paint.Transform = math32.Translate2D(-sz.X/2, -sz.Y/2)
-		shp.SetProp("transform", sb.Paint.Transform.String())
-		shp.SetProp("stroke-width", vw.LineWidth)
-		shp.SetProp("fill", "none")
+		shp.SetProperty("transform", sb.Paint.Transform.String())
+		shp.SetProperty("stroke-width", vw.LineWidth)
+		shp.SetProperty("fill", "none")
 		if cy.Color != "" {
-			shp.SetProp("stroke", cy.Color)
+			shp.SetProperty("stroke", cy.Color)
 		}
 	case "eve.Capsule":
 		cp := bod.(*eve.Capsule)
-		sz3 := math32.V3(cp.BotRad*2, cp.Height, cp.TopRad*2)
+		sz3 := math32.Vec3(cp.BotRad*2, cp.Height, cp.TopRad*2)
 		sz := vw.Prjn2D(sz3)
 		shp.(*svg.Ellipse).SetRadii(sz)
 		sb.Paint.Transform = math32.Translate2D(-sz.X/2, -sz.Y/2)
-		shp.SetProp("transform", sb.Paint.Transform.String())
-		shp.SetProp("stroke-width", vw.LineWidth)
-		shp.SetProp("fill", "none")
+		shp.SetProperty("transform", sb.Paint.Transform.String())
+		shp.SetProperty("stroke-width", vw.LineWidth)
+		shp.SetProperty("fill", "none")
 		if cp.Color != "" {
-			shp.SetProp("stroke", cp.Color)
+			shp.SetProperty("stroke", cp.Color)
 		}
 	case "eve.Sphere":
 		sp := bod.(*eve.Sphere)
-		sz3 := math32.V3(sp.Radius*2, sp.Radius*2, sp.Radius*2)
+		sz3 := math32.Vec3(sp.Radius*2, sp.Radius*2, sp.Radius*2)
 		sz := vw.Prjn2D(sz3)
 		shp.(*svg.Circle).SetRadius(sz.X) // should be same as Y
 		sb.Paint.Transform = math32.Translate2D(-sz.X/2, -sz.Y/2)
-		shp.SetProp("transform", sb.Paint.Transform.String())
-		shp.SetProp("stroke-width", vw.LineWidth)
-		shp.SetProp("fill", "none")
+		shp.SetProperty("transform", sb.Paint.Transform.String())
+		shp.SetProperty("stroke-width", vw.LineWidth)
+		shp.SetProperty("fill", "none")
 		if sp.Color != "" {
-			shp.SetProp("stroke", sp.Color)
+			shp.SetProperty("stroke", sp.Color)
 		}
 	}
 }
@@ -245,7 +245,7 @@ func (vw *View) ConfigView(wn eve.Node, vn svg.Node) {
 	wb := wn.AsNodeBase()
 	vb := vn.(*svg.Group)
 	vb.Paint.Transform = vw.Transform2D(&wb.Rel)
-	vb.SetProp("transform", vb.Paint.Transform.String())
+	vb.SetProperty("transform", vb.Paint.Transform.String())
 	bod := wn.AsBody()
 	if bod == nil {
 		return
@@ -303,7 +303,7 @@ func (vw *View) UpdatePoseNode(wn eve.Node, vn svg.Node) {
 		vk := vn.Child(idx).(svg.Node).(*svg.Group)
 		wb := wk.AsNodeBase()
 		vk.Paint.Transform = vw.Transform2D(&wb.Rel)
-		vk.SetProp("transform", vk.Paint.Transform.String())
+		vk.SetProperty("transform", vk.Paint.Transform.String())
 		// fmt.Printf("wk: %s  pos: %v  vk: %s\n", wk.Name(), ps, vk.Child(0).Name())
 		vw.UpdatePoseNode(wk, vk)
 	}

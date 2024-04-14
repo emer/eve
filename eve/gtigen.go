@@ -61,7 +61,7 @@ func (t *Box) New() tree.Ki { return &Box{} }
 
 // SetSize sets the [Box.Size]:
 // size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
-func (t *Box) SetSize(v math32.Vec3) *Box { t.Size = v; return t }
+func (t *Box) SetSize(v math32.Vector3) *Box { t.Size = v; return t }
 
 // SetInitial sets the [Box.Initial]
 func (t *Box) SetInitial(v Phys) *Box { t.Initial = v; return t }

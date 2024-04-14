@@ -20,10 +20,10 @@ type Contact struct {
 	B Body
 
 	// normal pointing from center of B to center of A
-	NormB math32.Vec3
+	NormB math32.Vector3
 
 	// point on spherical shell of B where A is contacting
-	PtB math32.Vec3
+	PtB math32.Vector3
 
 	// distance from PtB along NormB to contact point on spherical shell of A
 	Dist float32

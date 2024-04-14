@@ -26,7 +26,7 @@ type BBox struct {
 }
 
 // SetBounds sets BBox from min, max and updates other factors based on that
-func (bb *BBox) SetBounds(min, max math32.Vec3) {
+func (bb *BBox) SetBounds(min, max math32.Vector3) {
 	bb.BBox.Set(&min, &max)
 	bb.UpdateFromBBox()
 }
@@ -40,13 +40,13 @@ func (bb *BBox) UpdateFromBBox() {
 }
 
 // XForm transforms bounds with given quat and position offset to convert to world coords
-func (bb *BBox) XForm(q math32.Quat, pos math32.Vec3) {
+func (bb *BBox) XForm(q math32.Quat, pos math32.Vector3) {
 	bb.BBox = bb.BBox.MulQuat(q).Translate(pos)
 	bb.BSphere.Translate(pos)
 }
 
 // VelProject computes the velocity-projected bounding box for given velocity and step size
-func (bb *BBox) VelProject(vel math32.Vec3, step float32) {
+func (bb *BBox) VelProject(vel math32.Vector3, step float32) {
 	eb := bb.BBox.Translate(vel.MulScalar(step))
 	bb.VelBBox = bb.BBox
 	bb.VelBBox.ExpandByBox(eb)

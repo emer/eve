@@ -13,7 +13,7 @@ type Box struct {
 	BodyBase
 
 	// size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
-	Size math32.Vec3
+	Size math32.Vector3
 }
 
 func (bx *Box) SetBBox() {
