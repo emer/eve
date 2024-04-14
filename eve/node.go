@@ -7,13 +7,12 @@ package eve
 //go:generate core generate -add-types
 
 import (
-	"cogentcore.org/core/ki"
 	"cogentcore.org/core/math32"
 )
 
 // Node is the common interface for all eve nodes
 type Node interface {
-	ki.Ki
+	tree.Ki
 
 	// NodeType returns the type of node this is (Body, Group, Joint)
 	NodeType() NodeTypes
@@ -59,7 +58,7 @@ type Node interface {
 // and computed bounding boxes, etc.
 // There are only three different kinds of Nodes: Group, Body, and Joint
 type NodeBase struct {
-	ki.Node
+	tree.Node
 
 	// initial position, orientation, velocity in *local* coordinates (relative to parent)
 	Initial Phys `view:"inline"`
@@ -158,7 +157,7 @@ func (nb *NodeBase) StepPhysBase(step float32) {
 }
 
 // AsNode converts Ki to a Node interface and a Node3DBase obj -- nil if not.
-func AsNode(k ki.Ki) (Node, *NodeBase) {
+func AsNode(k tree.Ki) (Node, *NodeBase) {
 	if k == nil || k.This() == nil { // this also checks for destroyed
 		return nil, nil
 	}
@@ -186,12 +185,12 @@ const (
 // NodeFlags
 
 // NodeFlags define eve node bitflags -- uses ki Flags field (64 bit capacity)
-type NodeFlags ki.Flags //enums:bitflag
+type NodeFlags tree.Flags //enums:bitflag
 
 const (
 	// Dynamic means that this node can move -- if not so marked, it is
 	// a Static node.  Any top-level group that is not Dynamic is immediately
 	// pruned from further consideration, so top-level groups should be
 	// separated into Dynamic and Static nodes at the start.
-	Dynamic NodeFlags = NodeFlags(ki.FlagsN) + iota
+	Dynamic NodeFlags = NodeFlags(tree.FlagsN) + iota
 )

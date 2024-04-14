@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"image"
 
-	"cogentcore.org/core/ki"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/svg"
+	"cogentcore.org/core/tree"
 	"github.com/emer/eve/v2/eve"
 )
 
@@ -271,7 +271,7 @@ func (vw *View) SyncNode(wn eve.Node, vn svg.Node) bool {
 	nm := wn.Name()
 	vn.SetName(nm) // guaranteed to be unique
 	skids := *wn.Children()
-	tnl := make(ki.Config, 0, len(skids))
+	tnl := make(tree.Config, 0, len(skids))
 	for _, skid := range skids {
 		tnl.Add(svg.GroupType, skid.Name())
 	}

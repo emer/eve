@@ -12,7 +12,7 @@ import (
 
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/errors"
-	"cogentcore.org/core/ki"
+	"cogentcore.org/core/tree"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/eve/v2/eve"
 )
@@ -223,7 +223,7 @@ func (vw *View) SyncNode(wn eve.Node, vn xyz.Node, sc *xyz.Scene) bool {
 	nm := wn.Name()
 	vn.SetName(nm) // guaranteed to be unique
 	skids := *wn.Children()
-	tnl := make(ki.Config, 0, len(skids))
+	tnl := make(tree.Config, 0, len(skids))
 	for _, skid := range skids {
 		tnl.Add(xyz.GroupType, skid.Name())
 	}

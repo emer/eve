@@ -160,82 +160,82 @@ func (ps *Phys) RotateEulerRad(x, y, z, angle float32) {
 /*
 
 // PhysProps define the ToolBar and MenuBar for StructView
-var PhysProps = ki.Props{
-	"ToolBar": ki.PropSlice{
-		{"SetEulerRotation", ki.Props{
+var PhysProps = tree.Props{
+	"ToolBar": tree.PropSlice{
+		{"SetEulerRotation", tree.Props{
 			"desc": "Set the local rotation (relative to parent) using Euler angles, in degrees.",
 			"icon": "rotate-3d",
-			"Args": ki.PropSlice{
-				{"Pitch", ki.Props{
+			"Args": tree.PropSlice{
+				{"Pitch", tree.Props{
 					"desc": "rotation up / down along the X axis (in the Y-Z plane), e.g., the altitude (climbing, descending) for motion along the Z depth axis",
 				}},
-				{"Yaw", ki.Props{
+				{"Yaw", tree.Props{
 					"desc": "rotation along the Y axis (in the horizontal X-Z plane), e.g., the bearing or direction for motion along the Z depth axis",
 				}},
-				{"Roll", ki.Props{
+				{"Roll", tree.Props{
 					"desc": "rotation along the Z axis (in the X-Y plane), e.g., the bank angle for motion along the Z depth axis",
 				}},
 			},
 		}},
-		{"SetAxisRotation", ki.Props{
+		{"SetAxisRotation", tree.Props{
 			"desc": "Set the local rotation (relative to parent) using Axis about which to rotate, and the angle.",
 			"icon": "rotate-3d",
-			"Args": ki.PropSlice{
-				{"X", ki.BlankProp{}},
-				{"Y", ki.BlankProp{}},
-				{"Z", ki.BlankProp{}},
-				{"Angle", ki.BlankProp{}},
+			"Args": tree.PropSlice{
+				{"X", tree.BlankProp{}},
+				{"Y", tree.BlankProp{}},
+				{"Z", tree.BlankProp{}},
+				{"Angle", tree.BlankProp{}},
 			},
 		}},
-		{"RotateEuler", ki.Props{
+		{"RotateEuler", tree.Props{
 			"desc": "rotate (relative to current rotation) using Euler angles, in degrees.",
 			"icon": "rotate-3d",
-			"Args": ki.PropSlice{
-				{"Pitch", ki.Props{
+			"Args": tree.PropSlice{
+				{"Pitch", tree.Props{
 					"desc": "rotation up / down along the X axis (in the Y-Z plane), e.g., the altitude (climbing, descending) for motion along the Z depth axis",
 				}},
-				{"Yaw", ki.Props{
+				{"Yaw", tree.Props{
 					"desc": "rotation along the Y axis (in the horizontal X-Z plane), e.g., the bearing or direction for motion along the Z depth axis",
 				}},
-				{"Roll", ki.Props{
+				{"Roll", tree.Props{
 					"desc": "rotation along the Z axis (in the X-Y plane), e.g., the bank angle for motion along the Z depth axis",
 				}},
 			},
 		}},
-		{"RotateOnAxis", ki.Props{
+		{"RotateOnAxis", tree.Props{
 			"desc": "Rotate (relative to current rotation) using Axis about which to rotate, and the angle.",
 			"icon": "rotate-3d",
-			"Args": ki.PropSlice{
-				{"X", ki.BlankProp{}},
-				{"Y", ki.BlankProp{}},
-				{"Z", ki.BlankProp{}},
-				{"Angle", ki.BlankProp{}},
+			"Args": tree.PropSlice{
+				{"X", tree.BlankProp{}},
+				{"Y", tree.BlankProp{}},
+				{"Z", tree.BlankProp{}},
+				{"Angle", tree.BlankProp{}},
 			},
 		}},
-		{"EulerRotation", ki.Props{
+		{"EulerRotation", tree.Props{
 			"desc":        "The local rotation (relative to parent) in Euler angles in degrees (X = Pitch, Y = Yaw, Z = Roll)",
 			"icon":        "rotate-3d",
 			"show-return": "true",
 		}},
-		{"sep-rot", ki.BlankProp{}},
-		{"MoveOnAxis", ki.Props{
+		{"sep-rot", tree.BlankProp{}},
+		{"MoveOnAxis", tree.Props{
 			"desc": "Move given distance on given X,Y,Z axis relative to current rotation orientation.",
 			"icon": "pan",
-			"Args": ki.PropSlice{
-				{"X", ki.BlankProp{}},
-				{"Y", ki.BlankProp{}},
-				{"Z", ki.BlankProp{}},
-				{"Dist", ki.BlankProp{}},
+			"Args": tree.PropSlice{
+				{"X", tree.BlankProp{}},
+				{"Y", tree.BlankProp{}},
+				{"Z", tree.BlankProp{}},
+				{"Dist", tree.BlankProp{}},
 			},
 		}},
-		{"MoveOnAxisAbs", ki.Props{
+		{"MoveOnAxisAbs", tree.Props{
 			"desc": "Move given distance on given X,Y,Z axis in absolute coords, not relative to current rotation orientation.",
 			"icon": "pan",
-			"Args": ki.PropSlice{
-				{"X", ki.BlankProp{}},
-				{"Y", ki.BlankProp{}},
-				{"Z", ki.BlankProp{}},
-				{"Dist", ki.BlankProp{}},
+			"Args": tree.PropSlice{
+				{"X", tree.BlankProp{}},
+				{"Y", tree.BlankProp{}},
+				{"Z", tree.BlankProp{}},
+				{"Dist", tree.BlankProp{}},
 			},
 		}},
 	},

@@ -4,7 +4,6 @@ package eve
 
 import (
 	"cogentcore.org/core/gti"
-	"cogentcore.org/core/ki"
 	"cogentcore.org/core/math32"
 )
 
@@ -17,7 +16,7 @@ var BodyBaseType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.BodyB
 
 // NewBodyBase adds a new [BodyBase] with the given name to the given parent:
 // BodyBase is the base type for all specific Body types
-func NewBodyBase(par ki.Ki, name ...string) *BodyBase {
+func NewBodyBase(par tree.Ki, name ...string) *BodyBase {
 	return par.NewChild(BodyBaseType, name...).(*BodyBase)
 }
 
@@ -25,7 +24,7 @@ func NewBodyBase(par ki.Ki, name ...string) *BodyBase {
 func (t *BodyBase) KiType() *gti.Type { return BodyBaseType }
 
 // New returns a new [*BodyBase] value
-func (t *BodyBase) New() ki.Ki { return &BodyBase{} }
+func (t *BodyBase) New() tree.Ki { return &BodyBase{} }
 
 // SetRigid sets the [BodyBase.Rigid]:
 // rigid body properties, including mass, bounce, friction etc
@@ -50,7 +49,7 @@ var BoxType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Box", IDNa
 
 // NewBox adds a new [Box] with the given name to the given parent:
 // Box is a box body shape
-func NewBox(par ki.Ki, name ...string) *Box {
+func NewBox(par tree.Ki, name ...string) *Box {
 	return par.NewChild(BoxType, name...).(*Box)
 }
 
@@ -58,7 +57,7 @@ func NewBox(par ki.Ki, name ...string) *Box {
 func (t *Box) KiType() *gti.Type { return BoxType }
 
 // New returns a new [*Box] value
-func (t *Box) New() ki.Ki { return &Box{} }
+func (t *Box) New() tree.Ki { return &Box{} }
 
 // SetSize sets the [Box.Size]:
 // size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
@@ -85,7 +84,7 @@ var CapsuleType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Capsul
 // NewCapsule adds a new [Capsule] with the given name to the given parent:
 // Capsule is a generalized cylinder body shape, with hemispheres at each end,
 // with separate radii for top and bottom.
-func NewCapsule(par ki.Ki, name ...string) *Capsule {
+func NewCapsule(par tree.Ki, name ...string) *Capsule {
 	return par.NewChild(CapsuleType, name...).(*Capsule)
 }
 
@@ -93,7 +92,7 @@ func NewCapsule(par ki.Ki, name ...string) *Capsule {
 func (t *Capsule) KiType() *gti.Type { return CapsuleType }
 
 // New returns a new [*Capsule] value
-func (t *Capsule) New() ki.Ki { return &Capsule{} }
+func (t *Capsule) New() tree.Ki { return &Capsule{} }
 
 // SetHeight sets the [Capsule.Height]:
 // height of the cylinder portion of the capsule
@@ -132,7 +131,7 @@ var CylinderType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Cylin
 // NewCylinder adds a new [Cylinder] with the given name to the given parent:
 // Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.
 // A cone has a zero radius at one end.
-func NewCylinder(par ki.Ki, name ...string) *Cylinder {
+func NewCylinder(par tree.Ki, name ...string) *Cylinder {
 	return par.NewChild(CylinderType, name...).(*Cylinder)
 }
 
@@ -140,7 +139,7 @@ func NewCylinder(par ki.Ki, name ...string) *Cylinder {
 func (t *Cylinder) KiType() *gti.Type { return CylinderType }
 
 // New returns a new [*Cylinder] value
-func (t *Cylinder) New() ki.Ki { return &Cylinder{} }
+func (t *Cylinder) New() tree.Ki { return &Cylinder{} }
 
 // SetHeight sets the [Cylinder.Height]:
 // height of the cylinder
@@ -177,7 +176,7 @@ var GroupType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Group", 
 // it should be used strategically to partition the space
 // and its BBox is used to optimize tree-based collision detection.
 // Use a group for the top-level World node as well.
-func NewGroup(par ki.Ki, name ...string) *Group {
+func NewGroup(par tree.Ki, name ...string) *Group {
 	return par.NewChild(GroupType, name...).(*Group)
 }
 
@@ -185,7 +184,7 @@ func NewGroup(par ki.Ki, name ...string) *Group {
 func (t *Group) KiType() *gti.Type { return GroupType }
 
 // New returns a new [*Group] value
-func (t *Group) New() ki.Ki { return &Group{} }
+func (t *Group) New() tree.Ki { return &Group{} }
 
 // SetInitial sets the [Group.Initial]
 func (t *Group) SetInitial(v Phys) *Group { t.Initial = v; return t }
@@ -204,7 +203,7 @@ var NodeBaseType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.NodeB
 // NodeBase is the basic eve node, which has position, rotation, velocity
 // and computed bounding boxes, etc.
 // There are only three different kinds of Nodes: Group, Body, and Joint
-func NewNodeBase(par ki.Ki, name ...string) *NodeBase {
+func NewNodeBase(par tree.Ki, name ...string) *NodeBase {
 	return par.NewChild(NodeBaseType, name...).(*NodeBase)
 }
 
@@ -212,7 +211,7 @@ func NewNodeBase(par ki.Ki, name ...string) *NodeBase {
 func (t *NodeBase) KiType() *gti.Type { return NodeBaseType }
 
 // New returns a new [*NodeBase] value
-func (t *NodeBase) New() ki.Ki { return &NodeBase{} }
+func (t *NodeBase) New() tree.Ki { return &NodeBase{} }
 
 // SetInitial sets the [NodeBase.Initial]:
 // initial position, orientation, velocity in *local* coordinates (relative to parent)
@@ -235,7 +234,7 @@ var SphereType = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.Sphere"
 
 // NewSphere adds a new [Sphere] with the given name to the given parent:
 // Sphere is a spherical body shape.
-func NewSphere(par ki.Ki, name ...string) *Sphere {
+func NewSphere(par tree.Ki, name ...string) *Sphere {
 	return par.NewChild(SphereType, name...).(*Sphere)
 }
 
@@ -243,7 +242,7 @@ func NewSphere(par ki.Ki, name ...string) *Sphere {
 func (t *Sphere) KiType() *gti.Type { return SphereType }
 
 // New returns a new [*Sphere] value
-func (t *Sphere) New() ki.Ki { return &Sphere{} }
+func (t *Sphere) New() tree.Ki { return &Sphere{} }
 
 // SetRadius sets the [Sphere.Radius]:
 // radius

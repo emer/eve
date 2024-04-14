@@ -16,14 +16,14 @@ import (
 	"cogentcore.org/core/abilities"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
+	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
-	"cogentcore.org/core/gi"
-	"cogentcore.org/core/giv"
-	"cogentcore.org/core/grows/images"
 	"cogentcore.org/core/icons"
+	"cogentcore.org/core/iox/images"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/svg"
+	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
 	"cogentcore.org/core/xyzv"
 	"github.com/emer/eve/v2/eve"
@@ -43,7 +43,7 @@ func main() {
 		ev.NoGUIRun()
 		return
 	}
-	// gi.RenderTrace = true
+	// core.RenderTrace = true
 	b := ev.ConfigGUI()
 	b.NewWindow().Run().Wait()
 }
@@ -79,7 +79,7 @@ type Env struct {
 	Camera evev.Camera
 
 	// color map to use for rendering depth map
-	DepthMap giv.ColorMapName
+	DepthMap views.ColorMapName
 
 	// world
 	World *eve.Group `view:"-"`
@@ -94,7 +94,7 @@ type Env struct {
 	SceneView *xyzv.SceneView
 
 	// 2D visualization of the Scene
-	Scene2D *gi.SVG
+	Scene2D *core.SVG
 
 	// emer group
 	Emer *eve.Group `view:"-"`
@@ -106,10 +106,10 @@ type Env struct {
 	Contacts eve.Contacts `view:"-"`
 
 	// snapshot bitmap view
-	EyeRImg *gi.Image `view:"-"`
+	EyeRImg *core.Image `view:"-"`
 
 	// depth map bitmap view
-	DepthImage *gi.Image `view:"-"`
+	DepthImage *core.Image `view:"-"`
 }
 
 func (ev *Env) Defaults() {
@@ -120,7 +120,7 @@ func (ev *Env) Defaults() {
 	ev.EmerHt = 1
 	ev.MoveStep = ev.EmerHt * .2
 	ev.RotStep = 15
-	ev.DepthMap = giv.ColorMapName("ColdHot")
+	ev.DepthMap = views.ColorMapName("ColdHot")
 	ev.Camera.Defaults()
 	ev.Camera.FOV = 90
 }
@@ -354,19 +354,19 @@ func MakeEmer(par *eve.Group, height float32) *eve.Group {
 	return emr
 }
 
-func (ev *Env) ConfigGUI() *gi.Body {
+func (ev *Env) ConfigGUI() *core.Body {
 	// vgpu.Debug = true
 
-	b := gi.NewBody("virtroom").SetTitle("Emergent Virtual Engine")
+	b := core.NewBody("virtroom").SetTitle("Emergent Virtual Engine")
 
 	ev.MakeWorld()
 
-	split := gi.NewSplits(b, "split")
+	split := core.NewSplits(b, "split")
 
-	tv := giv.NewTreeView(gi.NewFrame(split), "tv").SyncTree(ev.World)
-	sv := giv.NewStructView(split, "sv").SetStruct(ev)
-	imfr := gi.NewFrame(split)
-	tbvw := gi.NewTabs(split)
+	tv := views.NewTreeView(core.NewFrame(split), "tv").SyncTree(ev.World)
+	sv := views.NewStructView(split, "sv").SetStruct(ev)
+	imfr := core.NewFrame(split)
+	tbvw := core.NewTabs(split)
 
 	scfr := tbvw.NewTab("3D View")
 	twofr := tbvw.NewTab("2D View")
@@ -407,18 +407,18 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	imfr.Style(func(s *styles.Style) {
 		s.Direction = styles.Column
 	})
-	gi.NewLabel(imfr).SetText("Right Eye Image:")
-	ev.EyeRImg = gi.NewImage(imfr, "eye-r-img")
+	core.NewLabel(imfr).SetText("Right Eye Image:")
+	ev.EyeRImg = core.NewImage(imfr, "eye-r-img")
 	ev.EyeRImg.Image = image.NewRGBA(image.Rectangle{Max: ev.Camera.Size})
 
-	gi.NewLabel(imfr).SetText("Right Eye Depth:")
-	ev.DepthImage = gi.NewImage(imfr, "depth-img")
+	core.NewLabel(imfr).SetText("Right Eye Depth:")
+	ev.DepthImage = core.NewImage(imfr, "depth-img")
 	ev.DepthImage.Image = image.NewRGBA(image.Rectangle{Max: ev.Camera.Size})
 
 	//////////////////////////////////////////
 	//    2D Scene
 
-	twov := gi.NewSVG(twofr, "sceneview")
+	twov := core.NewSVG(twofr, "sceneview")
 	ev.Scene2D = twov
 	twov.Style(func(s *styles.Style) {
 		s.Grow.Set(1, 1)
@@ -432,47 +432,47 @@ func (ev *Env) ConfigGUI() *gi.Body {
 	//////////////////////////////////////////
 	//    Toolbar
 
-	b.AddAppBar(func(tb *gi.Toolbar) {
-		gi.NewButton(tb).SetText("Edit Env").SetIcon(icons.Edit).
+	b.AddAppBar(func(tb *core.Toolbar) {
+		core.NewButton(tb).SetText("Edit Env").SetIcon(icons.Edit).
 			SetTooltip("Edit the settings for the environment").
 			OnClick(func(e events.Event) {
 				sv.SetStruct(ev)
 			})
-		giv.NewFuncButton(tb, ev.WorldInit).SetText("Init").SetIcon(icons.Update)
-		giv.NewFuncButton(tb, ev.ReMakeWorld).SetText("Make").SetIcon(icons.Update)
-		giv.NewFuncButton(tb, ev.GrabEyeImg).SetText("Grab Image").SetIcon(icons.Image)
-		gi.NewSeparator(tb)
+		views.NewFuncButton(tb, ev.WorldInit).SetText("Init").SetIcon(icons.Update)
+		views.NewFuncButton(tb, ev.ReMakeWorld).SetText("Make").SetIcon(icons.Update)
+		views.NewFuncButton(tb, ev.GrabEyeImg).SetText("Grab Image").SetIcon(icons.Image)
+		core.NewSeparator(tb)
 
-		giv.NewFuncButton(tb, ev.StepForward).SetText("Fwd").SetIcon(icons.SkipNext).
+		views.NewFuncButton(tb, ev.StepForward).SetText("Fwd").SetIcon(icons.SkipNext).
 			Style(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
 			})
-		giv.NewFuncButton(tb, ev.StepBackward).SetText("Bkw").SetIcon(icons.SkipPrevious).
+		views.NewFuncButton(tb, ev.StepBackward).SetText("Bkw").SetIcon(icons.SkipPrevious).
 			Style(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
 			})
-		giv.NewFuncButton(tb, ev.RotBodyLeft).SetText("Body Left").SetIcon(icons.KeyboardArrowLeft).
+		views.NewFuncButton(tb, ev.RotBodyLeft).SetText("Body Left").SetIcon(icons.KeyboardArrowLeft).
 			Style(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
 			})
-		giv.NewFuncButton(tb, ev.RotBodyRight).SetText("Body Right").SetIcon(icons.KeyboardArrowRight).
+		views.NewFuncButton(tb, ev.RotBodyRight).SetText("Body Right").SetIcon(icons.KeyboardArrowRight).
 			Style(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
 			})
-		giv.NewFuncButton(tb, ev.RotHeadLeft).SetText("Head Left").SetIcon(icons.KeyboardArrowLeft).
+		views.NewFuncButton(tb, ev.RotHeadLeft).SetText("Head Left").SetIcon(icons.KeyboardArrowLeft).
 			Style(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
 			})
-		giv.NewFuncButton(tb, ev.RotHeadRight).SetText("Head Right").SetIcon(icons.KeyboardArrowRight).
+		views.NewFuncButton(tb, ev.RotHeadRight).SetText("Head Right").SetIcon(icons.KeyboardArrowRight).
 			Style(func(s *styles.Style) {
 				s.SetAbilities(true, abilities.RepeatClickable)
 			})
-		gi.NewSeparator(tb)
+		core.NewSeparator(tb)
 
-		gi.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
+		core.NewButton(tb).SetText("README").SetIcon(icons.FileMarkdown).
 			SetTooltip("Open browser on README.").
 			OnClick(func(e events.Event) {
-				gi.TheApp.OpenURL("https://github.com/emer/eve/blob/master/examples/virtroom/README.md")
+				core.TheApp.OpenURL("https://github.com/emer/eve/blob/master/examples/virtroom/README.md")
 			})
 	})
 	return b

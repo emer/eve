@@ -7,7 +7,6 @@ package eve
 import (
 	"sort"
 
-	"cogentcore.org/core/ki"
 	"cogentcore.org/core/math32"
 )
 
@@ -55,7 +54,7 @@ func (gp *Group) GroupBBox() {
 
 // WorldDynGroupBBox does a GroupBBox on all dynamic nodes
 func (gp *Group) WorldDynGroupBBox() {
-	gp.WalkPost(func(k ki.Ki) bool {
+	gp.WalkPost(func(k tree.Ki) bool {
 		nii, _ := AsNode(k)
 		if nii == nil {
 			return false
@@ -64,7 +63,7 @@ func (gp *Group) WorldDynGroupBBox() {
 			return false
 		}
 		return true
-	}, func(k ki.Ki) bool {
+	}, func(k tree.Ki) bool {
 		nii, _ := AsNode(k)
 		if nii == nil {
 			return false
@@ -79,7 +78,7 @@ func (gp *Group) WorldDynGroupBBox() {
 
 // WorldInit does the full tree InitAbs and GroupBBox updates
 func (gp *Group) WorldInit() {
-	gp.WalkPre(func(k ki.Ki) bool {
+	gp.WalkPre(func(k tree.Ki) bool {
 		nii, _ := AsNode(k)
 		if nii == nil {
 			return false
@@ -89,13 +88,13 @@ func (gp *Group) WorldInit() {
 		return true
 	})
 
-	gp.WalkPost(func(k ki.Ki) bool {
+	gp.WalkPost(func(k tree.Ki) bool {
 		nii, _ := AsNode(k)
 		if nii == nil {
 			return false
 		}
 		return true
-	}, func(k ki.Ki) bool {
+	}, func(k tree.Ki) bool {
 		nii, _ := AsNode(k)
 		if nii == nil {
 			return false
@@ -109,7 +108,7 @@ func (gp *Group) WorldInit() {
 // WorldRelToAbs does a full RelToAbs update for all Dynamic groups, for
 // Scripted mode updates with manual updating of Rel values.
 func (gp *Group) WorldRelToAbs() {
-	gp.WalkPre(func(k ki.Ki) bool {
+	gp.WalkPre(func(k tree.Ki) bool {
 		nii, _ := AsNode(k)
 		if nii == nil {
 			return false // going into a different type of thing, bail
@@ -128,7 +127,7 @@ func (gp *Group) WorldRelToAbs() {
 // WorldStepPhys does a full StepPhys update for all Dynamic nodes, for
 // either physics or scripted mode, based on current velocities.
 func (gp *Group) WorldStepPhys(step float32) {
-	gp.WalkPre(func(k ki.Ki) bool {
+	gp.WalkPre(func(k tree.Ki) bool {
 		nii, _ := AsNode(k)
 		if nii == nil {
 			return false // going into a different type of thing, bail
@@ -216,7 +215,7 @@ type BodyPoint struct {
 // with the given ray, with the point of intersection
 func (gp *Group) RayBodyIntersections(ray math32.Ray) []*BodyPoint {
 	var bs []*BodyPoint
-	gp.WalkPre(func(k ki.Ki) bool {
+	gp.WalkPre(func(k tree.Ki) bool {
 		nii, ni := AsNode(k)
 		if nii == nil {
 			return false // going into a different type of thing, bail

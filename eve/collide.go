@@ -5,7 +5,6 @@
 package eve
 
 import (
-	"cogentcore.org/core/ki"
 	"cogentcore.org/core/math32"
 )
 
@@ -51,7 +50,7 @@ func (cs *Contacts) New(a, b Body) *Contact {
 // This is the broad first-pass filtering.
 func BodyVelBBoxIntersects(a, b Node) Contacts {
 	var cts Contacts
-	a.WalkPre(func(k ki.Ki) bool {
+	a.WalkPre(func(k tree.Ki) bool {
 		aii, ai := AsNode(k)
 		if aii == nil {
 			return false // going into a different type of thing, bail
@@ -61,7 +60,7 @@ func BodyVelBBoxIntersects(a, b Node) Contacts {
 		}
 		abod := aii.AsBody() // only consider bodies from a
 
-		b.WalkPre(func(k ki.Ki) bool {
+		b.WalkPre(func(k tree.Ki) bool {
 			bii, bi := AsNode(k)
 			if bii == nil {
 				return false // going into a different type of thing, bail
