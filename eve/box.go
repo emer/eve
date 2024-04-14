@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Box is a box body shape
@@ -13,7 +13,7 @@ type Box struct {
 	BodyBase
 
 	// size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
-	Size mat32.Vec3
+	Size math32.Vec3
 }
 
 func (bx *Box) SetBBox() {

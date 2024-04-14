@@ -5,7 +5,7 @@ package eve
 import (
 	"cogentcore.org/core/gti"
 	"cogentcore.org/core/ki"
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 var _ = gti.AddType(&gti.Type{Name: "github.com/emer/eve/v2/eve.BBox", IDName: "b-box", Doc: "BBox contains bounding box and other gross object properties", Fields: []gti.Field{{Name: "BBox", Doc: "bounding box in world coords (Axis-Aligned Bounding Box = AABB)"}, {Name: "VelBBox", Doc: "velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis"}, {Name: "BSphere", Doc: "bounding sphere in local coords"}, {Name: "Area", Doc: "area"}, {Name: "Volume", Doc: "volume"}}})
@@ -62,7 +62,7 @@ func (t *Box) New() ki.Ki { return &Box{} }
 
 // SetSize sets the [Box.Size]:
 // size of box in each dimension (units arbitrary, as long as they are all consistent -- meters is typical)
-func (t *Box) SetSize(v mat32.Vec3) *Box { t.Size = v; return t }
+func (t *Box) SetSize(v math32.Vec3) *Box { t.Size = v; return t }
 
 // SetInitial sets the [Box.Initial]
 func (t *Box) SetInitial(v Phys) *Box { t.Initial = v; return t }

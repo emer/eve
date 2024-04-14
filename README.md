@@ -8,9 +8,9 @@ Incrementally, we will start with a very basic explicitly driven form of physics
 
 The world is made using [GoKi](https://github.com/goki/ki) based trees (groups, bodies, joints).
 
-Rendering can *optionally* be performed using corresponding 3D renders in the `gi3d` 3D rendering framework in the [GoGi](https://github.com/goki/gi) GUI framework, using an `epev.View` object that sync's the two.
+Rendering can *optionally* be performed using corresponding 3D renders in the `xyz` 3D rendering framework in the [Cogent Core](https://cogentcore.org/core) GUI framework, using an `epev.View` object that sync's the two.
 
-We also use the full-featured `goki/mat32` math / matrix library (adapted from the `g3n` 3D game environment package).
+We also use the full-featured `math32` math / matrix library (adapted from the `g3n` 3D game environment package).
 
 # Organizing the World
 

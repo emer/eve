@@ -8,7 +8,7 @@ import (
 	"image"
 
 	"cogentcore.org/core/colors/colormap"
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // DepthNorm renders a normalized linear depth map from GPU (0-1 normalized floats) to
@@ -31,7 +31,7 @@ func DepthNorm(nd *[]float32, depth []float32, cam *Camera, flipY bool) {
 	fmn := cam.Far - cam.Near
 	var norm float32
 	if cam.LogD {
-		norm = 1 / mat32.Log(1+cam.MaxD)
+		norm = 1 / math32.Log(1+cam.MaxD)
 	} else {
 		norm = 1 / cam.MaxD
 	}
@@ -50,7 +50,7 @@ func DepthNorm(nd *[]float32, depth []float32, cam *Camera, flipY bool) {
 			effd := float32(1)
 			if lind < cam.MaxD {
 				if cam.LogD {
-					effd = norm * mat32.Log(1+lind)
+					effd = norm * math32.Log(1+lind)
 				} else {
 					effd = norm * lind
 				}
@@ -74,7 +74,7 @@ func DepthImage(img *image.RGBA, depth []float32, cmap *colormap.Map, cam *Camer
 	fmn := cam.Far - cam.Near
 	var norm float32
 	if cam.LogD {
-		norm = 1 / mat32.Log(1+cam.MaxD)
+		norm = 1 / math32.Log(1+cam.MaxD)
 	} else {
 		norm = 1 / cam.MaxD
 	}
@@ -89,7 +89,7 @@ func DepthImage(img *image.RGBA, depth []float32, cmap *colormap.Map, cam *Camer
 			effd := float32(1)
 			if lind < cam.MaxD {
 				if cam.LogD {
-					effd = norm * mat32.Log(1+lind)
+					effd = norm * math32.Log(1+lind)
 				} else {
 					effd = norm * lind
 				}

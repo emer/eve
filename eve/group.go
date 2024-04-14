@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"cogentcore.org/core/ki"
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Group is a container of bodies, joints, or other groups
@@ -209,12 +209,12 @@ func (gp *Group) WorldCollide(dynTop bool) []Contacts {
 // BodyPoint contains a Body and a Point on that body
 type BodyPoint struct {
 	Body  Body
-	Point mat32.Vec3
+	Point math32.Vec3
 }
 
 // RayBodyIntersections returns a list of bodies whose bounding box intersects
 // with the given ray, with the point of intersection
-func (gp *Group) RayBodyIntersections(ray mat32.Ray) []*BodyPoint {
+func (gp *Group) RayBodyIntersections(ray math32.Ray) []*BodyPoint {
 	var bs []*BodyPoint
 	gp.WalkPre(func(k ki.Ki) bool {
 		nii, ni := AsNode(k)

@@ -4,19 +4,19 @@
 
 package eve
 
-import "cogentcore.org/core/mat32"
+import "cogentcore.org/core/math32"
 
 // BBox contains bounding box and other gross object properties
 type BBox struct {
 
 	// bounding box in world coords (Axis-Aligned Bounding Box = AABB)
-	BBox mat32.Box3
+	BBox math32.Box3
 
 	// velocity-projected bounding box in world coords: extend BBox to include future position of moving bodies -- collision must be made on this basis
-	VelBBox mat32.Box3
+	VelBBox math32.Box3
 
 	// bounding sphere in local coords
-	BSphere mat32.Sphere
+	BSphere math32.Sphere
 
 	// area
 	Area float32
@@ -26,7 +26,7 @@ type BBox struct {
 }
 
 // SetBounds sets BBox from min, max and updates other factors based on that
-func (bb *BBox) SetBounds(min, max mat32.Vec3) {
+func (bb *BBox) SetBounds(min, max math32.Vec3) {
 	bb.BBox.Set(&min, &max)
 	bb.UpdateFromBBox()
 }
@@ -40,13 +40,13 @@ func (bb *BBox) UpdateFromBBox() {
 }
 
 // XForm transforms bounds with given quat and position offset to convert to world coords
-func (bb *BBox) XForm(q mat32.Quat, pos mat32.Vec3) {
+func (bb *BBox) XForm(q math32.Quat, pos math32.Vec3) {
 	bb.BBox = bb.BBox.MulQuat(q).Translate(pos)
 	bb.BSphere.Translate(pos)
 }
 
 // VelProject computes the velocity-projected bounding box for given velocity and step size
-func (bb *BBox) VelProject(vel mat32.Vec3, step float32) {
+func (bb *BBox) VelProject(vel math32.Vec3, step float32) {
 	eb := bb.BBox.Translate(vel.MulScalar(step))
 	bb.VelBBox = bb.BBox
 	bb.VelBBox.ExpandByBox(eb)

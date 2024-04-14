@@ -8,7 +8,7 @@ package eve
 
 import (
 	"cogentcore.org/core/ki"
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Node is the common interface for all eve nodes
@@ -87,25 +87,25 @@ func (nb *NodeBase) IsDynamic() bool {
 }
 
 // SetInitPos sets the initial position
-func (nb *NodeBase) SetInitPos(pos mat32.Vec3) *NodeBase {
+func (nb *NodeBase) SetInitPos(pos math32.Vec3) *NodeBase {
 	nb.Initial.Pos = pos
 	return nb
 }
 
 // SetInitQuat sets the initial rotation as a Quaternion
-func (nb *NodeBase) SetInitQuat(quat mat32.Quat) *NodeBase {
+func (nb *NodeBase) SetInitQuat(quat math32.Quat) *NodeBase {
 	nb.Initial.Quat = quat
 	return nb
 }
 
 // SetInitLinVel sets the initial linear velocity
-func (nb *NodeBase) SetInitLinVel(vel mat32.Vec3) *NodeBase {
+func (nb *NodeBase) SetInitLinVel(vel math32.Vec3) *NodeBase {
 	nb.Initial.LinVel = vel
 	return nb
 }
 
 // SetInitAngVel sets the initial angular velocity
-func (nb *NodeBase) SetInitAngVel(vel mat32.Vec3) *NodeBase {
+func (nb *NodeBase) SetInitAngVel(vel math32.Vec3) *NodeBase {
 	nb.Initial.AngVel = vel
 	return nb
 }

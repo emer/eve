@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Capsule is a generalized cylinder body shape, with hemispheres at each end,
@@ -26,7 +26,7 @@ type Capsule struct {
 func (cp *Capsule) SetBBox() {
 	th := cp.Height + cp.TopRad + cp.BotRad
 	h2 := th / 2
-	cp.BBox.SetBounds(mat32.V3(-cp.BotRad, -h2, -cp.BotRad), mat32.V3(cp.TopRad, h2, cp.TopRad))
+	cp.BBox.SetBounds(math32.V3(-cp.BotRad, -h2, -cp.BotRad), math32.V3(cp.TopRad, h2, cp.TopRad))
 	cp.BBox.XForm(cp.Abs.Quat, cp.Abs.Pos)
 }
 

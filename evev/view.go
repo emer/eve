@@ -11,7 +11,7 @@ import (
 	"image"
 
 	"cogentcore.org/core/colors"
-	"cogentcore.org/core/grr"
+	"cogentcore.org/core/errors"
 	"cogentcore.org/core/ki"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/eve/v2/eve"
@@ -171,25 +171,25 @@ func (vw *View) ConfigBodySolid(bod eve.Body, sld *xyz.Solid) {
 		bx := bod.(*eve.Box)
 		sld.Pose.Scale = bx.Size
 		if bx.Color != "" {
-			sld.Mat.Color = grr.Log1(colors.FromString(bx.Color))
+			sld.Mat.Color = errors.Log1(colors.FromString(bx.Color))
 		}
 	case "eve.Cylinder":
 		cy := bod.(*eve.Cylinder)
 		sld.Pose.Scale.Set(cy.BotRad, cy.Height, cy.BotRad)
 		if cy.Color != "" {
-			sld.Mat.Color = grr.Log1(colors.FromString(cy.Color))
+			sld.Mat.Color = errors.Log1(colors.FromString(cy.Color))
 		}
 	case "eve.Capsule":
 		cp := bod.(*eve.Capsule)
 		sld.Pose.Scale.Set(cp.BotRad/.2, cp.Height/1.4, cp.BotRad/.2)
 		if cp.Color != "" {
-			sld.Mat.Color = grr.Log1(colors.FromString(cp.Color))
+			sld.Mat.Color = errors.Log1(colors.FromString(cp.Color))
 		}
 	case "eve.Sphere":
 		sp := bod.(*eve.Sphere)
 		sld.Pose.Scale.SetScalar(sp.Radius)
 		if sp.Color != "" {
-			sld.Mat.Color = grr.Log1(colors.FromString(sp.Color))
+			sld.Mat.Color = errors.Log1(colors.FromString(sp.Color))
 		}
 	}
 }

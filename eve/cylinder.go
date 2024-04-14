@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Cylinder is a generalized cylinder body shape, with separate radii for top and bottom.
@@ -25,7 +25,7 @@ type Cylinder struct {
 
 func (cy *Cylinder) SetBBox() {
 	h2 := cy.Height / 2
-	cy.BBox.SetBounds(mat32.V3(-cy.BotRad, -h2, -cy.BotRad), mat32.V3(cy.TopRad, h2, cy.TopRad))
+	cy.BBox.SetBounds(math32.V3(-cy.BotRad, -h2, -cy.BotRad), math32.V3(cy.TopRad, h2, cy.TopRad))
 	cy.BBox.XForm(cy.Abs.Quat, cy.Abs.Pos)
 }
 

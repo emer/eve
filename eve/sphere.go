@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Sphere is a spherical body shape.
@@ -17,7 +17,7 @@ type Sphere struct {
 }
 
 func (sp *Sphere) SetBBox() {
-	sp.BBox.SetBounds(mat32.V3(-sp.Radius, -sp.Radius, -sp.Radius), mat32.V3(sp.Radius, sp.Radius, sp.Radius))
+	sp.BBox.SetBounds(math32.V3(-sp.Radius, -sp.Radius, -sp.Radius), math32.V3(sp.Radius, sp.Radius, sp.Radius))
 	sp.BBox.XForm(sp.Abs.Quat, sp.Abs.Pos)
 }
 

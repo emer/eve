@@ -5,7 +5,7 @@
 package eve
 
 import (
-	"cogentcore.org/core/mat32"
+	"cogentcore.org/core/math32"
 )
 
 // Rigid contains the full specification of a given object's basic physics
@@ -22,10 +22,10 @@ type Rigid struct {
 	Friction float32
 
 	// record of computed force vector from last iteration
-	Force mat32.Vec3
+	Force math32.Vec3
 
 	// Last calculated rotational inertia matrix in local coords
-	RotInertia mat32.Mat3
+	RotInertia math32.Mat3
 }
 
 // Defaults sets defaults only if current values are nil
