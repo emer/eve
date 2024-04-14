@@ -8,14 +8,15 @@ package eve
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tree"
 )
 
 // Node is the common interface for all eve nodes
 type Node interface {
-	tree.Ki
+	tree.Node
 
-	// NodeType returns the type of node this is (Body, Group, Joint)
-	NodeType() NodeTypes
+	// EveNodeType returns the type of node this is (Body, Group, Joint)
+	EveNodeType() NodeTypes
 
 	// AsNodeBase returns a generic NodeBase for our node -- gives generic
 	// access to all the base-level data structures without needing interface methods.
@@ -58,7 +59,7 @@ type Node interface {
 // and computed bounding boxes, etc.
 // There are only three different kinds of Nodes: Group, Body, and Joint
 type NodeBase struct {
-	tree.Node
+	tree.NodeBase
 
 	// initial position, orientation, velocity in *local* coordinates (relative to parent)
 	Initial Phys `view:"inline"`
@@ -157,7 +158,7 @@ func (nb *NodeBase) StepPhysBase(step float32) {
 }
 
 // AsNode converts Ki to a Node interface and a Node3DBase obj -- nil if not.
-func AsNode(k tree.Ki) (Node, *NodeBase) {
+func AsNode(k tree.Node) (Node, *NodeBase) {
 	if k == nil || k.This() == nil { // this also checks for destroyed
 		return nil, nil
 	}

@@ -19,13 +19,13 @@ import (
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/icons"
-	"cogentcore.org/core/iox/images"
+	"cogentcore.org/core/iox/imagex"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/styles"
 	"cogentcore.org/core/svg"
 	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
-	"cogentcore.org/core/xyzv"
+	"cogentcore.org/core/xyzview"
 	"github.com/emer/eve/v2/eve"
 	"github.com/emer/eve/v2/eve2d"
 	"github.com/emer/eve/v2/evev"
@@ -91,7 +91,7 @@ type Env struct {
 	View2D *eve2d.View
 
 	// 3D visualization of the Scene
-	SceneView *xyzv.SceneView
+	SceneView *xyzview.SceneView
 
 	// 2D visualization of the Scene
 	Scene2D *core.SVG
@@ -382,7 +382,7 @@ func (ev *Env) ConfigGUI() *core.Body {
 	//////////////////////////////////////////
 	//    3D Scene
 
-	ev.SceneView = xyzv.NewSceneView(scfr, "sceneview")
+	ev.SceneView = xyzview.NewSceneView(scfr, "sceneview")
 	ev.SceneView.Config()
 	se := ev.SceneView.SceneXYZ()
 	ev.ConfigScene(se)
@@ -492,7 +492,7 @@ func (ev *Env) NoGUIRun() {
 
 	img, err := ev.RenderEyeImg()
 	if err == nil {
-		images.Save(img, "eyer_0.png")
+		imagex.Save(img, "eyer_0.png")
 	} else {
 		panic(err)
 	}

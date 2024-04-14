@@ -31,7 +31,7 @@ type BodyBase struct {
 	Color string
 }
 
-func (bb *BodyBase) NodeType() NodeTypes {
+func (bb *BodyBase) EveNodeType() NodeTypes {
 	return BODY
 }
 

@@ -6,6 +6,7 @@ package eve
 
 import (
 	"cogentcore.org/core/math32"
+	"cogentcore.org/core/tree"
 )
 
 // Contact is one pairwise point of contact between two bodies.
@@ -50,17 +51,17 @@ func (cs *Contacts) New(a, b Body) *Contact {
 // This is the broad first-pass filtering.
 func BodyVelBBoxIntersects(a, b Node) Contacts {
 	var cts Contacts
-	a.WalkPre(func(k tree.Ki) bool {
+	a.WalkDown(func(k tree.Node) bool {
 		aii, ai := AsNode(k)
 		if aii == nil {
 			return false // going into a different type of thing, bail
 		}
-		if aii.NodeType() != BODY {
+		if aii.EveNodeType() != BODY {
 			return true
 		}
 		abod := aii.AsBody() // only consider bodies from a
 
-		b.WalkPre(func(k tree.Ki) bool {
+		b.WalkDown(func(k tree.Node) bool {
 			bii, bi := AsNode(k)
 			if bii == nil {
 				return false // going into a different type of thing, bail
@@ -68,7 +69,7 @@ func BodyVelBBoxIntersects(a, b Node) Contacts {
 			if !ai.BBox.IntersectsVelBox(&bi.BBox) {
 				return false // done
 			}
-			if bii.NodeType() == BODY {
+			if bii.EveNodeType() == BODY {
 				cts.New(abod, bii.AsBody())
 				return false // done
 			}
