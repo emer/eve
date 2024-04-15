@@ -49,7 +49,7 @@ func main() {
 }
 
 // Env encapsulates the virtual environment
-type Env struct {
+type Env struct { //types:add
 
 	// height of emer
 	EmerHt float32
@@ -152,7 +152,7 @@ func (ev *Env) MakeWorld() {
 }
 
 // InitWorld does init on world and re-syncs
-func (ev *Env) WorldInit() { //gti:add
+func (ev *Env) WorldInit() { //types:add
 	ev.World.WorldInit()
 	if ev.View3D != nil {
 		ev.View3D.Sync()
@@ -164,7 +164,7 @@ func (ev *Env) WorldInit() { //gti:add
 }
 
 // ReMakeWorld rebuilds the world and re-syncs with gui
-func (ev *Env) ReMakeWorld() { //gti:add
+func (ev *Env) ReMakeWorld() { //types:add
 	ev.MakeWorld()
 	ev.View3D.World = ev.World
 	if ev.View3D != nil {
@@ -208,7 +208,7 @@ func (ev *Env) RenderEyeImg() (*image.RGBA, error) {
 }
 
 // GrabEyeImg takes a snapshot from the perspective of Emer's right eye
-func (ev *Env) GrabEyeImg() { //gti:add
+func (ev *Env) GrabEyeImg() { //types:add
 	img, err := ev.RenderEyeImg()
 	if err == nil && img != nil {
 		ev.EyeRImg.SetImage(img)
@@ -269,38 +269,38 @@ func (ev *Env) WorldStep() {
 }
 
 // StepForward moves Emer forward in current facing direction one step, and takes GrabEyeImg
-func (ev *Env) StepForward() { //gti:add
+func (ev *Env) StepForward() { //types:add
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, -ev.MoveStep)
 	ev.WorldStep()
 }
 
 // StepBackward moves Emer backward in current facing direction one step, and takes GrabEyeImg
-func (ev *Env) StepBackward() { //gti:add
+func (ev *Env) StepBackward() { //types:add
 	ev.Emer.Rel.MoveOnAxis(0, 0, 1, ev.MoveStep)
 	ev.WorldStep()
 }
 
 // RotBodyLeft rotates emer left and takes GrabEyeImg
-func (ev *Env) RotBodyLeft() { //gti:add
+func (ev *Env) RotBodyLeft() { //types:add
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.WorldStep()
 }
 
 // RotBodyRight rotates emer right and takes GrabEyeImg
-func (ev *Env) RotBodyRight() { //gti:add
+func (ev *Env) RotBodyRight() { //types:add
 	ev.Emer.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.WorldStep()
 }
 
 // RotHeadLeft rotates emer left and takes GrabEyeImg
-func (ev *Env) RotHeadLeft() { //gti:add
+func (ev *Env) RotHeadLeft() { //types:add
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, ev.RotStep)
 	ev.WorldStep()
 }
 
 // RotHeadRight rotates emer right and takes GrabEyeImg
-func (ev *Env) RotHeadRight() { //gti:add
+func (ev *Env) RotHeadRight() { //types:add
 	hd := ev.Emer.ChildByName("head", 1).(*eve.Group)
 	hd.Rel.RotateOnAxis(0, 1, 0, -ev.RotStep)
 	ev.WorldStep()
