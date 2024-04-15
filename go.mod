@@ -3,7 +3,7 @@ module github.com/emer/eve/v2
 go 1.22
 
 require (
-	cogentcore.org/core v0.0.10-0.20240405190546-83db9203b880
+	cogentcore.org/core v0.1.0
 	github.com/goki/vulkan v1.0.7
 )
 
