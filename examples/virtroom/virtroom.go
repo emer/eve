@@ -45,7 +45,7 @@ func main() {
 	}
 	// core.RenderTrace = true
 	b := ev.ConfigGUI()
-	b.NewWindow().Run().Wait()
+	b.RunMainWindow()
 }
 
 // Env encapsulates the virtual environment
