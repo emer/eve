@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"image"
 
+	"cogentcore.org/core/base/errors"
 	"cogentcore.org/core/colors"
-	"cogentcore.org/core/errors"
 	"cogentcore.org/core/tree"
 	"cogentcore.org/core/xyz"
 	"github.com/emer/eve/v2/eve"

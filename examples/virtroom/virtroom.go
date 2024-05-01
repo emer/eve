@@ -13,19 +13,19 @@ import (
 	"math/rand"
 	"os"
 
-	"cogentcore.org/core/abilities"
+	"cogentcore.org/core/base/iox/imagex"
 	"cogentcore.org/core/colors"
 	"cogentcore.org/core/colors/colormap"
 	"cogentcore.org/core/core"
 	"cogentcore.org/core/events"
 	"cogentcore.org/core/icons"
-	"cogentcore.org/core/iox/imagex"
 	"cogentcore.org/core/math32"
 	"cogentcore.org/core/styles"
+	"cogentcore.org/core/styles/abilities"
 	"cogentcore.org/core/svg"
 	"cogentcore.org/core/views"
 	"cogentcore.org/core/xyz"
-	"cogentcore.org/core/xyzview"
+	"cogentcore.org/core/xyz/xyzview"
 	"github.com/emer/eve/v2/eve"
 	"github.com/emer/eve/v2/eve2d"
 	"github.com/emer/eve/v2/evev"
@@ -407,11 +407,11 @@ func (ev *Env) ConfigGUI() *core.Body {
 	imfr.Style(func(s *styles.Style) {
 		s.Direction = styles.Column
 	})
-	core.NewLabel(imfr).SetText("Right Eye Image:")
+	core.NewText(imfr).SetText("Right Eye Image:")
 	ev.EyeRImg = core.NewImage(imfr, "eye-r-img")
 	ev.EyeRImg.Image = image.NewRGBA(image.Rectangle{Max: ev.Camera.Size})
 
-	core.NewLabel(imfr).SetText("Right Eye Depth:")
+	core.NewText(imfr).SetText("Right Eye Depth:")
 	ev.DepthImage = core.NewImage(imfr, "depth-img")
 	ev.DepthImage.Image = image.NewRGBA(image.Rectangle{Max: ev.Camera.Size})
 
