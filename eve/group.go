@@ -234,8 +234,8 @@ func (gp *Group) RayBodyIntersections(ray math32.Ray) []*BodyPoint {
 	})
 
 	sort.Slice(bs, func(i, j int) bool {
-		di := bs[i].Point.DistTo(ray.Origin)
-		dj := bs[j].Point.DistTo(ray.Origin)
+		di := bs[i].Point.DistanceTo(ray.Origin)
+		dj := bs[j].Point.DistanceTo(ray.Origin)
 		return di < dj
 	})
 
