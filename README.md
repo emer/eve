@@ -1,6 +1,6 @@
 # Emergent Virtual Engine
 
-**IMPORTANT UPDATE:** [Cogent Core](https://github.com/cogentcore/core) now has an improved version of eve, in its [xyz/physics](https://github.com/cogentcore/core/tree/main/xyz/physics) package and associated sub-packages.  This version will not be further maintained or developed.  The v1 version is still needed for the v1 version of emergent.
+**IMPORTANT UPDATE:** [Cogent Core](https://github.com/cogentcore/core) now has an improved version of eve in its [xyz/physics](https://github.com/cogentcore/core/tree/main/xyz/physics) package and associated sub-packages.  This version will not be further maintained or developed.  The v1 version is still needed for the v1 version of emergent.
 
 The *Emergent Virtual Engine* (EVE) is a scenegraph-based physics simulator for creating virtual environments for neural network models to grow up in.
 
